@@ -17,7 +17,7 @@ export async function POST(request) {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { level, concept, concept_name, score, total } = await request.json()
+    const { level, concept, concept_name, score, total, vocabularyWords = [] } = await request.json()
 
     // 1. Save session
     const { error } = await supabase.from('sessions').insert({
@@ -35,6 +35,11 @@ export async function POST(request) {
 
     // 3. Check recalibration (runs after session is saved so current session is included)
     const recalibration = await checkRecalibration(user.id, level)
+
+    // 4. Track vocabulary words encountered this session
+    if (vocabularyWords.length > 0) {
+      await updateVocabularySeen(user.id, vocabularyWords)
+    }
 
     return NextResponse.json({ ok: true, promotion, recalibration })
   } catch (error) {
@@ -89,6 +94,29 @@ async function checkRecalibration(userId, currentLevel) {
   } catch (err) {
     console.error('checkRecalibration error:', err)
     return null
+  }
+}
+
+async function updateVocabularySeen(userId, words) {
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('vocabulary_seen')
+      .eq('id', userId)
+      .single()
+
+    const seen = profile?.vocabulary_seen ?? {}
+    const updated = { ...seen }
+    for (const word of words) {
+      updated[word] = (updated[word] ?? 0) + 1
+    }
+
+    await supabase
+      .from('profiles')
+      .update({ vocabulary_seen: updated })
+      .eq('id', userId)
+  } catch (err) {
+    console.error('updateVocabularySeen error:', err)
   }
 }
 

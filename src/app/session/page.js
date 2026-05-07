@@ -22,6 +22,7 @@ const LEVEL_DATA = {
 import { useAuth } from '@/hooks/useAuth'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { scoreToLevel } from '@/lib/level'
+import { getVocabularyForLevel } from '@/data/vocabulary-map'
 
 const LEVEL_SEQUENCE = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 function nextLevel(level) {
@@ -43,6 +44,14 @@ function getDailyConcept(level) {
   return A1_CONCEPTS[A1_ORDER[0]]
 }
 
+function selectVocabularyWords(level, vocabularySeen) {
+  const words = getVocabularyForLevel(level)
+  if (!vocabularySeen) return [...words].sort(() => Math.random() - 0.5).slice(0, 7)
+  return [...words]
+    .sort((a, b) => (vocabularySeen[a.word] ?? 0) - (vocabularySeen[b.word] ?? 0))
+    .slice(0, 7)
+}
+
 export default function SessionPage() {
   const router = useRouter()
   const { user, signInWithGoogle, signOut } = useAuth()
@@ -62,6 +71,7 @@ export default function SessionPage() {
   const [results, setResults] = useState([])
   const [promotion, setPromotion] = useState(null)
   const [recalibration, setRecalibration] = useState(null)
+  const [vocabularySeen, setVocabularySeen] = useState(null)
   const didFetch = useRef(false)
 
   useEffect(() => {
@@ -78,6 +88,17 @@ export default function SessionPage() {
     setConcept(c)
     // Don't auto-start — show confirm screen first
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    supabaseBrowser
+      .from('profiles')
+      .select('vocabulary_seen')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => setVocabularySeen(data?.vocabulary_seen ?? {}))
+      .catch(() => setVocabularySeen({}))
+  }, [user?.id])
 
   async function fetchSession(lvl, c) {
     setLoadState('loading')
@@ -102,10 +123,11 @@ export default function SessionPage() {
       }
 
       // Pass lesson to questions so generation is always lesson-seeded
+      const vocabularyWords = selectVocabularyWords(lvl, vocabularySeen)
       const questionsRes = await fetch('/api/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level: lvl, concept: c, lesson }),
+        body: JSON.stringify({ level: lvl, concept: c, lesson, vocabularyWords }),
       })
 
       if (!questionsRes.ok) throw new Error()
@@ -158,6 +180,11 @@ export default function SessionPage() {
     try {
       const { data: { session: authSession } } = await supabaseBrowser.auth.getSession()
       if (!authSession?.access_token) return
+
+      const servedVocabWords = questions
+        .map(q => q.vocabulary_word ?? q.vocabularyWord)
+        .filter(Boolean)
+
       const res = await fetch('/api/save-session', {
         method: 'POST',
         headers: {
@@ -170,11 +197,22 @@ export default function SessionPage() {
           concept_name: concept.nameFr,
           score: finalResults.filter(r => r.correct).length,
           total: finalResults.length,
+          vocabularyWords: servedVocabWords,
         }),
       })
       const data = await res.json()
       if (data.promotion) setPromotion(data.promotion)
       if (data.recalibration) setRecalibration(data.recalibration)
+
+      if (servedVocabWords.length > 0) {
+        setVocabularySeen(prev => {
+          const updated = { ...(prev ?? {}) }
+          for (const word of servedVocabWords) {
+            updated[word] = (updated[word] ?? 0) + 1
+          }
+          return updated
+        })
+      }
     } catch (err) {
       console.error('Failed to save session:', err)
     }
@@ -244,6 +282,11 @@ export default function SessionPage() {
 
   if (!level || !concept) return null
 
+  const levelWordSet = level ? new Set(getVocabularyForLevel(level).map(v => v.word)) : new Set()
+  const vocabCount = user && vocabularySeen
+    ? Object.keys(vocabularySeen).filter(w => levelWordSet.has(w)).length
+    : null
+
   return (
     <div className="app-shell">
       <Sidebar
@@ -252,6 +295,7 @@ export default function SessionPage() {
         user={user}
         signInWithGoogle={signInWithGoogle}
         signOut={signOut}
+        vocabCount={vocabCount}
       />
 
       <div className="main-content">
@@ -949,7 +993,7 @@ function ProgressRow({ done, label }) {
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
-function Sidebar({ level, levelInfo, user, signInWithGoogle, signOut }) {
+function Sidebar({ level, levelInfo, user, signInWithGoogle, signOut, vocabCount }) {
   return (
     <div className="sidebar">
       <div className="sidebar-logo">Lexitree<span>.</span></div>
@@ -979,6 +1023,14 @@ function Sidebar({ level, levelInfo, user, signInWithGoogle, signOut }) {
           <div style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--terracotta)', marginBottom: '4px' }}>Your level</div>
           <div style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 600, color: 'var(--dark)' }}>{level}</div>
           <div style={{ fontSize: '12px', color: 'var(--mid)', marginTop: '2px' }}>{levelInfo?.name}</div>
+          {vocabCount !== null && (
+            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--terracotta-light)' }}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--dark)' }}>{vocabCount}</div>
+              <div style={{ fontSize: '11px', color: 'var(--mid)', lineHeight: 1.4 }}>
+                {vocabCount === 1 ? 'word' : 'words'} encountered at {level}
+              </div>
+            </div>
+          )}
         </div>
 
         {user === undefined && null}
