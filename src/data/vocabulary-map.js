@@ -231,6 +231,14 @@ const VOCABULARY = {
   ],
 }
 
+const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+
 export function getVocabularyForLevel(level) {
   return VOCABULARY[level] ?? []
+}
+
+export function getVocabularyUpToLevel(level) {
+  const idx = LEVEL_ORDER.indexOf(level)
+  if (idx === -1) return []
+  return LEVEL_ORDER.slice(0, idx + 1).flatMap(l => VOCABULARY[l] ?? [])
 }

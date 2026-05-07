@@ -22,7 +22,7 @@ const LEVEL_DATA = {
 import { useAuth } from '@/hooks/useAuth'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import { scoreToLevel } from '@/lib/level'
-import { getVocabularyForLevel } from '@/data/vocabulary-map'
+import { getVocabularyUpToLevel } from '@/data/vocabulary-map'
 
 const LEVEL_SEQUENCE = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 function nextLevel(level) {
@@ -45,7 +45,7 @@ function getDailyConcept(level) {
 }
 
 function selectVocabularyWords(level, vocabularySeen) {
-  const words = getVocabularyForLevel(level)
+  const words = getVocabularyUpToLevel(level)
   if (!vocabularySeen) return [...words].sort(() => Math.random() - 0.5).slice(0, 7)
   return [...words]
     .sort((a, b) => (vocabularySeen[a.word] ?? 0) - (vocabularySeen[b.word] ?? 0))
@@ -282,9 +282,9 @@ export default function SessionPage() {
 
   if (!level || !concept) return null
 
-  const levelWordSet = level ? new Set(getVocabularyForLevel(level).map(v => v.word)) : new Set()
+  const cumulativeWordSet = level ? new Set(getVocabularyUpToLevel(level).map(v => v.word)) : new Set()
   const vocabCount = user && vocabularySeen
-    ? Object.keys(vocabularySeen).filter(w => levelWordSet.has(w)).length
+    ? Object.keys(vocabularySeen).filter(w => cumulativeWordSet.has(w)).length
     : null
 
   return (
@@ -1027,7 +1027,7 @@ function Sidebar({ level, levelInfo, user, signInWithGoogle, signOut, vocabCount
             <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--terracotta-light)' }}>
               <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--dark)' }}>{vocabCount}</div>
               <div style={{ fontSize: '11px', color: 'var(--mid)', lineHeight: 1.4 }}>
-                {vocabCount === 1 ? 'word' : 'words'} encountered at {level}
+                {vocabCount === 1 ? 'word' : 'words'} encountered up to {level}
               </div>
             </div>
           )}
