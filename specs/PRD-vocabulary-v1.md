@@ -143,14 +143,21 @@ TRUNCATE TABLE questions;
 
 ---
 
-### 4. Session save changes
+### 4. Vocabulary tracking — count-based, signed-in users only
 
-When a session is saved, the question IDs served must be included in the payload. The save-session route:
+`vocabulary_seen` on `profiles` is a JSONB object mapping word → integer encounter count:
 
-1. Looks up `vocabulary_word` for each served question ID
-2. Appends new words to `profiles.vocabulary_seen` (union — no duplicates)
+```json
+{ "parvenir": 3, "accomplir": 1, "ambitieux": 2 }
+```
 
-This requires a small change to the session page — include question IDs in the save payload.
+After each session, `session/page.js` extracts vocabulary words from served questions and passes them to `save-session`. The route increments the count for each word on the user's profile.
+
+**Guests are not tracked.** Vocabulary words are still passed to Mistral for guests (better question quality), but no counts are written — guests have no profile row.
+
+**New users** start with `'{}'::jsonb` — an empty object. First session populates it.
+
+**Word selection** is per-user: words sorted by `vocabulary_seen[word] ?? 0` ascending — words the user has seen least are served first. Guests fall back to random selection.
 
 ---
 

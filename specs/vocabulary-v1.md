@@ -13,7 +13,7 @@ Grammar comprehension is bottlenecked by vocabulary range. Today Mistral picks v
 
 ## Solution
 
-Build a curated master vocabulary list of grammar-critical words. Pass 7 words — one per question — to Mistral during question generation. Mistral uses each word naturally in whichever question it fits best. Tag each question with the vocabulary word used. Track which words each user has encountered. Surface a word count in the sidebar.
+Build a curated master vocabulary list of grammar-critical words. Pass 7 words to Mistral per question generation call — one per question. Mistral uses each word naturally in whichever question it fits best and reports back which word it used. Tag each question with the vocabulary word used. Track how many times each signed-in user has encountered each word. Surface a word count in the sidebar.
 
 Vocabulary learning is invisible — it happens through better, more systematic exercises, not a separate quiz or flash card UI.
 
@@ -25,77 +25,86 @@ Vocabulary learning is invisible — it happens through better, more systematic 
 
 | Part of speech | Role | Example |
 |---|---|---|
-| Verbs | Core element in conjugation/tense/mood exercises | *parvenir, accomplir, promettre* |
+| Verbs | Core element in conjugation / tense / mood exercises | *parvenir, accomplir, promettre* |
 | Adjectives | Agreement, placement, comparative exercises | *ambitieux, jaloux, vif* |
 | Manner adverbs | Context enrichment, tense-agnostic | *rapidement, souvent, absolument* |
-| Prepositions | Verb + preposition collocations | *parvenir à, rêver de* |
 
 **Excluded:**
 
 | Part of speech | Reason |
 |---|---|
 | Nouns | Grammatically neutral — Mistral picks freely, no value in controlling |
-| Temporal adverbs (*soudain, jadis*) | Already systematically used as forcing cues in the prompt — redundant |
-| Conjunctions (*bien que, si*) | Already systematically used as forcing cues in the prompt — redundant and conflict-prone |
+| Temporal adverbs (*soudain, jadis*) | Grammar-locked to specific tenses — already covered by forcing cue rules in prompt |
+| Conjunctions (*bien que, si*) | Grammar-locked to specific moods — conflict-prone if passed to wrong concept |
 
-Temporal adverbs and conjunctions are grammar-locked to specific tenses and moods. Passing them to a mismatched concept session produces bad French or wasted slots. Since they are already covered by the existing forcing cue rules in the prompt, excluding them from the vocabulary bank has no learning cost.
+Temporal adverbs and conjunctions are grammar-locked: passing *bien que* to a futur simple session produces contradictory French. Both are already systematically present through existing forcing cue rules. Excluding them has no learning cost and eliminates all concept-vocabulary conflict risk.
 
 ---
 
 ## Master Vocabulary List
 
 **File:** `src/data/vocabulary-map.js`  
-**Philosophy:** Same as `grammar-map.js` — static curriculum data, zero latency, changes only on curriculum redesign.
+**Philosophy:** Same as `grammar-map.js` — static curriculum data, zero latency, changes only on curriculum redesign. Exports `getVocabularyForLevel(level)`.
 
-### Word shape
-
+**Word shape:**
 ```js
 {
   word: 'parvenir',
   definition: 'to manage / to succeed in',
-  pos: 'verb',     // 'verb' | 'adjective' | 'adverb' | 'preposition'
+  pos: 'verb',     // 'verb' | 'adjective' | 'adverb'
   level: 'B1',
 }
 ```
 
 No concept field — all words are level-wide and safe for any concept at that level.
 
-### List size
-
-~40–45 words per level, ~260 total across A1–C2:
-- 20–25 verbs
-- 8–10 adjectives
-- 5–7 manner adverbs
-- 5–8 prepositions (in verb collocation context)
-
-**First draft:** Mistral-generated per level, human-reviewed, committed to code.
-
-Generation prompt:
-> "Give me the 40 most important French vocabulary words for grammar practice at [LEVEL] — verbs, adjectives, manner adverbs, and prepositions only. No nouns, no temporal adverbs (soudain, jadis, etc.), no conjunctions. For each: French word, English definition, part of speech."
+**Size:** ~35 words per level, ~210 total across A1–C2 (verbs, adjectives, manner adverbs only).
 
 ---
 
-## Question Generation Changes
+## How Vocabulary Words Are Selected Per Session
 
-### How it works
+Words are selected client-side in `session/page.js` using the user's `vocabulary_seen` object:
 
-Every question generation call receives 7 vocabulary words from the bank (least-used first by `use_count` at the active level). Mistral is instructed to use each word exactly once across the 7 questions, in whichever question it fits most naturally. Mistral reports back which word it used per question via a `vocabularyWord` field in the JSON response.
-
-### Prompt addition
-
-Replace rule 6 ("Vocabulary appropriate for ${level}") with:
-
-```
-6. VOCABULARY: Use each of the following words exactly once across the 
-   ${count} questions, placing each in whichever question it fits most 
-   naturally. The word may appear conjugated in the blank, as part of 
-   the sentence context, or in a supporting clause.
-   Words: [word1, word2, word3, word4, word5, word6, word7]
-   Add a "vocabularyWord" field to each question with the exact word used.
+```js
+function selectVocabularyWords(level, vocabularySeen) {
+  const words = getVocabularyForLevel(level)
+  return [...words]
+    .sort((a, b) => (vocabularySeen[a.word] ?? 0) - (vocabularySeen[b.word] ?? 0))
+    .slice(0, 7)
+}
 ```
 
-### Updated JSON shape
+- Words the user has never seen (count = 0) are served first
+- Words with the lowest encounter count are prioritised
+- If fewer than 7 words exist for a level, all are passed
 
+**Guests:** No `vocabulary_seen` available → words sorted randomly. Vocabulary words are still passed to Mistral (better question quality) but encounter counts are not tracked.
+
+---
+
+## Question Generation Changes (`generate-questions/route.js`)
+
+**Request body** — new field:
+```json
+{ "level": "B1", "concept": {...}, "lesson": {...}, "vocabularyWords": [
+  { "word": "parvenir", "pos": "verb" },
+  ...
+] }
+```
+
+**Prompt change** — replace old rule 6 ("Vocabulary appropriate for ${level}") with:
+
+```
+VOCABULARY — use each of the following words exactly once across the
+${count} questions, placing each in whichever question it fits most
+naturally. The word may appear conjugated in the blank, in the sentence
+for context, or in a supporting clause. Add a "vocabularyWord" field to
+that question in the JSON with the exact word used.
+Words: parvenir, accomplir, ambitieux, ...
+```
+
+**Mistral reports back** — `vocabularyWord` field on each question:
 ```json
 {
   "question": "Elle ___ à finir avant minuit.",
@@ -107,67 +116,122 @@ Replace rule 6 ("Vocabulary appropriate for ${level}") with:
 }
 ```
 
-### Word selection
+**Saving to bank** — normalize and persist vocabulary fields:
+```js
+vocabulary_word: q.vocabularyWord ?? null,
+vocabulary_pos:  q.vocabularyWord
+  ? (vocabularyWords.find(v => v.word === q.vocabularyWord)?.pos ?? null)
+  : null,
+```
 
-Pick 7 words from `vocabulary-map.js` filtered by `level === activeLevel`, ordered by `use_count ASC` from the questions table (words least recently used across all sessions at this level).
-
-### Quality gate
-
-After generation, verify `vocabularyWord` is present and non-empty on each question. If missing — question is still valid and saved, just stored with `vocabulary_word: null`. Log for monitoring.
+**Serving from bank** — include `vocabulary_word` and `vocabulary_pos` in the select query.
 
 ---
 
-## Schema Changes
+## User-Level Vocabulary Tracking
 
-### `questions` table
+### Data model
+
+**`vocabulary_seen` on `profiles` table** — a JSONB object mapping word → encounter count:
+
+```json
+{ "parvenir": 3, "accomplir": 1, "ambitieux": 2, "vif": 1 }
+```
+
+- Keys: vocabulary word strings (exact match to `vocabulary-map.js`)
+- Values: integer count — how many sessions this user has encountered this word
+
+**Default for new users:** `'{}'::jsonb` (empty object)
+
+**Guests:** No profile row → no tracking. Vocabulary words are still passed to Mistral but counts are never written.
+
+### Schema
 
 ```sql
 ALTER TABLE questions ADD COLUMN vocabulary_word text;
 ALTER TABLE questions ADD COLUMN vocabulary_pos  text;
+
+ALTER TABLE profiles  ADD COLUMN vocabulary_seen jsonb DEFAULT '{}'::jsonb;
 ```
 
-Both nullable. Null = freely generated, no vocabulary seeding.
+### How counts are updated
 
-### `profiles` table
+After each session completes, `session/page.js` extracts vocabulary words from the served questions and passes them to `save-session`:
 
-```sql
-ALTER TABLE profiles ADD COLUMN vocabulary_seen jsonb DEFAULT '[]'::jsonb;
+```js
+// In saveSession():
+const servedVocabWords = questions
+  .map(q => q.vocabulary_word ?? q.vocabularyWord)
+  .filter(Boolean)
+
+// Included in save-session POST body:
+{ ..., vocabularyWords: servedVocabWords }
 ```
 
-Array of unique vocabulary words the user has encountered. Appended at session save.
+`save-session/route.js` updates the profile:
 
-### Question bank
+```js
+async function updateVocabularySeen(userId, words) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('vocabulary_seen')
+    .eq('id', userId)
+    .single()
 
-**Truncate and rebuild.** Old questions incompatible with new prompt and missing columns.
+  const seen = profile?.vocabulary_seen ?? {}
+  const updated = { ...seen }
+  for (const word of words) {
+    updated[word] = (updated[word] ?? 0) + 1
+  }
 
-```sql
-TRUNCATE TABLE questions;
+  await supabase
+    .from('profiles')
+    .update({ vocabulary_seen: updated })
+    .eq('id', userId)
+}
 ```
+
+Called only for authenticated users. Guests are skipped.
 
 ---
 
-## Session Save Changes
+## Sidebar — Vocabulary Word Count
 
-The session save payload must include IDs of questions served. The save-session route:
-
-1. Fetches `vocabulary_word` for each served question ID
-2. Deduplicates
-3. Appends new words to `profiles.vocabulary_seen`
-
-Requires a small change to the session page — include question IDs in the save payload.
-
----
-
-## Sidebar
-
-Add below the level display:
+**Shown for signed-in users only.** Guests see nothing.
 
 ```
+─────────────────
+Your level
+B1  Intermediate
+
 47 words
 encountered at B1
+─────────────────
 ```
 
-Computed from `profiles.vocabulary_seen` filtered by current level. Available via profile fetch in `useAuth`.
+Count computed client-side:
+```js
+const levelWordSet = new Set(getVocabularyForLevel(level).map(v => v.word))
+const vocabCount = Object.keys(vocabularySeen ?? {})
+  .filter(w => levelWordSet.has(w)).length
+```
+
+`vocabularySeen` is fetched from the profile on session page mount and updated locally after each session save — no additional page reload needed.
+
+---
+
+## Session Page Changes (`session/page.js`)
+
+1. Import `getVocabularyForLevel` from `vocabulary-map.js`
+2. Add `vocabularySeen` state — fetched from profile on mount (when `user` is signed in)
+3. `selectVocabularyWords(level, vocabularySeen)` — pick 7 least-seen words
+4. Pass `vocabularyWords` to `fetchSession` → included in generate-questions body
+5. In `saveSession`:
+   - Extract `vocabulary_word` / `vocabularyWord` from served questions
+   - Include `vocabularyWords` array in save-session body
+   - On success, update local `vocabularySeen` state with incremented counts
+6. Pass `vocabCount` to `Sidebar` component
+7. `Sidebar` displays word count for signed-in users
 
 ---
 
@@ -175,34 +239,57 @@ Computed from `profiles.vocabulary_seen` filtered by current level. Available vi
 
 | File | Change |
 |---|---|
-| `src/data/vocabulary-map.js` | New — master vocabulary list |
-| `src/app/api/generate-questions/route.js` | Pass 7 words to Mistral, tag questions with vocabularyWord |
-| `src/app/api/save-session/route.js` | Accept question IDs, append vocabulary_seen to profile |
-| `src/app/session/page.js` | Include question IDs in save payload, show word count in sidebar |
-| `src/hooks/useAuth.js` | Expose vocabulary_seen from profile |
-| Supabase | Run ALTER TABLE migrations |
+| `src/data/vocabulary-map.js` | New — master vocabulary list, `getVocabularyForLevel()` |
+| `src/app/api/generate-questions/route.js` | Accept `vocabularyWords`, update prompt, save `vocabulary_word` / `vocabulary_pos` |
+| `src/app/api/save-session/route.js` | Accept `vocabularyWords`, call `updateVocabularySeen` for authenticated users |
+| `src/app/session/page.js` | Fetch/track `vocabularySeen`, select words, pass to API, show sidebar count |
+| Supabase | Run `ALTER TABLE` migrations for `questions` and `profiles` |
+
+---
+
+## Question Bank
+
+**Truncate and rebuild.** Old questions are incompatible — missing `vocabulary_word` column and generated without vocabulary seeding.
+
+```sql
+TRUNCATE TABLE questions;
+```
+
+---
+
+## What Changes for Guests
+
+| Behaviour | Guest | Signed-in |
+|---|---|---|
+| Vocabulary words passed to Mistral | Yes — better questions | Yes |
+| `vocabulary_seen` tracked | No | Yes |
+| Sidebar word count shown | No | Yes |
+| Word selection | Random | Least-seen first |
 
 ---
 
 ## Out of Scope (V2)
 
-- Comprehension analytics per word
-- Per-user word rotation (serve unseen words first per individual)
-- Pos breakdown in sidebar
-- Spaced repetition
-- Vocabulary question type
+- Comprehension analytics per word (requires question-level result tracking)
+- Breakdown by part of speech in sidebar ("23 verbs · 12 adverbs")
+- Spaced repetition / decay intervals
+- Vocabulary question type (dedicated quiz)
+- Separate vocabulary session mode
 
 ---
 
 ## Success Metrics
 
-**Primary:** Session completion rate — A/B holdout from launch. Revert if > 2pp drop.  
+**Primary:** Session completion rate — A/B holdout 50/50 from launch. Revert vocabulary seeding if completion drops > 2 percentage points.
+
 **Secondary:** 30-day retention lift vs control group.
 
 ---
 
 ## Dependencies
 
-- `vocabulary-map.js` written and reviewed before question generation changes
-- Supabase migrations run before deploy
-- Question bank truncated before deploy
+| Item | Required before |
+|---|---|
+| Supabase `ALTER TABLE` migrations | Deploy |
+| Question bank truncated (`TRUNCATE TABLE questions`) | Deploy |
+| `vocabulary-map.js` reviewed | Question generation changes |
