@@ -7,38 +7,45 @@
 
 ## Problem
 
-Grammar comprehension is bottlenecked by vocabulary range. A B1 user who understands the *subjonctif présent* rule but doesn't recognise *bien que* as a subjunctive trigger will fail exercises not because of grammar knowledge but because of vocabulary. Today Mistral chooses vocabulary freely — we have no visibility into which words users encounter, and no mechanism to systematically expand their grammatical vocabulary range.
+Grammar comprehension is bottlenecked by vocabulary range. Today Mistral picks vocabulary freely during question generation — we have no visibility into which words users encounter, and no mechanism to systematically expand their vocabulary range. Users may practice the same grammar rule repeatedly with the same handful of words, limiting their ability to generalise the rule.
 
 ---
 
 ## Solution
 
-Build a curated master vocabulary list of grammar-critical words. Pass words from this list to Mistral during question generation. Mistral uses them as the grammatically testable element in exercise sentences. Tag each question with the vocabulary word it used. Track which words each user has encountered. Surface a word count in the sidebar.
+Build a curated master vocabulary list of grammar-critical words. Pass 7 words — one per question — to Mistral during question generation. Mistral uses each word naturally in whichever question it fits best. Tag each question with the vocabulary word used. Track which words each user has encountered. Surface a word count in the sidebar.
 
-Vocabulary learning is invisible to the user — it happens through better, more systematic exercises, not a separate quiz or flash card UI.
+Vocabulary learning is invisible — it happens through better, more systematic exercises, not a separate quiz or flash card UI.
 
 ---
 
 ## Vocabulary Scope
 
-**In scope — grammar-critical parts of speech only:**
+**In scope:**
 
-| Part of speech | Grammar role | Example |
+| Part of speech | Role | Example |
 |---|---|---|
-| Verbs | Conjugation, tense, mood exercises | *parvenir, accomplir, promettre* |
-| Adjectives | Agreement, placement, comparative | *ambitieux, jaloux, vif* |
-| Adverbs | Temporal forcing cues, tense selection | *jadis, soudain, désormais* |
-| Conjunctions | Mood/tense triggers | *bien que, à condition que, pourvu que* |
-| Prepositions | Verb + preposition collocations | *à, de, pour* (in context) |
+| Verbs | Core element in conjugation/tense/mood exercises | *parvenir, accomplir, promettre* |
+| Adjectives | Agreement, placement, comparative exercises | *ambitieux, jaloux, vif* |
+| Manner adverbs | Context enrichment, tense-agnostic | *rapidement, souvent, absolument* |
+| Prepositions | Verb + preposition collocations | *parvenir à, rêver de* |
 
-**Out of scope:** Nouns — grammatically neutral, Mistral picks freely.
+**Excluded:**
+
+| Part of speech | Reason |
+|---|---|
+| Nouns | Grammatically neutral — Mistral picks freely, no value in controlling |
+| Temporal adverbs (*soudain, jadis*) | Already systematically used as forcing cues in the prompt — redundant |
+| Conjunctions (*bien que, si*) | Already systematically used as forcing cues in the prompt — redundant and conflict-prone |
+
+Temporal adverbs and conjunctions are grammar-locked to specific tenses and moods. Passing them to a mismatched concept session produces bad French or wasted slots. Since they are already covered by the existing forcing cue rules in the prompt, excluding them from the vocabulary bank has no learning cost.
 
 ---
 
 ## Master Vocabulary List
 
 **File:** `src/data/vocabulary-map.js`  
-**Philosophy:** Same as `grammar-map.js` — static curriculum data, zero latency, changes only on course redesign.
+**Philosophy:** Same as `grammar-map.js` — static curriculum data, zero latency, changes only on curriculum redesign.
 
 ### Word shape
 
@@ -46,76 +53,67 @@ Vocabulary learning is invisible to the user — it happens through better, more
 {
   word: 'parvenir',
   definition: 'to manage / to succeed in',
-  pos: 'verb',              // 'verb' | 'adjective' | 'adverb' | 'conjunction' | 'preposition'
+  pos: 'verb',     // 'verb' | 'adjective' | 'adverb' | 'preposition'
   level: 'B1',
-  concept: 'futur_simple',  // optional — null means level-wide
-  tier: 'concept',          // 'concept' | 'level' | 'cross-level'
 }
 ```
 
-### Tiers and serving priority
-
-| Tier | Description | Served when |
-|---|---|---|
-| `concept` | Words specific to one grammar concept | Active concept matches |
-| `level` | Words useful across any concept at this level | Always available at this level |
-| `cross-level` | High-frequency grammar words (prepositions, core conjunctions) | Always available, any level |
+No concept field — all words are level-wide and safe for any concept at that level.
 
 ### List size
 
-~55–60 words per level, ~350 total across A1–C2. Breakdown per level:
-- 20–25 verbs (level-wide)
-- 10 concept-specific adverbs (temporal forcing cues)
-- 8–10 conjunctions (mood/tense triggers)
-- 8–10 adjectives (agreement practice)
-- 5–8 prepositions (verb collocations)
+~40–45 words per level, ~260 total across A1–C2:
+- 20–25 verbs
+- 8–10 adjectives
+- 5–7 manner adverbs
+- 5–8 prepositions (in verb collocation context)
 
 **First draft:** Mistral-generated per level, human-reviewed, committed to code.
 
-Prompt for generation:
-> "Give me the 60 most grammatically important French words at [LEVEL] — verbs, adjectives, adverbs, conjunctions, and prepositions only. For each: French word, English definition, part of speech, and the grammar concept it most directly supports. No nouns."
+Generation prompt:
+> "Give me the 40 most important French vocabulary words for grammar practice at [LEVEL] — verbs, adjectives, manner adverbs, and prepositions only. No nouns, no temporal adverbs (soudain, jadis, etc.), no conjunctions. For each: French word, English definition, part of speech."
 
 ---
 
 ## Question Generation Changes
 
-### Words passed per session
+### How it works
 
-The number of vocabulary-seeded questions is **concept-type-aware**, not a fixed number. The concept slug determines how many words are passed:
+Every question generation call receives 7 vocabulary words from the bank (least-used first by `use_count` at the active level). Mistral is instructed to use each word exactly once across the 7 questions, in whichever question it fits most naturally. Mistral reports back which word it used per question via a `vocabularyWord` field in the JSON response.
 
-| Concept type | Words passed | Rationale |
-|---|---|---|
-| Verb tense (futur, imparfait, etc.) | 3–4 verbs | Core element being conjugated |
-| Mood (subjonctif, conditionnel) | 2 conjunctions + 1 verb | Trigger word + conjugation both matter |
-| Agreement (adjective) | 3–4 adjectives | Core element being agreed |
-| Verb + preposition | 2–3 prepositions + 1 verb | Collocation is the rule |
+### Prompt addition
 
-Words are passed as an array to the generation call. Implicitly, one word = one seeded question.
-
-### Prompt instruction per part of speech
+Replace rule 6 ("Vocabulary appropriate for ${level}") with:
 
 ```
-For each vocabulary word provided, use it in exactly one question as follows:
-- verb: conjugated form must appear as the correct answer in the blank
-- adjective: agreed form (correct gender/number) must appear as the correct answer
-- adverb: word must appear in the question stem as a temporal/contextual forcing cue
-- conjunction: word must appear in the question stem to trigger the required mood or tense
-- preposition: must appear as part of a verb + preposition collocation in the correct answer
+6. VOCABULARY: Use each of the following words exactly once across the 
+   ${count} questions, placing each in whichever question it fits most 
+   naturally. The word may appear conjugated in the blank, as part of 
+   the sentence context, or in a supporting clause.
+   Words: [word1, word2, word3, word4, word5, word6, word7]
+   Add a "vocabularyWord" field to each question with the exact word used.
 ```
 
-### Quality gate (post-generation)
+### Updated JSON shape
 
-After Mistral responds, verify each vocabulary-seeded question:
+```json
+{
+  "question": "Elle ___ à finir avant minuit.",
+  "options": ["parviendra", "parvenait", "est parvenue", "parviendrait"],
+  "answer": "parviendra",
+  "explanation": "...",
+  "wrongExplanations": { ... },
+  "vocabularyWord": "parvenir"
+}
+```
 
-| Part of speech | Check |
-|---|---|
-| verb | Word root appears in `question.answer` |
-| adjective | Word root appears in `question.answer` |
-| adverb | Word appears in `question.question` |
-| conjunction | Word appears in `question.question` |
-| preposition | Word appears in `question.answer` |
+### Word selection
 
-If check fails: do not tag the question with the vocabulary word. Log for monitoring. Do not regenerate in V1 — question is still valid, just untagged.
+Pick 7 words from `vocabulary-map.js` filtered by `level === activeLevel`, ordered by `use_count ASC` from the questions table (words least recently used across all sessions at this level).
+
+### Quality gate
+
+After generation, verify `vocabularyWord` is present and non-empty on each question. If missing — question is still valid and saved, just stored with `vocabulary_word: null`. Log for monitoring.
 
 ---
 
@@ -128,7 +126,7 @@ ALTER TABLE questions ADD COLUMN vocabulary_word text;
 ALTER TABLE questions ADD COLUMN vocabulary_pos  text;
 ```
 
-Both nullable. Null = freely generated question with no vocabulary seeding.
+Both nullable. Null = freely generated, no vocabulary seeding.
 
 ### `profiles` table
 
@@ -136,11 +134,11 @@ Both nullable. Null = freely generated question with no vocabulary seeding.
 ALTER TABLE profiles ADD COLUMN vocabulary_seen jsonb DEFAULT '[]'::jsonb;
 ```
 
-Array of unique vocabulary words the user has encountered across all sessions. Appended at session save time.
+Array of unique vocabulary words the user has encountered. Appended at session save.
 
 ### Question bank
 
-**Truncate and rebuild.** Old questions are incompatible — missing `wrong_explanations`, missing `vocabulary_word`, generated with old prompt. Run:
+**Truncate and rebuild.** Old questions incompatible with new prompt and missing columns.
 
 ```sql
 TRUNCATE TABLE questions;
@@ -148,28 +146,28 @@ TRUNCATE TABLE questions;
 
 ---
 
-## Session Save Changes (`save-session/route.js`)
+## Session Save Changes
 
-After saving the session, extract vocabulary words from the questions that were served:
+The session save payload must include IDs of questions served. The save-session route:
 
-1. Fetch the question rows that were served this session (by ID — requires question IDs to be included in the session save payload)
-2. Extract non-null `vocabulary_word` values, deduplicate
-3. Append new words to `profiles.vocabulary_seen` (union with existing array)
+1. Fetches `vocabulary_word` for each served question ID
+2. Deduplicates
+3. Appends new words to `profiles.vocabulary_seen`
 
-**Note:** This requires the session save payload to include the IDs of questions served. Currently it does not — this is an additional change to the session page and save-session route.
+Requires a small change to the session page — include question IDs in the save payload.
 
 ---
 
-## Sidebar Change (`session/page.js`)
+## Sidebar
 
-Add below the level display in the sidebar:
+Add below the level display:
 
 ```
 47 words
 encountered at B1
 ```
 
-Computed from `profiles.vocabulary_seen.length` — available from the profile fetch in `useAuth`.
+Computed from `profiles.vocabulary_seen` filtered by current level. Available via profile fetch in `useAuth`.
 
 ---
 
@@ -177,36 +175,34 @@ Computed from `profiles.vocabulary_seen.length` — available from the profile f
 
 | File | Change |
 |---|---|
-| `src/data/vocabulary-map.js` | New file — master vocabulary list |
-| `src/app/api/generate-questions/route.js` | Pass vocabulary words to Mistral, apply quality gate, store vocabulary_word + vocabulary_pos |
-| `src/app/api/save-session/route.js` | Accept question IDs in payload, append vocabulary_seen to profile |
-| `src/app/session/page.js` | Include question IDs in save-session payload, show word count in sidebar |
-| `src/hooks/useAuth.js` | Expose vocabulary_seen count from profile |
-| Supabase | Run ALTER TABLE migrations for questions and profiles |
+| `src/data/vocabulary-map.js` | New — master vocabulary list |
+| `src/app/api/generate-questions/route.js` | Pass 7 words to Mistral, tag questions with vocabularyWord |
+| `src/app/api/save-session/route.js` | Accept question IDs, append vocabulary_seen to profile |
+| `src/app/session/page.js` | Include question IDs in save payload, show word count in sidebar |
+| `src/hooks/useAuth.js` | Expose vocabulary_seen from profile |
+| Supabase | Run ALTER TABLE migrations |
 
 ---
 
 ## Out of Scope (V2)
 
-- Comprehension analytics per word (requires question-level result tracking)
-- Per-user word rotation — serve unseen words first (requires per-user word tracking beyond vocabulary_seen)
-- Breakdown by part of speech in sidebar ("23 verbs, 12 conjunctions…")
+- Comprehension analytics per word
+- Per-user word rotation (serve unseen words first per individual)
+- Pos breakdown in sidebar
 - Spaced repetition
-- Vocabulary questions as a distinct question type
-- Separate vocabulary session mode
+- Vocabulary question type
 
 ---
 
-## Success Metric
+## Success Metrics
 
-**Primary:** Session completion rate — does adding vocabulary-seeded questions increase or decrease completion? A/B holdout from launch day. If completion drops > 2 percentage points, revert vocabulary seeding.
-
-**Secondary:** 30-day retention split by users who encountered vocabulary seeding vs control group.
+**Primary:** Session completion rate — A/B holdout from launch. Revert if > 2pp drop.  
+**Secondary:** 30-day retention lift vs control group.
 
 ---
 
 ## Dependencies
 
-- Question bank must be truncated before launch
-- Supabase migrations must run before deploy
-- `vocabulary-map.js` must be written and reviewed before question generation changes are implemented
+- `vocabulary-map.js` written and reviewed before question generation changes
+- Supabase migrations run before deploy
+- Question bank truncated before deploy
