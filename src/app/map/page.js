@@ -51,13 +51,12 @@ export default function MapPage() {
     }
   }, [])
 
-  // Fetch latest session per concept for the user's current level to colour nodes
+  // Fetch latest session per concept across all levels to colour nodes
   useEffect(() => {
     if (!user) return
     supabaseBrowser
       .from('sessions')
       .select('concept, score, total')
-      .eq('level', userLevel)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
         if (!data) return
@@ -165,6 +164,7 @@ export default function MapPage() {
 
               {LEVEL_ORDER.map((lvl, i) => {
                 const isCurrent = lvl === userLevel
+                const isAccessible = LEVEL_ORDER.indexOf(lvl) <= LEVEL_ORDER.indexOf(userLevel)
                 const isBeforeCurrent = LEVEL_ORDER.indexOf(userLevel) === i + 1
                 const meta = LEVEL_META[lvl]
 
@@ -172,15 +172,15 @@ export default function MapPage() {
                 const nodes = order.map(slug => ({
                   slug,
                   label: concepts[slug].mapLabel,
-                  state: isCurrent ? (performance[slug] ?? 'open') : 'grey',
-                  concept: isCurrent ? { ...concepts[slug], level: lvl } : null,
+                  state: isAccessible ? (performance[slug] ?? 'open') : 'grey',
+                  concept: isAccessible ? { ...concepts[slug], level: lvl } : null,
                 }))
 
                 return (
                   <div key={lvl} style={{ display: 'flex', alignItems: 'flex-start' }}>
                     <LevelCol
                       level={isCurrent ? `${lvl} · now` : lvl}
-                      badge={isCurrent ? 'current' : 'grey'}
+                      badge={isCurrent ? 'current' : isAccessible ? 'accessible' : 'grey'}
                       sublabel={`${meta.concepts} concepts`}
                       sublabelColor={isCurrent ? 'var(--terracotta)' : 'var(--light)'}
                       nodes={nodes}
@@ -212,8 +212,9 @@ export default function MapPage() {
 
 function LevelCol({ level, badge, sublabel, sublabelColor, nodes, selected, onSelect }) {
   const badgeColors = {
-    current: { background: 'var(--terracotta-bg)', color: 'var(--terracotta)' },
-    grey:    { background: 'var(--bg)',             color: 'var(--light)',      border: '1px solid var(--border)' },
+    current:    { background: 'var(--terracotta-bg)', color: 'var(--terracotta)' },
+    accessible: { background: 'var(--white)',          color: 'var(--mid)',        border: '1px solid var(--border)' },
+    grey:       { background: 'var(--bg)',             color: 'var(--light)',      border: '1px solid var(--border)', opacity: 0.6 },
   }
 
   return (

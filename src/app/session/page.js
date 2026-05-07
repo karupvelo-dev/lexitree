@@ -122,12 +122,13 @@ export default function SessionPage() {
         // lesson is optional — continue without it
       }
 
-      // Pass lesson to questions so generation is always lesson-seeded
+      // Use concept's native level for question generation (may differ from user's stored level)
+      const conceptLevel = c.level ?? lvl
       const vocabularyWords = selectVocabularyWords(lvl, vocabularySeen)
       const questionsRes = await fetch('/api/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ level: lvl, concept: c, lesson, vocabularyWords }),
+        body: JSON.stringify({ level: conceptLevel, concept: c, lesson, vocabularyWords }),
       })
 
       if (!questionsRes.ok) throw new Error()
@@ -192,7 +193,7 @@ export default function SessionPage() {
           'Authorization': `Bearer ${authSession.access_token}`,
         },
         body: JSON.stringify({
-          level,
+          level: concept.level ?? level,
           concept: concept.slug,
           concept_name: concept.nameFr,
           score: finalResults.filter(r => r.correct).length,
