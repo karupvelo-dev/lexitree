@@ -33,7 +33,7 @@ export async function POST(request) {
       const questions = pickRandom(pool, SESSION_SIZE).map(q => ({
         ...q,
         options: [...q.options].sort(() => Math.random() - 0.5),
-      }))
+      })).filter(validateQuestion)
 
       // Increment use_count for served questions (fire and forget)
       const ids = questions.map(q => q.id)
@@ -52,8 +52,8 @@ export async function POST(request) {
               vocabulary_pos: q.vocabularyWord
                 ? (vocabularyWords.find(v => v.word === q.vocabularyWord)?.pos ?? null)
                 : null,
-            }))
-            return saveToBank(level, concept.slug, normalized)
+            })).filter(validateQuestion)
+            if (normalized.length > 0) return saveToBank(level, concept.slug, normalized)
           })
           .catch(err => console.error('Background bank growth error:', err))
       }
@@ -76,11 +76,14 @@ export async function POST(request) {
         : null,
     }))
 
-    saveToBank(level, concept.slug, questions).catch(err =>
-      console.error('Failed to save to bank:', err)
-    )
+    const validQuestions = questions.filter(validateQuestion)
+    if (validQuestions.length > 0) {
+      saveToBank(level, concept.slug, validQuestions).catch(err =>
+        console.error('Failed to save to bank:', err)
+      )
+    }
 
-    return NextResponse.json({ questions, source: 'generated' })
+    return NextResponse.json({ questions: validQuestions, source: 'generated' })
   } catch (error) {
     console.error('generate-questions error:', error)
     return NextResponse.json({ error: 'Failed to generate questions' }, { status: 500 })
@@ -105,7 +108,7 @@ async function fetchCachedLesson(level, conceptSlug) {
 async function generateQuestions(level, concept, lesson = null, count = SESSION_SIZE, vocabularyWords = []) {
   const lessonContext = lesson ? buildLessonContext(lesson) : ''
 
-  const vocabRuleNum = lessonContext ? '13' : '12'
+  const vocabRuleNum = lessonContext ? '14' : '13'
   const vocabInstruction = vocabularyWords.length > 0
     ? `\n${vocabRuleNum}. VOCABULARY — use each of the following words exactly once across the ${count} questions, placing each in whichever question it fits most naturally. The word may appear conjugated in the blank, in the sentence for context, or in a supporting clause. Add a "vocabularyWord" field to that question in the JSON with the exact word used (match the list exactly).
 Words: ${vocabularyWords.map(v => v.word).join(', ')}`
@@ -121,12 +124,9 @@ Generate ${count} fill-in-the-blank multiple-choice questions.
 
 QUALITY RULES — every question must satisfy all of these:
 1. ONE unambiguous correct answer. The sentence must make only one option grammatically valid.
-2. Use structural forcing cues to eliminate every wrong option:
-   - Force plus-que-parfait: include "déjà" + sequenced past event ("Quand elle est arrivée, il ___ déjà ___")
-   - Force subjonctif: open with explicit trigger ("Il faut que tu ___ / Bien qu'il ___")
-   - Force imparfait for background: use ongoing marker ("Pendant qu'il ___, soudain...")
-   - Force conditionnel passé: explicit si + plus-que-parfait ("Si tu m'avais appelé, je ___")
-   - Force passé composé: use "soudain", "tout à coup", or a specific completed moment
+2. Design a forcing cue that fits this specific concept and level. The cue must make exactly one option grammatically correct based on the grammar being tested. Do not use grammar structures from levels above ${level}.
+   - Use exactly one blank (___). Never put two blanks in one question.
+   - The forcing cue must come from sentence context only (words around the blank) — not from a second blank testing a different grammar point.
 3. Every wrong option must fail for a specific grammatical reason tied to ${concept.name}.
 4. Do not write contexts where two options are pragmatically interchangeable.
 5. Tests ONLY ${concept.name} — no other grammar.
@@ -136,7 +136,8 @@ QUALITY RULES — every question must satisfy all of these:
 9. Vary contexts: dialogue, short narrative, everyday situation. No two questions with the same context type.
 10. Explanation in English, 1–2 sentences explaining why the correct answer is right. Name the forcing cue.
 11. wrongExplanations: REQUIRED. For every incorrect option, write one sentence that (a) names the tense or form of that option, and (b) explains why it conflicts with the specific forcing cue in the sentence. Do NOT name or hint at the correct tense. Example: "allons is present tense — but 'Demain' signals an action that hasn't happened yet." Keys must exactly match the option strings character-for-character. This field must always be present with exactly 3 entries (one per wrong option).
-${lessonContext ? '12. Use different verbs and vocabulary from the lesson examples — test the same patterns, not the same sentences.' : ''}${vocabInstruction}
+12. BLANK CHECK — before finalising each question: mentally substitute ___ with your correct answer. The resulting sentence must be grammatically complete with no repeated words. The blank must replace the ENTIRE tested phrase. If any word in your correct answer already appears immediately after ___ in the sentence template, you have split incorrectly — remove that word from the template and put it only in the options.
+${lessonContext ? '13. Use different verbs and vocabulary from the lesson examples — test the same patterns, not the same sentences.' : ''}${vocabInstruction}
 
 Return ONLY this JSON — no markdown, no extra text:
 {"questions":[{"question":"...","options":["...","...","...","..."],"answer":"...","explanation":"...","wrongExplanations":{"wrong option 1":"why wrong","wrong option 2":"why wrong","wrong option 3":"why wrong"},"vocabularyWord":"..."}]}`
@@ -151,7 +152,12 @@ Return ONLY this JSON — no markdown, no extra text:
   // return JSON.parse(text)
 
   const raw = await callMistral({ messages: [{ role: 'user', content: prompt }], temperature: 0.5 })
-  return JSON.parse(raw)
+  const parsed = JSON.parse(raw)
+  const questions = Array.isArray(parsed) ? parsed : parsed?.questions
+  if (!Array.isArray(questions)) {
+    throw new Error(`Mistral returned unexpected structure: ${raw.slice(0, 300)}`)
+  }
+  return { questions }
 }
 
 function buildLessonContext(lesson) {
@@ -176,6 +182,31 @@ function buildLessonContext(lesson) {
 
   lines.push('Write questions that reinforce these constructions using fresh vocabulary.\n')
   return lines.join('\n')
+}
+
+function validateQuestion(q) {
+  if (typeof q.question !== 'string' || !q.question.includes('___')) return false
+  if (!Array.isArray(q.options) || q.options.length !== 4) return false
+  if (q.options.some(o => typeof o !== 'string' || !o.trim())) return false
+  if (typeof q.answer !== 'string' || !q.options.includes(q.answer)) return false
+  if (typeof q.explanation !== 'string' || !q.explanation.trim()) return false
+  const wrongOptions = q.options.filter(o => o !== q.answer)
+  const explanations = q.wrong_explanations ?? q.wrongExplanations ?? {}
+  if (wrongOptions.some(o => !explanations[o])) return false
+
+  // Check 1: filling the blank must not produce duplicate adjacent tokens
+  const filled = q.question.replace('___', q.answer)
+  const tokens = filled.toLowerCase().replace(/[«»?!.,;:'"]/g, ' ').split(/\s+/).filter(w => w.length > 1)
+  for (let i = 1; i < tokens.length; i++) {
+    if (tokens[i] === tokens[i - 1]) return false
+  }
+
+  // Check 2: no answer word appears immediately after the blank in the template
+  const afterBlank = (q.question.split('___')[1] ?? '').trim().split(/\s+/)[0].replace(/[?!.,;:'"«»]/g, '').toLowerCase()
+  const answerTokens = q.answer.toLowerCase().split(/\s+/)
+  if (afterBlank && answerTokens.includes(afterBlank)) return false
+
+  return true
 }
 
 async function saveToBank(level, conceptSlug, questions) {

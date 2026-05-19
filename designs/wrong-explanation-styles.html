@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wrong Explanation — Style Prototypes</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0ede8;
+    padding: 48px 24px 80px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #999;
+    text-align: center; margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 13px; color: #aaa; text-align: center; margin-bottom: 52px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .col { display: flex; flex-direction: column; gap: 12px; }
+
+  .col-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #aaa; text-align: center;
+  }
+  .col-desc {
+    font-size: 11px; color: #bbb; text-align: center; line-height: 1.5;
+    padding: 0 4px;
+  }
+
+  /* ── Question card ── */
+  .card {
+    background: #fff;
+    border: 1px solid #e8e5df;
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .question {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    padding: 13px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    border: 1.5px solid #e8e5df;
+    background: #fff;
+    cursor: default;
+  }
+  .option.wrong-tried {
+    border-color: #f5c2c2;
+    background: #fff8f8;
+    color: #d08080;
+    text-decoration: line-through;
+  }
+  .option.neutral { color: #888; border-color: #eee; }
+
+  /* ── Explanation boxes — each style ── */
+
+  /* A: Current (jargon) */
+  .expl-a {
+    border-left: 3px solid #e8b4b4;
+    background: #fff8f8;
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #c07070;
+    line-height: 1.55;
+  }
+  .expl-a .wrong-word { font-weight: 700; color: #c05050; }
+
+  /* B: Contrastive */
+  .expl-b {
+    border-left: 3px solid #e8b4b4;
+    background: #fff8f8;
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .expl-b .wrong-word { font-weight: 700; color: #c05050; }
+  .contrast-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .contrast-wrong {
+    color: #c05050;
+    text-decoration: line-through;
+    font-family: 'Lora', serif;
+  }
+  .contrast-arrow { color: #bbb; font-size: 12px; }
+  .contrast-right {
+    color: #2d7a4f;
+    font-family: 'Lora', serif;
+  }
+  .contrast-rule {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 6px;
+    letter-spacing: 0.01em;
+  }
+
+  /* C: English parallel */
+  .expl-c {
+    border-left: 3px solid #e8b4b4;
+    background: #fff8f8;
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+  }
+  .expl-c .wrong-word { font-weight: 700; color: #c05050; }
+  .en-parallel {
+    margin-top: 7px;
+    padding: 7px 10px;
+    background: rgba(0,0,0,0.03);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #888;
+    font-style: italic;
+  }
+
+  /* D: Ultra-minimal */
+  .expl-d {
+    border-left: 3px solid #e8b4b4;
+    background: #fff8f8;
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+  }
+  .expl-d .wrong-word { font-weight: 700; color: #c05050; font-size: 13px; }
+  .minimal-rule {
+    font-size: 13px;
+    color: #444;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .minimal-rule span { color: #c05050; }
+  .minimal-rule strong { color: #1a1a1a; }
+
+  /* E: Meaning-based */
+  .expl-e {
+    border-left: 3px solid #e8b4b4;
+    background: #fff8f8;
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .expl-e .wrong-word { font-weight: 700; color: #c05050; }
+
+  /* F: Chip / badge style */
+  .expl-f {
+    border-left: 3px solid #e8b4b4;
+    background: #fff8f8;
+    padding: 12px 14px;
+    border-radius: 0 8px 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chip-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Lora', serif;
+  }
+  .chip.wrong { background: #fee2e2; color: #c05050; }
+  .chip.right { background: #d1fae5; color: #1d6b44; }
+  .chip-arrow { color: #bbb; font-size: 11px; font-weight: 700; }
+  .chip-note { font-size: 12px; color: #888; line-height: 1.5; }
+
+  .section-break {
+    max-width: 1100px;
+    margin: 52px auto 36px;
+    text-align: center;
+  }
+  .section-break h2 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #bbb;
+  }
+</style>
+</head>
+<body>
+
+<h1>Wrong Explanation — Style Prototypes</h1>
+<p class="subtitle">Sentence: "Nous ___ fruits au marché" · Wrong pick: "n'achetons pas des" · Correct: "n'achetons pas de"</p>
+
+<div class="grid">
+
+  <!-- A: Current (baseline) -->
+  <div class="col">
+    <div class="col-label">A · Current (baseline)</div>
+    <div class="card">
+      <div class="question">Nous ___ fruits au marché, mais nous avons des légumes.</div>
+      <div class="options">
+        <div class="option">n'achetons pas de</div>
+        <div class="option wrong-tried">n'achetons pas des</div>
+        <div class="option neutral">n'achetons pas les</div>
+        <div class="option neutral">n'achetons que de</div>
+      </div>
+      <div class="expl-a">
+        <span class="wrong-word">✕ n'achetons pas des</span> — 'des' is a partitive article, but negation changes it to 'de', not 'des'.
+      </div>
+    </div>
+    <div class="col-desc">Names the grammar term. Accurate but opaque to learners without linguistics background.</div>
+  </div>
+
+  <!-- B: Contrastive -->
+  <div class="col">
+    <div class="col-label">B · Contrastive</div>
+    <div class="card">
+      <div class="question">Nous ___ fruits au marché, mais nous avons des légumes.</div>
+      <div class="options">
+        <div class="option">n'achetons pas de</div>
+        <div class="option wrong-tried">n'achetons pas des</div>
+        <div class="option neutral">n'achetons pas les</div>
+        <div class="option neutral">n'achetons que de</div>
+      </div>
+      <div class="expl-b">
+        <span class="wrong-word">✕ n'achetons pas des</span>
+        <div class="contrast-row">
+          <span class="contrast-wrong">pas des</span>
+          <span class="contrast-arrow">→</span>
+          <span class="contrast-right">pas de</span>
+        </div>
+        <div class="contrast-rule">After ne…pas, 'des' always shrinks to 'de'.</div>
+      </div>
+    </div>
+    <div class="col-desc">SLA research winner. Shows the exact swap visually. Rule stated in one plain line.</div>
+  </div>
+
+  <!-- C: English parallel -->
+  <div class="col">
+    <div class="col-label">C · English Parallel</div>
+    <div class="card">
+      <div class="question">Nous ___ fruits au marché, mais nous avons des légumes.</div>
+      <div class="options">
+        <div class="option">n'achetons pas de</div>
+        <div class="option wrong-tried">n'achetons pas des</div>
+        <div class="option neutral">n'achetons pas les</div>
+        <div class="option neutral">n'achetons que de</div>
+      </div>
+      <div class="expl-c">
+        <span class="wrong-word">✕ n'achetons pas des</span> — In a negative sentence, 'des' drops to 'de'.
+        <div class="en-parallel">Like English: "not <em>any</em>" not "not <em>some</em>" — same idea.</div>
+      </div>
+    </div>
+    <div class="col-desc">Anchors the rule in English intuition. The parallel makes it feel obvious rather than arbitrary.</div>
+  </div>
+
+</div>
+
+<!-- Row 2 -->
+<div class="section-break"><h2>Further explorations</h2></div>
+
+<div class="grid">
+
+  <!-- D: Ultra-minimal -->
+  <div class="col">
+    <div class="col-label">D · Ultra-minimal</div>
+    <div class="card">
+      <div class="question">Nous ___ fruits au marché, mais nous avons des légumes.</div>
+      <div class="options">
+        <div class="option">n'achetons pas de</div>
+        <div class="option wrong-tried">n'achetons pas des</div>
+        <div class="option neutral">n'achetons pas les</div>
+        <div class="option neutral">n'achetons que de</div>
+      </div>
+      <div class="expl-d">
+        <div class="minimal-rule">After <strong>pas</strong>, <span>des</span> → <strong>de</strong>.</div>
+      </div>
+    </div>
+    <div class="col-desc">A single sharp rule. Trusts the learner to connect it. Risks being too terse for beginners.</div>
+  </div>
+
+  <!-- E: Meaning-based -->
+  <div class="col">
+    <div class="col-label">E · Meaning-based</div>
+    <div class="card">
+      <div class="question">Nous ___ fruits au marché, mais nous avons des légumes.</div>
+      <div class="options">
+        <div class="option">n'achetons pas de</div>
+        <div class="option wrong-tried">n'achetons pas des</div>
+        <div class="option neutral">n'achetons pas les</div>
+        <div class="option neutral">n'achetons que de</div>
+      </div>
+      <div class="expl-e">
+        <span class="wrong-word">✕ n'achetons pas des</span> — 'Des' suggests buying <em>some</em> — but you're saying there are <em>none</em>, so it becomes 'de'.
+      </div>
+    </div>
+    <div class="col-desc">Explains why the wrong answer doesn't make sense semantically. Appeals to logic over memorisation.</div>
+  </div>
+
+  <!-- F: Chip / visual contrast -->
+  <div class="col">
+    <div class="col-label">F · Chip contrast</div>
+    <div class="card">
+      <div class="question">Nous ___ fruits au marché, mais nous avons des légumes.</div>
+      <div class="options">
+        <div class="option">n'achetons pas de</div>
+        <div class="option wrong-tried">n'achetons pas des</div>
+        <div class="option neutral">n'achetons pas les</div>
+        <div class="option neutral">n'achetons que de</div>
+      </div>
+      <div class="expl-f">
+        <div class="chip-row">
+          <span class="chip wrong">pas des ✕</span>
+          <span class="chip-arrow">→</span>
+          <span class="chip right">pas de ✓</span>
+        </div>
+        <div class="chip-note">After 'ne…pas', 'des' always becomes 'de'.</div>
+      </div>
+    </div>
+    <div class="col-desc">Visual chips make the contrast scannable in under 2 seconds. Requires UI support for colour-coded badges.</div>
+  </div>
+
+</div>
+
+<!-- Reload -->
+<div style="text-align:center; margin-top:52px;">
+  <div style="font-size:11px; color:#bbb; margin-bottom:16px; letter-spacing:0.08em; text-transform:uppercase;">Same question, different cue</div>
+  <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; max-width:700px; margin:0 auto;">
+    <button onclick="switchExample('negation')" class="ex-btn active" id="btn-negation">Negation (des→de)</button>
+    <button onclick="switchExample('future')" class="ex-btn" id="btn-future">Future tense</button>
+    <button onclick="switchExample('reflexive')" class="ex-btn" id="btn-reflexive">Reflexive verb</button>
+  </div>
+</div>
+
+<style>
+  .ex-btn {
+    font-size: 12px; font-weight: 600; font-family: 'Inter', sans-serif;
+    color: #888; background: #fff; border: 1px solid #ddd;
+    border-radius: 500px; padding: 7px 18px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ex-btn.active, .ex-btn:hover { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+</style>
+
+<script>
+  const examples = {
+    negation: {
+      question: 'Nous ___ fruits au marché, mais nous avons des légumes.',
+      wrong: "n'achetons pas des",
+      opts: ["n'achetons pas de", "n'achetons pas des", "n'achetons pas les", "n'achetons que de"],
+      correct: "n'achetons pas de",
+      explanations: {
+        a: "'des' is a partitive article, but negation changes it to 'de', not 'des'.",
+        b_label: 'pas des → pas de',
+        b_rule: "After ne…pas, 'des' always shrinks to 'de'.",
+        c: "'des' drops to 'de' in a negative sentence.",
+        c_parallel: 'Like English: "not any" not "not some" — same idea.',
+        d: "After pas, des → de.",
+        e: "'Des' suggests buying some — but you're saying there are none, so it becomes 'de'.",
+        f_wrong: 'pas des ✕', f_right: 'pas de ✓',
+        f_note: "After 'ne…pas', 'des' always becomes 'de'.",
+      }
+    },
+    future: {
+      question: "On ___ au cinéma demain soir.",
+      wrong: "allons",
+      opts: ["irons", "allons", "sommes allés", "aller"],
+      correct: "irons",
+      explanations: {
+        a: "'allons' is present tense, but 'demain' signals a future action.",
+        b_label: 'allons → irons',
+        b_rule: "'Demain' points to tomorrow — use the future form.",
+        c: "'Demain' means this hasn't happened yet.",
+        c_parallel: 'Like "we will go" in English — not "we go".',
+        d: "Demain = future. Use irons, not allons.",
+        e: "'Allons' means we're going right now — but 'demain' means it's tomorrow.",
+        f_wrong: 'allons ✕', f_right: 'irons ✓',
+        f_note: "'Demain' always calls for the future form.",
+      }
+    },
+    reflexive: {
+      question: "Ils ___ amusés pendant la fête.",
+      wrong: "sont",
+      opts: ["se sont amusés", "sont", "se sont amusées", "ont amusé"],
+      correct: "se sont amusés",
+      explanations: {
+        a: "'sont' is missing the reflexive pronoun 'se' — reflexive verbs require the pronoun matching the subject.",
+        b_label: 'sont → se sont',
+        b_rule: "This verb always needs 'se' — it's about what they did to themselves.",
+        c: "This verb needs 'se' before it to work.",
+        c_parallel: 'Like English "they enjoyed themselves" — the "themselves" can\'t be dropped.',
+        d: "s'amuser always needs se. Add it.",
+        e: "'Sont' alone means 'they are' — you need 'se sont' to say they had fun together.",
+        f_wrong: 'sont ✕', f_right: 'se sont ✓',
+        f_note: "This verb always needs 'se' — it can't stand alone.",
+      }
+    }
+  }
+
+  function switchExample(key) {
+    const ex = examples[key]
+    const e = ex.explanations
+
+    // Update questions
+    document.querySelectorAll('.question').forEach(el => el.textContent = ex.question)
+
+    // Update options
+    const optionSets = document.querySelectorAll('.options')
+    optionSets.forEach(set => {
+      const opts = set.querySelectorAll('.option')
+      ex.opts.forEach((text, i) => {
+        if (!opts[i]) return
+        opts[i].textContent = text
+        opts[i].className = 'option'
+        if (text === ex.wrong) opts[i].classList.add('wrong-tried')
+        else if (text !== ex.correct) opts[i].classList.add('neutral')
+      })
+    })
+
+    // A
+    document.querySelector('.expl-a').innerHTML =
+      `<span class="wrong-word">✕ ${ex.wrong}</span> — ${e.a}`
+
+    // B
+    document.querySelector('.expl-b').innerHTML =
+      `<span class="wrong-word">✕ ${ex.wrong}</span>
+       <div class="contrast-row">
+         <span class="contrast-wrong">${e.b_label.split('→')[0].trim()}</span>
+         <span class="contrast-arrow">→</span>
+         <span class="contrast-right">${e.b_label.split('→')[1].trim()}</span>
+       </div>
+       <div class="contrast-rule">${e.b_rule}</div>`
+
+    // C
+    document.querySelector('.expl-c').innerHTML =
+      `<span class="wrong-word">✕ ${ex.wrong}</span> — ${e.c}
+       <div class="en-parallel">Like English: "${e.c_parallel}"</div>`
+
+    // D
+    document.querySelector('.expl-d').innerHTML =
+      `<div class="minimal-rule">${e.d}</div>`
+
+    // E
+    document.querySelector('.expl-e').innerHTML =
+      `<span class="wrong-word">✕ ${ex.wrong}</span> — ${e.e}`
+
+    // F
+    document.querySelector('.expl-f').innerHTML =
+      `<div class="chip-row">
+         <span class="chip wrong">${e.f_wrong}</span>
+         <span class="chip-arrow">→</span>
+         <span class="chip right">${e.f_right}</span>
+       </div>
+       <div class="chip-note">${e.f_note}</div>`
+
+    // Active button
+    document.querySelectorAll('.ex-btn').forEach(b => b.classList.remove('active'))
+    document.getElementById('btn-' + key).classList.add('active')
+  }
+</script>
+
+</body>
+</html>
