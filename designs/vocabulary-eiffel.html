@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexitree — Tour de Vocabulaire</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #07071a;
+  color: #e8e2d4;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  user-select: none;
+}
+
+/* ── Stars canvas ─────────────────────────────────────────────────────── */
+#stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── App shell ────────────────────────────────────────────────────────── */
+.app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 24px 56px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+.header {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 44px;
+}
+
+.header-left h1 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a4a6a;
+  margin-bottom: 6px;
+}
+
+.header-left p {
+  font-size: 22px;
+  font-weight: 300;
+  color: #c8c0dc;
+  letter-spacing: -0.01em;
+}
+
+.header-left p span {
+  color: #ffa040;
+  font-weight: 600;
+}
+
+.header-stats {
+  display: flex;
+  gap: 28px;
+  padding-top: 4px;
+}
+
+.stat { text-align: right; }
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffa040;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #4a4a6a;
+  margin-top: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Main layout ──────────────────────────────────────────────────────── */
+.main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+/* ── Level axis ───────────────────────────────────────────────────────── */
+.level-axis {
+  width: 72px;
+  position: relative;
+  /* height matches SVG */
+  height: 640px;
+  flex-shrink: 0;
+}
+
+.level-tick {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  transform: translateY(-50%);
+}
+
+.level-code {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.level-code.unlocked { color: #8a8aaa; background: #11112a; border: 1px solid #22223a; }
+.level-code.current  { color: #5ac8fa; background: #0a1f30; border: 1px solid #1a4a6a; }
+.level-code.locked   { color: #33334a; background: #0c0c1e; border: 1px solid #18182a; }
+
+.level-count {
+  font-size: 9px;
+  color: #3a3a5a;
+  margin-top: 3px;
+  letter-spacing: 0.05em;
+}
+
+.level-count.active { color: #5a5a8a; }
+
+/* connector line */
+.level-tick::after {
+  content: '';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: #22223a;
+}
+
+.level-tick.current-tick::after { background: #1a4a6a; }
+
+/* ── Tower SVG ────────────────────────────────────────────────────────── */
+.tower-wrap {
+  position: relative;
+}
+
+.tower-svg {
+  width: 420px;
+  height: 640px;
+  overflow: visible;
+  display: block;
+}
+
+/* ── Word nodes ───────────────────────────────────────────────────────── */
+.word-node {
+  cursor: pointer;
+  transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.word-node:hover { transform: scale(1.7); }
+
+/* state: unseen */
+.s-unseen circle { fill: #11112a; stroke: #252540; stroke-width: 1; }
+/* state: seen (1-2×) */
+.s-seen circle   { fill: #2e1e08; stroke: #5a3a15; stroke-width: 1; }
+/* state: known (3-5×) */
+.s-known circle  { fill: #7a4e10; stroke: #bb7820; stroke-width: 1; }
+/* state: mastered (6+×) */
+.s-mastered circle {
+  fill: #ffaa30;
+  stroke: #ffd070;
+  stroke-width: 1;
+  filter: drop-shadow(0 0 5px rgba(255,140,0,0.8)) drop-shadow(0 0 12px rgba(255,100,0,0.35));
+}
+
+@keyframes twinkle {
+  0%,100% { opacity: 1; }
+  45%     { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(255,140,0,0.5)); }
+}
+
+.s-mastered circle { animation: twinkle var(--dur, 2.4s) ease-in-out infinite var(--delay, 0s); }
+
+/* locked ghost nodes */
+.ghost-node { pointer-events: none; }
+
+/* ── Tooltip ──────────────────────────────────────────────────────────── */
+#tooltip {
+  position: fixed;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  background: #0d0d22;
+  border: 1px solid #252540;
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-width: 160px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+#tooltip.show { opacity: 1; }
+
+.tt-word {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffaa30;
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+
+.tt-pos {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #4a4a6a;
+  margin-bottom: 7px;
+}
+
+.tt-def {
+  font-size: 13px;
+  color: #9090b0;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.tt-pips {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1e1e38;
+  border: 1px solid #2e2e50;
+  flex-shrink: 0;
+}
+
+.pip.on { background: #ffaa30; border-color: #ffd070; }
+
+.tt-mastery-label {
+  font-size: 10px;
+  color: #4a4a6a;
+  margin-left: 6px;
+  letter-spacing: 0.05em;
+}
+
+/* ── Legend ───────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 22px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #4a4a6a;
+  letter-spacing: 0.04em;
+}
+
+.ld {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="app">
+
+  <header class="header">
+    <div class="header-left">
+      <h1>Lexitree · Vocabulaire</h1>
+      <p>La Tour — <span id="pct">0</span>% maîtrisée</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-value" id="stat-mastered">–</div>
+        <div class="stat-label">maîtrisés</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="stat-seen">–</div>
+        <div class="stat-label">rencontrés</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- Level axis -->
+    <div class="level-axis" id="level-axis"></div>
+
+    <!-- Tower -->
+    <div class="tower-wrap">
+      <svg class="tower-svg" id="tower" viewBox="0 0 420 640" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="base-glow" cx="50%" cy="100%" r="50%">
+            <stop offset="0%"   stop-color="#ff8800" stop-opacity="0.12"/>
+            <stop offset="100%" stop-color="#ff8800" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="iron-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#181828"/>
+            <stop offset="100%" stop-color="#0e0e1c"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Ground glow -->
+        <ellipse cx="210" cy="595" rx="200" ry="28" fill="url(#base-glow)"/>
+
+        <!-- Ground line -->
+        <line x1="18" y1="588" x2="402" y2="588" stroke="#1a1a30" stroke-width="1"/>
+
+        <!-- ── Tower structure ─────────────────────────────────────── -->
+
+        <!-- Antenna -->
+        <rect x="207" y="10" width="6" height="66" fill="#14142a" rx="2"/>
+        <rect x="204" y="13" width="12" height="4"  fill="#1e1e36" rx="1"/>
+
+        <!-- Antenna tip light -->
+        <circle cx="210" cy="10" r="3" fill="#ff4040" opacity="0.7">
+          <animate attributeName="opacity" values="0.7;0.2;0.7" dur="2s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Upper pyramid (C2 zone) -->
+        <polygon points="210,76 176,158 244,158" fill="url(#iron-grad)" stroke="#1e1e34" stroke-width="0.5"/>
+
+        <!-- Second platform -->
+        <rect x="160" y="155" width="100" height="14" fill="#161626" rx="2"/>
+        <rect x="155" y="152" width="110" height="6"  fill="#1e1e34" rx="1"/>
+
+        <!-- Upper-middle body (C1 zone) -->
+        <polygon points="172,169 160,254 260,254 248,169" fill="url(#iron-grad)" stroke="#1e1e34" stroke-width="0.5"/>
+
+        <!-- Lower-middle bell (B2 / B1 zone) -->
+        <path d="M 160,254 L 122,344 L 298,344 L 260,254 Z" fill="url(#iron-grad)" stroke="#1e1e34" stroke-width="0.5"/>
+
+        <!-- First platform -->
+        <rect x="98"  y="342" width="224" height="16" fill="#161626" rx="2"/>
+        <rect x="92"  y="339" width="236" height="6"  fill="#1e1e34" rx="1"/>
+
+        <!-- Left leg -->
+        <path d="M 115,358 C 104,405 76,468 32,582
+                 L 166,582 C 153,468 148,405 147,358 Z"
+              fill="url(#iron-grad)" stroke="#1e1e34" stroke-width="0.5"/>
+
+        <!-- Right leg -->
+        <path d="M 305,358 C 316,405 344,468 388,582
+                 L 254,582 C 267,468 272,405 273,358 Z"
+              fill="url(#iron-grad)" stroke="#1e1e34" stroke-width="0.5"/>
+
+        <!-- Lattice hint lines on legs (decorative) -->
+        <g opacity="0.15" stroke="#5050a0" stroke-width="0.4" fill="none">
+          <line x1="131" y1="358" x2="50"  y2="582"/>
+          <line x1="147" y1="358" x2="166" y2="582"/>
+          <line x1="273" y1="358" x2="254" y2="582"/>
+          <line x1="289" y1="358" x2="370" y2="582"/>
+          <line x1="115" y1="440" x2="166" y2="440"/>
+          <line x1="254" y1="440" x2="388" y2="440"/>
+          <line x1="40"  y1="510" x2="166" y2="510"/>
+          <line x1="254" y1="510" x2="380" y2="510"/>
+        </g>
+
+        <!-- Cross-bracing on body (decorative) -->
+        <g opacity="0.12" stroke="#5050a0" stroke-width="0.4" fill="none">
+          <line x1="160" y1="254" x2="260" y2="344"/>
+          <line x1="260" y1="254" x2="160" y2="344"/>
+          <line x1="172" y1="169" x2="248" y2="254"/>
+          <line x1="248" y1="169" x2="172" y2="254"/>
+        </g>
+
+        <!-- Node layer (JS-populated) -->
+        <g id="nodes-g"></g>
+
+        <!-- Locked overlay layer (JS-populated) -->
+        <g id="locked-g"></g>
+
+        <!-- "Vous êtes ici" indicator for B1 -->
+        <g id="vei-indicator">
+          <line x1="92" y1="302" x2="118" y2="302" stroke="#3a8fd0" stroke-width="1" stroke-dasharray="3,2" opacity="0.7"/>
+          <text x="88" y="300" text-anchor="end" fill="#3a8fd0" font-size="8"
+                letter-spacing="0.07" font-weight="600" opacity="0.85"
+                font-family="-apple-system,BlinkMacSystemFont,sans-serif">VOUS ÊTES ICI</text>
+          <polygon points="119,299 125,302 119,305" fill="#3a8fd0" opacity="0.7"/>
+        </g>
+
+      </svg>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="ld" style="background:#11112a;border:1px solid #252540;"></div>
+      Non vu
+    </div>
+    <div class="legend-item">
+      <div class="ld" style="background:#2e1e08;border:1px solid #5a3a15;"></div>
+      Aperçu (1–2×)
+    </div>
+    <div class="legend-item">
+      <div class="ld" style="background:#7a4e10;border:1px solid #bb7820;"></div>
+      Connu (3–5×)
+    </div>
+    <div class="legend-item">
+      <div class="ld" style="background:#ffaa30;box-shadow:0 0 6px #ff8800;"></div>
+      Maîtrisé (6+×)
+    </div>
+    <div class="legend-item">
+      <div class="ld" style="background:#0c0c1e;border:1px solid #18182a;opacity:0.5;"></div>
+      Verrouillé
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Tooltip -->
+<div id="tooltip">
+  <div class="tt-word" id="tt-word"></div>
+  <div class="tt-pos"  id="tt-pos"></div>
+  <div class="tt-def"  id="tt-def"></div>
+  <div class="tt-pips" id="tt-pips"></div>
+</div>
+
+<script>
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const M = { UNSEEN:0, SEEN:1, KNOWN:2, MASTERED:3, LOCKED:4 };
+const MASTERY_LABELS = ['Non vu','Aperçu','Connu','Maîtrisé','Verrouillé'];
+const MASTERY_CLASSES = ['s-unseen','s-seen','s-known','s-mastered',''];
+
+// node radius per mastery
+const RADIUS = [4, 5, 6, 7.5, 3.5];
+
+// ── Vocabulary data ──────────────────────────────────────────────────────────
+// pos: SVG coordinates within the tower (viewBox 0 0 420 640)
+// Positions verified to lie within the tower section boundaries
+
+const WORDS = [
+
+  // ── C2 — Maîtrise — upper pyramid (y≈14–158) ──────────────────────────
+  { level:'C2', word:'atermoyer',     pos:{x:210,y:22},  pos_:'verbe',  def:'to procrastinate / delay',      m:M.LOCKED },
+  { level:'C2', word:'circonvenir',   pos:{x:205,y:50},  pos_:'verbe',  def:'to circumvent / get around',    m:M.LOCKED },
+  { level:'C2', word:'délétère',      pos:{x:215,y:50},  pos_:'adj',    def:'harmful / deleterious',         m:M.LOCKED },
+  { level:'C2', word:'incommoder',    pos:{x:200,y:80},  pos_:'verbe',  def:'to inconvenience',              m:M.LOCKED },
+  { level:'C2', word:'propédeutique', pos:{x:212,y:80},  pos_:'adj',    def:'preparatory / introductory',    m:M.LOCKED },
+  { level:'C2', word:'sérendipité',   pos:{x:197,y:110}, pos_:'nom',    def:'serendipity',                   m:M.LOCKED },
+  { level:'C2', word:'acrimonie',     pos:{x:210,y:110}, pos_:'nom',    def:'acrimony / bitterness',         m:M.LOCKED },
+  { level:'C2', word:'véhément',      pos:{x:202,y:138}, pos_:'adj',    def:'vehement / forceful',           m:M.LOCKED },
+
+  // ── C1 — Avancé — upper-middle body (y≈169–254) ───────────────────────
+  { level:'C1', word:'appréhender',   pos:{x:183,y:183}, pos_:'verbe',  def:'to dread / to apprehend',       m:M.LOCKED },
+  { level:'C1', word:'susciter',      pos:{x:200,y:181}, pos_:'verbe',  def:'to provoke / to arouse',        m:M.LOCKED },
+  { level:'C1', word:'prévaloir',     pos:{x:217,y:183}, pos_:'verbe',  def:'to prevail',                    m:M.LOCKED },
+  { level:'C1', word:'corroborer',    pos:{x:178,y:210}, pos_:'verbe',  def:'to corroborate',                m:M.LOCKED },
+  { level:'C1', word:'nuancer',       pos:{x:196,y:208}, pos_:'verbe',  def:'to nuance / to qualify',        m:M.LOCKED },
+  { level:'C1', word:'atténuer',      pos:{x:214,y:208}, pos_:'verbe',  def:'to soften / to attenuate',      m:M.LOCKED },
+  { level:'C1', word:'prépondérant',  pos:{x:175,y:238}, pos_:'adj',    def:'dominant / preponderant',       m:M.LOCKED },
+  { level:'C1', word:'concomitant',   pos:{x:225,y:238}, pos_:'adj',    def:'concurrent / concomitant',      m:M.LOCKED },
+
+  // ── B2 — Intermédiaire sup. — lower bell (y≈254–342) ──────────────────
+  { level:'B2', word:"s'avérer",      pos:{x:170,y:265}, pos_:'verbe',  def:'to turn out (to be)',           m:M.LOCKED },
+  { level:'B2', word:'préconiser',    pos:{x:191,y:263}, pos_:'verbe',  def:'to advocate / recommend',       m:M.LOCKED },
+  { level:'B2', word:'néanmoins',     pos:{x:210,y:263}, pos_:'adv',    def:'nevertheless',                  m:M.LOCKED },
+  { level:'B2', word:'toutefois',     pos:{x:230,y:265}, pos_:'adv',    def:'however / yet',                 m:M.LOCKED },
+  { level:'B2', word:'pourtant',      pos:{x:160,y:296}, pos_:'adv',    def:'yet / however',                 m:M.LOCKED },
+  { level:'B2', word:'davantage',     pos:{x:184,y:293}, pos_:'adv',    def:'more / further',                m:M.LOCKED },
+  { level:'B2', word:'voire',         pos:{x:210,y:293}, pos_:'adv',    def:'indeed / or even',              m:M.LOCKED },
+  { level:'B2', word:'quoique',       pos:{x:240,y:296}, pos_:'conj',   def:'although / even though',        m:M.LOCKED },
+
+  // ── B1 — Intermédiaire — CURRENT (y≈300–342, bell upper) ─────────────
+  { level:'B1', word:'parvenir',      pos:{x:143,y:310}, pos_:'verbe',  def:'to manage / to succeed in',     m:M.KNOWN   },
+  { level:'B1', word:'accomplir',     pos:{x:163,y:306}, pos_:'verbe',  def:'to accomplish / carry out',     m:M.SEEN    },
+  { level:'B1', word:'promettre',     pos:{x:184,y:302}, pos_:'verbe',  def:'to promise',                    m:M.UNSEEN  },
+  { level:'B1', word:'réussir',       pos:{x:210,y:301}, pos_:'verbe',  def:'to succeed / to pass',          m:M.UNSEEN  },
+  { level:'B1', word:'ambitieux',     pos:{x:236,y:302}, pos_:'adj',    def:'ambitious',                     m:M.KNOWN   },
+  { level:'B1', word:'jaloux',        pos:{x:257,y:306}, pos_:'adj',    def:'jealous / envious',             m:M.UNSEEN  },
+  { level:'B1', word:'rapidement',   pos:{x:172,y:328}, pos_:'adv',    def:'quickly / rapidly',             m:M.SEEN    },
+  { level:'B1', word:'absolument',    pos:{x:238,y:328}, pos_:'adv',    def:'absolutely',                    m:M.UNSEEN  },
+
+  // ── A2 — Élémentaire — around first platform (y≈340–360) ──────────────
+  { level:'A2', word:'penser',        pos:{x:118,y:350}, pos_:'verbe',  def:'to think',                      m:M.MASTERED },
+  { level:'A2', word:'croire',        pos:{x:144,y:347}, pos_:'verbe',  def:'to believe',                    m:M.MASTERED },
+  { level:'A2', word:'prendre',       pos:{x:168,y:345}, pos_:'verbe',  def:'to take',                       m:M.KNOWN   },
+  { level:'A2', word:'venir',         pos:{x:192,y:344}, pos_:'verbe',  def:'to come',                       m:M.KNOWN   },
+  { level:'A2', word:'voir',          pos:{x:228,y:344}, pos_:'verbe',  def:'to see',                        m:M.SEEN    },
+  { level:'A2', word:'partir',        pos:{x:252,y:345}, pos_:'verbe',  def:'to leave / to go',              m:M.SEEN    },
+  { level:'A2', word:'savoir',        pos:{x:276,y:347}, pos_:'verbe',  def:'to know (a fact)',              m:M.UNSEEN  },
+  { level:'A2', word:'mettre',        pos:{x:300,y:350}, pos_:'verbe',  def:'to put / to place',             m:M.MASTERED },
+
+  // ── A1 — Débutant — lower legs ────────────────────────────────────────
+  // Left leg
+  { level:'A1', word:'avoir',         pos:{x:122,y:410}, pos_:'verbe',  def:'to have',                       m:M.MASTERED },
+  { level:'A1', word:'être',          pos:{x:104,y:455}, pos_:'verbe',  def:'to be',                         m:M.MASTERED },
+  { level:'A1', word:'faire',         pos:{x:83,y:500},  pos_:'verbe',  def:'to do / to make',               m:M.MASTERED },
+  { level:'A1', word:'aller',         pos:{x:58,y:547},  pos_:'verbe',  def:'to go',                         m:M.MASTERED },
+  // Right leg
+  { level:'A1', word:'vouloir',       pos:{x:298,y:410}, pos_:'verbe',  def:'to want',                       m:M.MASTERED },
+  { level:'A1', word:'pouvoir',       pos:{x:316,y:455}, pos_:'verbe',  def:'to be able to / can',           m:M.MASTERED },
+  { level:'A1', word:'parler',        pos:{x:337,y:500}, pos_:'verbe',  def:'to speak / to talk',            m:M.KNOWN   },
+  { level:'A1', word:'manger',        pos:{x:360,y:547}, pos_:'verbe',  def:'to eat',                        m:M.SEEN    },
+];
+
+// ── Level config ─────────────────────────────────────────────────────────────
+
+const LEVEL_CFG = {
+  A1: { label:'Débutant',           locked:false, current:false, axisY:480 },
+  A2: { label:'Élémentaire',        locked:false, current:false, axisY:348 },
+  B1: { label:'Intermédiaire',      locked:false, current:true,  axisY:302 },
+  B2: { label:'Intermédiaire sup.', locked:true,  current:false, axisY:265 },
+  C1: { label:'Avancé',            locked:true,  current:false, axisY:198 },
+  C2: { label:'Maîtrise',          locked:true,  current:false, axisY: 75 },
+};
+
+// Locked zone polygon definitions (in SVG coords)
+const LOCKED_ZONES = [
+  // B2: lower bell upper half
+  { pts:[[160,254],[260,254],[260,254],[298,344],[122,344]], label:'B2', lx:210, ly:300 },
+  // C1: upper-middle body
+  { pts:[[172,169],[248,169],[260,254],[160,254]], label:'C1', lx:210, ly:212 },
+  // C2: pyramid + platform band
+  { pts:[[176,158],[244,158],[248,169],[172,169]], label:null,  lx:null, ly:null },
+  { pts:[[210,76],[176,158],[244,158]],            label:'C2',  lx:210, ly:128 },
+];
+
+// ── Stars ─────────────────────────────────────────────────────────────────────
+
+(function initStars() {
+  const c = document.getElementById('stars');
+  const ctx = c.getContext('2d');
+  c.width = innerWidth; c.height = innerHeight;
+  for (let i = 0; i < 200; i++) {
+    const x = Math.random() * c.width;
+    const y = Math.random() * c.height * 0.75;
+    const r = Math.random() * 1.1;
+    const a = 0.15 + Math.random() * 0.55;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,200,255,${a})`;
+    ctx.fill();
+  }
+})();
+
+// ── Render nodes ──────────────────────────────────────────────────────────────
+
+function renderNodes() {
+  const g = document.getElementById('nodes-g');
+
+  WORDS.forEach((w, i) => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    if (w.m === M.LOCKED) {
+      // ghost dot
+      el.setAttribute('class', 'ghost-node');
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', w.pos.x); c.setAttribute('cy', w.pos.y);
+      c.setAttribute('r', RADIUS[M.LOCKED]);
+      c.setAttribute('fill', '#0e0e20');
+      c.setAttribute('stroke', '#1c1c30');
+      c.setAttribute('stroke-width', '0.6');
+      c.setAttribute('opacity', '0.35');
+      el.appendChild(c);
+      g.appendChild(el);
+      return;
+    }
+
+    el.setAttribute('class', `word-node ${MASTERY_CLASSES[w.m]}`);
+    el.setAttribute('data-i', i);
+
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', w.pos.x); c.setAttribute('cy', w.pos.y);
+    c.setAttribute('r', RADIUS[w.m]);
+
+    if (w.m === M.MASTERED) {
+      const delay = (Math.random() * 4).toFixed(1) + 's';
+      const dur   = (1.8 + Math.random() * 2.2).toFixed(1) + 's';
+      c.style.setProperty('--delay', delay);
+      c.style.setProperty('--dur', dur);
+    }
+
+    el.appendChild(c);
+    el.addEventListener('mouseenter', e => showTip(e, w));
+    el.addEventListener('mousemove',  e => moveTip(e));
+    el.addEventListener('mouseleave', hideTip);
+    g.appendChild(el);
+  });
+}
+
+// ── Locked overlays ───────────────────────────────────────────────────────────
+
+function renderLocked() {
+  const g = document.getElementById('locked-g');
+
+  LOCKED_ZONES.forEach(zone => {
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', zone.pts.map(p => p.join(',')).join(' '));
+    poly.setAttribute('fill', 'rgba(7,7,26,0.64)');
+    g.appendChild(poly);
+
+    if (zone.label && zone.lx != null) {
+      const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      txt.setAttribute('x', zone.lx); txt.setAttribute('y', zone.ly);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-size', '8');
+      txt.setAttribute('fill', '#2a2a45');
+      txt.setAttribute('font-weight', '600');
+      txt.setAttribute('letter-spacing', '1');
+      txt.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+      txt.textContent = '— ' + zone.label + ' —';
+      g.appendChild(txt);
+    }
+  });
+
+  // Antenna locked strip
+  const ar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  ar.setAttribute('x','204'); ar.setAttribute('y','10');
+  ar.setAttribute('width','12'); ar.setAttribute('height','66');
+  ar.setAttribute('fill','rgba(7,7,26,0.6)'); ar.setAttribute('rx','2');
+  g.appendChild(ar);
+}
+
+// ── Level axis labels ─────────────────────────────────────────────────────────
+
+function renderAxis() {
+  const axis = document.getElementById('level-axis');
+  const levels = ['C2','C1','B2','B1','A2','A1'];
+
+  levels.forEach(lvl => {
+    const cfg = LEVEL_CFG[lvl];
+    const words = WORDS.filter(w => w.level === lvl);
+    const mastered = words.filter(w => w.m === M.MASTERED).length;
+    const total = words.length;
+
+    const tick = document.createElement('div');
+    tick.className = 'level-tick' + (cfg.current ? ' current-tick' : '');
+    tick.style.top = cfg.axisY + 'px';
+
+    const cls = cfg.locked ? 'locked' : cfg.current ? 'current' : 'unlocked';
+    tick.innerHTML = `
+      <div class="level-code ${cls}">${lvl}</div>
+      <div class="level-count${!cfg.locked ? ' active' : ''}">
+        ${cfg.locked ? '–' : mastered + '/' + total}
+      </div>`;
+    axis.appendChild(tick);
+  });
+}
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+const tip     = document.getElementById('tooltip');
+const ttWord  = document.getElementById('tt-word');
+const ttPos   = document.getElementById('tt-pos');
+const ttDef   = document.getElementById('tt-def');
+const ttPips  = document.getElementById('tt-pips');
+
+function showTip(e, w) {
+  ttWord.textContent = w.word;
+  ttPos.textContent  = w.pos_;
+  ttDef.textContent  = w.def;
+
+  // mastery pips (max 6)
+  const pipCount = 6;
+  const filled   = w.m === M.MASTERED ? 6 : w.m === M.KNOWN ? 3 : w.m === M.SEEN ? 1 : 0;
+  ttPips.innerHTML = '';
+  for (let i = 0; i < pipCount; i++) {
+    const p = document.createElement('div');
+    p.className = 'pip' + (i < filled ? ' on' : '');
+    ttPips.appendChild(p);
+  }
+  const lbl = document.createElement('span');
+  lbl.className = 'tt-mastery-label';
+  lbl.textContent = MASTERY_LABELS[w.m];
+  ttPips.appendChild(lbl);
+
+  tip.classList.add('show');
+  moveTip(e);
+}
+
+function moveTip(e) {
+  const x = e.clientX + 16, y = e.clientY - 12;
+  tip.style.left = Math.min(x, innerWidth - 200) + 'px';
+  tip.style.top  = Math.min(y, innerHeight - 140) + 'px';
+}
+
+function hideTip() { tip.classList.remove('show'); }
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+function updateStats() {
+  const total    = WORDS.filter(w => w.m !== M.LOCKED).length;
+  const mastered = WORDS.filter(w => w.m === M.MASTERED).length;
+  const seen     = WORDS.filter(w => w.m !== M.LOCKED && w.m !== M.UNSEEN).length;
+  const pct      = Math.round(mastered / total * 100);
+
+  document.getElementById('stat-mastered').textContent = mastered;
+  document.getElementById('stat-seen').textContent = seen;
+  document.getElementById('pct').textContent = pct;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+
+renderNodes();
+renderLocked();
+renderAxis();
+updateStats();
+</script>
+</body>
+</html>

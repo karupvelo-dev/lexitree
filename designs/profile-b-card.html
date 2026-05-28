@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — B: Card</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #000000; --mid: #545454; --light: #ADADAD;
+      --border: #E2E2E2; --bg: #F6F6F6; --white: #FFFFFF;
+      --green: #0E8345; --green-light: #D4EDDA;
+      --red: #D1293D; --red-light: #FDECEA;
+      --amber: #D97706; --amber-bg: #FEF3C7;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-serif: 'Lora', Georgia, serif;
+    }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; }
+
+    .topbar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 14px 20px; gap: 12px;
+    }
+    .back-btn { background: none; border: none; font-size: 14px; font-weight: 500; color: var(--mid); cursor: pointer; }
+
+    .page { max-width: 480px; margin: 0 auto; padding: 0 0 100px; }
+
+    /* ── Hero card ── */
+    .hero {
+      background: var(--dark); padding: 36px 20px 28px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      color: var(--white); font-size: 28px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px; border: 2px solid rgba(255,255,255,0.2);
+    }
+    .hero-name { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; color: var(--white); margin-bottom: 4px; }
+    .hero-email { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 16px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 500px;
+      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+      font-size: 12px; font-weight: 600; color: var(--white); letter-spacing: 0.02em;
+    }
+
+    /* ── Stat strip ── */
+    .stat-strip {
+      display: flex; background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .stat-item { flex: 1; padding: 18px 12px; text-align: center; border-right: 1px solid var(--border); }
+    .stat-item:last-child { border-right: none; }
+    .stat-value { font-size: 26px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 2px; }
+    .stat-value.amber { color: var(--amber); }
+    .stat-value.green { color: var(--green); }
+    .stat-label { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--light); }
+
+    /* ── Sections ── */
+    .section { background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-top: 12px; }
+    .section-header { padding: 14px 20px 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--light); }
+
+    /* Progress section */
+    .progress-body { padding: 14px 20px 18px; }
+    .progress-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .progress-label { font-size: 14px; font-weight: 600; }
+    .progress-next { font-size: 12px; color: var(--mid); }
+    .bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+    .bar-fill { height: 100%; background: var(--dark); border-radius: 4px; }
+    .bar-hint { font-size: 12px; color: var(--light); }
+
+    /* Checklist */
+    .checklist { padding: 12px 20px 18px; display: flex; flex-direction: column; gap: 8px; }
+    .check-row { display: flex; align-items: center; gap: 10px; }
+    .check-icon { font-size: 13px; color: var(--green); flex-shrink: 0; }
+    .check-icon.pending { color: var(--light); }
+    .check-text { font-size: 13px; color: var(--mid); }
+
+    /* Recent sessions */
+    .session-list { }
+    .session-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+    }
+    .session-left { flex: 1; min-width: 0; }
+    .session-concept { font-size: 14px; font-weight: 500; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .session-meta { font-size: 12px; color: var(--light); }
+    .session-score { font-size: 13px; font-weight: 700; }
+    .session-score.good { color: var(--green); }
+    .session-score.ok { color: var(--amber); }
+
+    /* Actions */
+    .actions { margin-top: 12px; }
+    .action-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; background: var(--white);
+      border-top: 1px solid var(--border); cursor: pointer;
+    }
+    .action-row:first-child { border-top: none; }
+    .action-label { font-size: 14px; font-weight: 500; color: var(--dark); }
+    .action-label.danger { color: var(--red); }
+    .action-chevron { color: var(--light); font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="back-btn">← Back</button>
+  </div>
+
+  <div class="page">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="avatar">S</div>
+      <div class="hero-name">Sophie Martin</div>
+      <div class="hero-email">sophie.m@gmail.com</div>
+      <div class="hero-badge">B1 · Intermediate</div>
+    </div>
+
+    <!-- Stat strip -->
+    <div class="stat-strip">
+      <div class="stat-item">
+        <div class="stat-value amber">🔥14</div>
+        <div class="stat-label">Streak</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">23</div>
+        <div class="stat-label">Sessions</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value green">74%</div>
+        <div class="stat-label">Accuracy</div>
+      </div>
+    </div>
+
+    <!-- Level progress -->
+    <div class="section">
+      <div class="section-header">Progress to B2</div>
+      <div class="progress-body">
+        <div class="progress-row">
+          <span class="progress-label">Intermediate · B1</span>
+          <span class="progress-next">B2 →</span>
+        </div>
+        <div class="bar"><div class="bar-fill" style="width:62%"></div></div>
+        <div class="bar-hint">12 of 19 concepts attempted</div>
+      </div>
+      <div class="checklist">
+        <div class="check-row"><span class="check-icon">✓</span><span class="check-text">All B1 concepts attempted</span></div>
+        <div class="check-row"><span class="check-icon pending">○</span><span class="check-text">Overall accuracy ≥ 70% <span style="color:var(--amber)">(currently 74% ✓)</span></span></div>
+        <div class="check-row"><span class="check-icon pending">○</span><span class="check-text">No weak concepts below 50%</span></div>
+      </div>
+    </div>
+
+    <!-- Recent sessions -->
+    <div class="section" style="margin-top:12px">
+      <div class="section-header" style="padding-bottom:2px">Recent sessions</div>
+      <div class="session-list">
+        <div class="session-row">
+          <div class="session-left">
+            <div class="session-concept">Le subjonctif présent</div>
+            <div class="session-meta">Today · B1</div>
+          </div>
+          <div class="session-score good">7/7</div>
+        </div>
+        <div class="session-row">
+          <div class="session-left">
+            <div class="session-concept">L'imparfait</div>
+            <div class="session-meta">Yesterday · B1</div>
+          </div>
+          <div class="session-score good">6/7</div>
+        </div>
+        <div class="session-row">
+          <div class="session-left">
+            <div class="session-concept">Le passé composé</div>
+            <div class="session-meta">Sat · B1</div>
+          </div>
+          <div class="session-score ok">5/7</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="section actions">
+      <div class="action-row">
+        <span class="action-label">Vocab score: <strong>61/100</strong> · 48 words seen</span>
+      </div>
+      <div class="action-row" style="cursor:pointer">
+        <span class="action-label">Change my level</span>
+        <span class="action-chevron">›</span>
+      </div>
+      <div class="action-row">
+        <span class="action-label danger">Sign out</span>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Card Deck — Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --white: #fff;
+      --dark: #1a1a1a;
+      --mid: #555;
+      --light: #888;
+      --border: #e8e5df;
+      --gold: #C9A84C;
+      --gold-bright: #F0DC8A;
+      --gold-glow: rgba(201,168,76,0.15);
+      --card-w: 76px;
+      --card-h: 108px;
+      --card-r: 7px;
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #dedad5;
+      font-family: var(--font-sans);
+      color: var(--dark);
+      padding: 40px 20px 80px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #999;
+      text-align: center;
+      margin: 56px 0 20px;
+    }
+    .section-label:first-of-type { margin-top: 0; }
+
+    /* ── Phone shell ── */
+    .phone {
+      max-width: 430px;
+      margin: 0 auto;
+      background: var(--bg);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+    .nav-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #1a1a1a; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; color: #fff; font-weight: 700;
+    }
+
+    .profile-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 18px 14px;
+    }
+    .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .big-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: #1a1a1a; display: flex; align-items: center;
+      justify-content: center; font-size: 14px; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .profile-sub { font-size: 11px; color: var(--light); }
+
+    .stats-row { display: flex; }
+    .stat { flex: 1; text-align: center; padding: 8px 0; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+    .stat-val.gold { color: var(--gold); }
+    .stat-lbl { font-size: 9px; color: var(--light); margin-top: 1px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+
+    .tabs { display: flex; background: var(--white); border-bottom: 1px solid var(--border); }
+    .tab { flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--light); }
+    .tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+
+    /* ── Vault body ── */
+    .vault { padding: 24px 0 36px; }
+
+    /* ── Level block ── */
+    .level-block { margin-bottom: 32px; }
+
+    .level-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      margin-bottom: 16px;
+    }
+    .level-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--mid);
+    }
+    .level-score { font-size: 11px; color: var(--light); }
+    .level-score.complete { color: var(--gold); font-weight: 700; }
+
+    .maitrise {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 100px;
+      border: 1px solid rgba(201,168,76,0.35);
+      background: rgba(201,168,76,0.07);
+    }
+    .maitrise-text {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.16em;
+      text-transform: uppercase; color: var(--gold);
+    }
+
+    /* ── Card fan stage ── */
+    .fan-stage {
+      position: relative;
+      height: 148px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: visible;
+      padding-bottom: 0;
+    }
+
+    /* ── Individual card ── */
+    .card {
+      position: absolute;
+      width: var(--card-w);
+      height: var(--card-h);
+      border-radius: var(--card-r);
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+    }
+
+    /* Earned face-up */
+    .card.earned {
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.12),
+        0 1px 0 rgba(201,168,76,0.4),
+        3px 6px 16px rgba(0,0,0,0.55),
+        1px 2px 0 #0a0a0a, 2px 4px 0 #080808;
+      padding: 7px 6px 6px;
+      justify-content: space-between;
+    }
+    .card.earned .card-level {
+      font-size: 8px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: rgba(201,168,76,0.55);
+      align-self: flex-end; line-height: 1;
+    }
+    .card.earned .card-name {
+      font-family: var(--font-serif); font-size: 10px;
+      color: rgba(255,255,255,0.82); line-height: 1.3;
+      margin-top: auto;
+    }
+    .card.earned .card-crown {
+      font-size: 11px; align-self: flex-end; line-height: 1;
+    }
+
+    /* Gold hairline top accent on earned card */
+    .card.earned::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 20%; right: 20%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    }
+
+    /* Unearned face-down */
+    .card.unearned {
+      background: #111;
+      border: 1px solid #242424;
+      box-shadow:
+        3px 6px 14px rgba(0,0,0,0.45),
+        1px 2px 0 #0a0a0a, 2px 4px 0 #080808;
+      overflow: hidden;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Diamond back pattern */
+    .card.unearned::before {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border: 1px solid #1e1e1e;
+      border-radius: 4px;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 9px),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 9px);
+    }
+    .card.unearned .card-back-icon {
+      font-size: 14px;
+      opacity: 0.12;
+      z-index: 1;
+    }
+
+    /* ── Deck pile (collapsed level) ── */
+    .deck-wrap {
+      padding: 0 18px;
+    }
+    .deck-collapsed {
+      position: relative;
+      cursor: pointer;
+    }
+    .deck-shadow-3 {
+      position: absolute;
+      width: 64px; height: 90px;
+      background: #0c0c0c;
+      border: 1px solid #1e1e1e;
+      border-radius: 6px;
+      top: -8px; left: 10px;
+      transform: rotate(5deg);
+    }
+    .deck-shadow-2 {
+      position: absolute;
+      width: 64px; height: 90px;
+      background: #0e0e0e;
+      border: 1px solid #202020;
+      border-radius: 6px;
+      top: -4px; left: 6px;
+      transform: rotate(2.5deg);
+    }
+    .deck-top {
+      position: relative;
+      width: 64px; height: 90px;
+      background: #111;
+      border: 1px solid #242424;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .deck-top::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 1px solid #1e1e1e;
+      border-radius: 3px;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 9px),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,0.025) 0, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 9px);
+    }
+    .deck-top-icon { font-size: 18px; opacity: 0.1; z-index: 1; }
+
+    .deck-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .deck-info { flex: 1; }
+    .deck-title { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 2px; }
+    .deck-sub { font-size: 11px; color: var(--light); }
+    .deck-badge {
+      position: absolute;
+      top: -6px; right: -6px;
+      width: 20px; height: 20px;
+      background: #333;
+      border: 1px solid #444;
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 700;
+      color: #888;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .deck-collapsed { position: relative; margin-right: 16px; }
+
+    /* ── Fan hover ── */
+    .fan-stage:hover .card {
+      /* override individual transforms slightly on hover handled per-card below */
+    }
+
+    /* ═══════════════════ SHARE PAGE ═══════════════════ */
+    .dark-phone {
+      max-width: 430px;
+      margin: 0 auto;
+      background: #0c0c0c;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .dark-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px;
+      background: #111; border-bottom: 1px solid #1a1a1a;
+    }
+    .dark-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; color: #fff; letter-spacing: -0.02em; }
+    .dark-cta {
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4);
+      padding: 5px 12px; border: 1px solid #222; border-radius: 100px; text-decoration: none;
+    }
+
+    .share-body { padding: 28px 20px 32px; }
+    .gold-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-bright) 50%, var(--gold) 70%, transparent);
+      margin-bottom: 24px;
+    }
+    .share-head { text-align: center; margin-bottom: 24px; }
+    .share-who { font-size: 11px; color: rgba(255,255,255,0.2); margin-bottom: 6px; letter-spacing: 0.05em; }
+    .share-count-row { display: flex; align-items: baseline; gap: 8px; justify-content: center; margin-bottom: 2px; }
+    .share-num { font-family: var(--font-serif); font-size: 42px; font-weight: 700; color: var(--gold); letter-spacing: -0.03em; }
+    .share-denom { font-family: var(--font-serif); font-size: 20px; color: rgba(255,255,255,0.15); }
+    .share-sub { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; color: rgba(255,255,255,0.15); text-transform: uppercase; }
+
+    .share-sep { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 20px; }
+
+    /* ── Share card grid ── */
+    .share-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-bottom: 18px;
+    }
+    .share-card {
+      aspect-ratio: 76/108;
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      border-radius: 5px;
+      padding: 5px 4px 4px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    .share-card::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    }
+    .share-card-lvl { font-size: 7px; font-weight: 700; letter-spacing: 0.1em; color: rgba(201,168,76,0.45); align-self: flex-end; text-transform: uppercase; }
+    .share-card-name { font-family: var(--font-serif); font-size: 8px; color: rgba(255,255,255,0.75); line-height: 1.3; margin-top: auto; }
+    .share-card-crown { font-size: 9px; align-self: flex-end; line-height: 1; }
+
+    .share-breakdown {
+      text-align: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.12);
+      letter-spacing: 0.04em;
+      margin-bottom: 22px;
+      line-height: 2;
+    }
+    .share-breakdown .lit { color: rgba(201,168,76,0.55); font-weight: 700; }
+
+    .share-btn {
+      display: block; width: 100%; padding: 13px;
+      background: var(--gold); color: #000;
+      text-align: center; font-size: 13px; font-weight: 700;
+      border-radius: 100px; text-decoration: none; letter-spacing: 0.01em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- VAULT TAB                                         -->
+<!-- ══════════════════════════════════════════════════ -->
+<p class="section-label">Profile — Black Cards Tab</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <div class="nav-avatar">N</div>
+  </div>
+
+  <div class="profile-header">
+    <div class="profile-row">
+      <div class="big-avatar">N</div>
+      <div>
+        <div class="profile-name">Nithin Sebastian</div>
+        <div class="profile-sub">B1 · 2 day streak 🔥</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val gold">12</div><div class="stat-lbl">Black Cards</div></div>
+      <div class="stat"><div class="stat-val">34</div><div class="stat-lbl">Sessions</div></div>
+      <div class="stat"><div class="stat-val">78%</div><div class="stat-lbl">Accuracy</div></div>
+      <div class="stat"><div class="stat-val">74</div><div class="stat-lbl">Vocab</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">Stats</div>
+    <div class="tab">Concepts</div>
+    <div class="tab active">♛ Black Cards</div>
+  </div>
+
+  <div class="vault">
+
+    <!-- ── A1 — Complete ── -->
+    <div class="level-block">
+      <div class="level-meta">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="level-tag">A1</span>
+          <span class="level-score complete">8 / 8</span>
+        </div>
+        <div class="maitrise">
+          <span style="font-size:9px">👑</span>
+          <span class="maitrise-text">Maîtrisé</span>
+        </div>
+      </div>
+
+      <!-- 8 earned cards fanned -->
+      <div class="fan-stage" style="height:160px">
+        <!-- angles spread -28° to +28° in 8 steps, pivot at bottom centre -->
+        <!-- left: 50% + horizontal offset from rotation, then cards overlap naturally -->
+        <div class="card earned" style="transform:rotate(-26deg);left:calc(50% - 130px);z-index:1">
+          <span class="card-level">A1</span>
+          <span class="card-name">Présent indicatif</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(-18deg);left:calc(50% - 96px);z-index:2">
+          <span class="card-level">A1</span>
+          <span class="card-name">Articles définis</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(-11deg);left:calc(50% - 60px);z-index:3">
+          <span class="card-level">A1</span>
+          <span class="card-name">Négation simple</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(-4deg);left:calc(50% - 22px);z-index:4">
+          <span class="card-level">A1</span>
+          <span class="card-name">Questions simples</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(4deg);left:calc(50% + 16px);z-index:5">
+          <span class="card-level">A1</span>
+          <span class="card-name">Pluriel des noms</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(11deg);left:calc(50% + 50px);z-index:6">
+          <span class="card-level">A1</span>
+          <span class="card-name">Adjectifs qual.</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(18deg);left:calc(50% + 82px);z-index:7">
+          <span class="card-level">A1</span>
+          <span class="card-name">Verbes en -er</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(26deg);left:calc(50% + 116px);z-index:8">
+          <span class="card-level">A1</span>
+          <span class="card-name">Être et avoir</span>
+          <span class="card-crown">👑</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── A2 — Partial: 6 face-down then 4 face-up ── -->
+    <div class="level-block">
+      <div class="level-meta">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="level-tag">A2</span>
+          <span class="level-score">4 / 10</span>
+        </div>
+      </div>
+
+      <!-- 10 cards: first 6 face-down (spread right), last 4 face-up (front) -->
+      <div class="fan-stage" style="height:160px">
+        <!-- 6 unearned face-down at the back of the fan (left side) -->
+        <div class="card unearned" style="transform:rotate(-27deg);left:calc(50% - 152px);z-index:1">
+          <span class="card-back-icon">♠</span>
+        </div>
+        <div class="card unearned" style="transform:rotate(-19deg);left:calc(50% - 120px);z-index:2">
+          <span class="card-back-icon">♠</span>
+        </div>
+        <div class="card unearned" style="transform:rotate(-12deg);left:calc(50% - 86px);z-index:3">
+          <span class="card-back-icon">♠</span>
+        </div>
+        <div class="card unearned" style="transform:rotate(-5deg);left:calc(50% - 48px);z-index:4">
+          <span class="card-back-icon">♠</span>
+        </div>
+        <div class="card unearned" style="transform:rotate(2deg);left:calc(50% - 12px);z-index:5">
+          <span class="card-back-icon">♠</span>
+        </div>
+        <div class="card unearned" style="transform:rotate(9deg);left:calc(50% + 22px);z-index:6">
+          <span class="card-back-icon">♠</span>
+        </div>
+        <!-- 4 earned face-up at the front of the fan (right side) -->
+        <div class="card earned" style="transform:rotate(15deg);left:calc(50% + 54px);z-index:7">
+          <span class="card-level">A2</span>
+          <span class="card-name">Passé composé</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(20deg);left:calc(50% + 78px);z-index:8">
+          <span class="card-level">A2</span>
+          <span class="card-name">Imparfait</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(24deg);left:calc(50% + 102px);z-index:9">
+          <span class="card-level">A2</span>
+          <span class="card-name">Futur proche</span>
+          <span class="card-crown">👑</span>
+        </div>
+        <div class="card earned" style="transform:rotate(27deg);left:calc(50% + 124px);z-index:10">
+          <span class="card-level">A2</span>
+          <span class="card-name">Accord des adj.</span>
+          <span class="card-crown">👑</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── B1 — None earned (deck pile) ── -->
+    <div class="level-block">
+      <div class="level-meta">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="level-tag">B1</span>
+          <span class="level-score">0 / 12</span>
+        </div>
+      </div>
+      <div class="deck-wrap">
+        <div class="deck-row">
+          <div class="deck-collapsed">
+            <div class="deck-shadow-3"></div>
+            <div class="deck-shadow-2"></div>
+            <div class="deck-top">
+              <span class="deck-top-icon">♠</span>
+            </div>
+            <div class="deck-badge">12</div>
+          </div>
+          <div class="deck-info">
+            <div class="deck-title">B1 concepts</div>
+            <div class="deck-sub">No black cards earned yet. Keep practicing to unlock these.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /vault -->
+</div><!-- /phone -->
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- EARNING MOMENT                                    -->
+<!-- ══════════════════════════════════════════════════ -->
+<p class="section-label">Earning Moment — card slides from the deck to your hand</p>
+
+<div class="phone" style="background:#0d0d0d">
+  <div style="padding:40px 32px;text-align:center">
+
+    <!-- Showing the "newly earned" card prominently, with a ghost of the deck it came from -->
+    <div style="position:relative;display:inline-block;margin-bottom:24px">
+
+      <!-- Ghost deck (it came from here) -->
+      <div style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%) rotate(-6deg);width:82px;height:116px;background:#111;border:1px solid #222;border-radius:8px;z-index:0"></div>
+      <div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(-3deg);width:82px;height:116px;background:#0f0f0f;border:1px solid #1e1e1e;border-radius:8px;z-index:1"></div>
+
+      <!-- The newly earned card — elevated, rotated slightly, gold glow -->
+      <div style="
+        position:relative;z-index:10;
+        width:160px;height:226px;
+        background:#0c0c0c;
+        border:1px solid var(--gold);
+        border-radius:14px;
+        padding:16px 14px 14px;
+        display:flex;flex-direction:column;justify-content:space-between;
+        box-shadow:
+          0 0 0 1px rgba(201,168,76,0.1),
+          0 0 40px rgba(201,168,76,0.18),
+          0 0 80px rgba(201,168,76,0.08),
+          0 24px 48px rgba(0,0,0,0.6);
+        transform:rotate(-2deg) translateY(-12px);
+      ">
+        <!-- Gold hairline top -->
+        <div style="position:absolute;top:-1px;left:25%;right:25%;height:1px;background:linear-gradient(90deg,transparent,#F0DC8A,transparent)"></div>
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(201,168,76,0.4)">B1</div>
+          <div style="font-size:18px">👑</div>
+        </div>
+
+        <div style="text-align:center">
+          <div style="font-size:48px;font-weight:900;color:#fff;letter-spacing:-0.04em;line-height:1;margin-bottom:6px">7/7</div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Parfait</div>
+          <div style="font-family:var(--font-serif);font-size:13px;color:rgba(255,255,255,0.25)">Le futur simple</div>
+        </div>
+
+        <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;text-align:center">
+          <div style="display:inline-flex;align-items:center;gap:5px">
+            <span style="font-size:10px;color:var(--gold)">✦</span>
+            <span style="font-size:10px;font-weight:600;color:rgba(201,168,76,0.8);letter-spacing:0.03em">Added to your collection</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:rgba(255,255,255,0.2);margin-top:8px">Gold border traces clockwise as card materialises</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- COLLECTION SHARE                                  -->
+<!-- ══════════════════════════════════════════════════ -->
+<p class="section-label">Collection Share Page</p>
+
+<div class="dark-phone">
+  <div class="dark-nav">
+    <span class="dark-logo">LexiTree</span>
+    <a href="#" class="dark-cta">Try it free →</a>
+  </div>
+
+  <div class="share-body">
+    <div class="gold-line"></div>
+
+    <div class="share-head">
+      <div class="share-who">Nithin Sebastian's black cards</div>
+      <div class="share-count-row">
+        <span class="share-num">12</span>
+        <span class="share-denom">/ 84 earned</span>
+      </div>
+      <div class="share-sub">French grammar · LexiTree</div>
+    </div>
+
+    <div class="share-sep"></div>
+
+    <!-- Earned cards only: 8 A1 + 4 A2 = 12 cards -->
+    <div class="share-grid">
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Présent indicatif</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Articles définis</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Négation simple</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Questions simples</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Pluriel des noms</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Adjectifs qual.</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Verbes en -er</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A1</span><span class="share-card-name">Être et avoir</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A2</span><span class="share-card-name">Passé composé</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A2</span><span class="share-card-name">Imparfait</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A2</span><span class="share-card-name">Futur proche</span><span class="share-card-crown">👑</span></div>
+      <div class="share-card"><span class="share-card-lvl">A2</span><span class="share-card-name">Accord des adj.</span><span class="share-card-crown">👑</span></div>
+    </div>
+
+    <div class="share-breakdown">
+      <span class="lit">A1 &nbsp;8 / 8</span> &nbsp;·&nbsp; <span class="lit">A2 &nbsp;4 / 10</span><br>
+      B1 &nbsp;0 / 12 &nbsp;·&nbsp; B2 &nbsp;0 / 14 &nbsp;·&nbsp; C1+ &nbsp;0 / 40
+    </div>
+
+    <a href="#" class="share-btn">Build your collection — it's free →</a>
+  </div>
+</div>
+
+</body>
+</html>

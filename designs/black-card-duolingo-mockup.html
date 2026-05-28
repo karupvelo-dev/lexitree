@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maître Vault — Duolingo Edit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --white: #fff;
+      --dark: #3c3c3c;
+      --mid: #777;
+      --light: #afafaf;
+      --border: #e5e5e5;
+      --green: #58CC02;
+      --green-dark: #46A302;
+      --blue: #1CB0F6;
+      --blue-dark: #119ACC;
+      --purple: #CE82FF;
+      --purple-dark: #A560D8;
+      --orange: #FF9600;
+      --orange-dark: #CC7800;
+      --red: #FF4B4B;
+      --red-dark: #CC2B2B;
+      --gold: #FFC800;
+      --gold-dark: #CC9F00;
+      --font: 'Nunito', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e5e5e5; font-family: var(--font); color: var(--dark); padding: 40px 20px 80px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #aaa; text-align: center;
+      margin: 40px 0 16px;
+    }
+
+    .phone, .share-phone {
+      max-width: 430px; margin: 0 auto; background: var(--bg);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--white); border-bottom: 2px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 18px; font-weight: 900; color: var(--green);
+      letter-spacing: -0.02em;
+    }
+    .nav-badges { display: flex; gap: 8px; align-items: center; }
+    .nav-badge {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--bg); border: 2px solid var(--border);
+      border-radius: 100px; padding: 4px 10px;
+      font-size: 12px; font-weight: 800; color: var(--dark);
+    }
+    .nav-badge .icon { font-size: 14px; }
+
+    /* ── Profile strip ── */
+    .profile-strip {
+      background: var(--white); border-bottom: 2px solid var(--border);
+      padding: 14px 18px;
+    }
+    .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--green); border: 3px solid var(--green-dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 900; color: #fff;
+    }
+    .profile-name { font-size: 15px; font-weight: 900; color: var(--dark); }
+    .profile-sub { font-size: 11px; color: var(--mid); font-weight: 600; margin-top: 1px; }
+    .stats-row { display: flex; gap: 8px; }
+    .stat-pill {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--bg); border: 2px solid var(--border);
+      border-radius: 100px; padding: 5px 10px;
+      font-size: 12px; font-weight: 800;
+    }
+    .stat-pill .sval { color: var(--dark); }
+    .stat-pill .slbl { color: var(--mid); font-weight: 700; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; background: var(--white); border-bottom: 2px solid var(--border); }
+    .tab {
+      flex: 1; padding: 11px 0; text-align: center;
+      font-size: 12px; font-weight: 800; color: var(--light);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .tab.active {
+      color: var(--green); border-bottom: 3px solid var(--green);
+    }
+
+    /* ── Vault ── */
+    .vault { padding: 20px 16px 36px; }
+    .section-head {
+      font-size: 13px; font-weight: 900; color: var(--dark);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+
+    /* ── Level shields (completed) ── */
+    .shields-row { display: flex; gap: 10px; margin-bottom: 24px; }
+    .shield {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .shield-badge {
+      width: 56px; height: 62px;
+      border-radius: 10px 10px 28px 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 900; color: #fff;
+      position: relative;
+      border-bottom: 4px solid;
+    }
+    .shield-badge.a1 { background: var(--green); border-color: var(--green-dark); }
+    .shield-badge.a2 { background: var(--blue); border-color: var(--blue-dark); }
+    .shield-badge.b1 { background: var(--purple); border-color: var(--purple-dark); }
+    .shield-badge.b2 { background: var(--orange); border-color: var(--orange-dark); }
+    .shield-check {
+      position: absolute; top: -6px; right: -6px;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--gold); border: 2px solid #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: #fff; font-weight: 900;
+    }
+    .shield-lbl { font-size: 10px; font-weight: 800; color: var(--mid); }
+
+    /* ── C1 progress bar ── */
+    .progress-section { margin-bottom: 20px; }
+    .progress-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .progress-title { font-size: 13px; font-weight: 900; color: var(--dark); }
+    .progress-count { font-size: 12px; font-weight: 800; color: var(--mid); }
+    .progress-bar {
+      height: 14px; background: var(--border); border-radius: 100px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--red); border-radius: 100px;
+      width: 43%;
+    }
+
+    /* ── Achievement cards ── */
+    .cards-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .ach-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 0 var(--border);
+      padding: 14px 12px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .ach-icon {
+      width: 40px; height: 40px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .ach-icon.c1 { background: rgba(255,75,75,0.1); }
+    .ach-name {
+      font-size: 12px; font-weight: 800; color: var(--dark); line-height: 1.3;
+    }
+    .ach-footer { display: flex; align-items: center; justify-content: space-between; }
+    .ach-level {
+      font-size: 10px; font-weight: 800; color: var(--red);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .ach-stars { font-size: 12px; letter-spacing: 1px; }
+
+    /* ── CTA button (Duolingo 3D style) ── */
+    .cta-btn {
+      display: block; width: 100%;
+      background: var(--green);
+      color: #fff;
+      text-align: center;
+      font-family: var(--font);
+      font-size: 16px; font-weight: 900;
+      border-radius: 16px;
+      text-decoration: none;
+      padding: 16px;
+      border: 2px solid var(--green-dark);
+      box-shadow: 0 5px 0 var(--green-dark);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    /* ── Share header ── */
+    .share-header {
+      background: var(--white); border-bottom: 2px solid var(--border);
+      padding: 20px 18px 16px;
+    }
+    .share-name { font-size: 15px; font-weight: 900; color: var(--dark); }
+    .share-meta { font-size: 11px; color: var(--mid); font-weight: 700; margin-top: 2px; }
+    .share-count-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .share-count-num {
+      font-size: 48px; font-weight: 900; color: var(--gold);
+      letter-spacing: -0.04em; line-height: 1;
+    }
+    .share-count-info { display: flex; flex-direction: column; }
+    .share-count-label { font-size: 13px; font-weight: 900; color: var(--dark); }
+    .share-count-sub { font-size: 11px; color: var(--mid); font-weight: 700; margin-top: 1px; }
+    .share-body { padding: 20px 16px 28px; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════ PROFILE ══════════════════════════ -->
+<p class="section-label">Profile — Maîtres (Duolingo Edit)</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <div class="nav-badges">
+      <div class="nav-badge"><span class="icon">🔥</span><span>14</span></div>
+      <div class="nav-badge"><span class="icon">💎</span><span>320</span></div>
+    </div>
+  </div>
+
+  <div class="profile-strip">
+    <div class="profile-row">
+      <div class="avatar">N</div>
+      <div>
+        <div class="profile-name">Nithin Sebastian</div>
+        <div class="profile-sub">C1 French</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-pill"><span class="sval">50</span><span class="slbl">Maîtres</span></div>
+      <div class="stat-pill"><span class="sval">142</span><span class="slbl">Sessions</span></div>
+      <div class="stat-pill"><span class="sval">83%</span><span class="slbl">Accuracy</span></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">Stats</div>
+    <div class="tab">Concepts</div>
+    <div class="tab active">Maîtres</div>
+  </div>
+
+  <div class="vault">
+
+    <!-- Completed level shields -->
+    <div class="section-head">Completed</div>
+    <div class="shields-row">
+      <div class="shield">
+        <div class="shield-badge a1">A1<div class="shield-check">★</div></div>
+        <div class="shield-lbl">A1</div>
+      </div>
+      <div class="shield">
+        <div class="shield-badge a2">A2<div class="shield-check">★</div></div>
+        <div class="shield-lbl">A2</div>
+      </div>
+      <div class="shield">
+        <div class="shield-badge b1">B1<div class="shield-check">★</div></div>
+        <div class="shield-lbl">B1</div>
+      </div>
+      <div class="shield">
+        <div class="shield-badge b2">B2<div class="shield-check">★</div></div>
+        <div class="shield-lbl">B2</div>
+      </div>
+    </div>
+
+    <!-- C1 progress -->
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-title">C1</span>
+        <span class="progress-count">6 / 14 mastered</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+
+    <!-- Earned achievement cards -->
+    <div class="cards-grid">
+
+      <div class="ach-card">
+        <div class="ach-icon c1">🌀</div>
+        <div class="ach-name">Subjonctif présent</div>
+        <div class="ach-footer">
+          <span class="ach-level">C1</span>
+          <span class="ach-stars">⭐⭐⭐</span>
+        </div>
+      </div>
+
+      <div class="ach-card">
+        <div class="ach-icon c1">⏳</div>
+        <div class="ach-name">Conditionnel passé</div>
+        <div class="ach-footer">
+          <span class="ach-level">C1</span>
+          <span class="ach-stars">⭐⭐⭐</span>
+        </div>
+      </div>
+
+      <div class="ach-card">
+        <div class="ach-icon c1">🔗</div>
+        <div class="ach-name">Pronoms relatifs</div>
+        <div class="ach-footer">
+          <span class="ach-level">C1</span>
+          <span class="ach-stars">⭐⭐⭐</span>
+        </div>
+      </div>
+
+      <div class="ach-card">
+        <div class="ach-icon c1">🔄</div>
+        <div class="ach-name">Voix passive</div>
+        <div class="ach-footer">
+          <span class="ach-level">C1</span>
+          <span class="ach-stars">⭐⭐⭐</span>
+        </div>
+      </div>
+
+      <div class="ach-card">
+        <div class="ach-icon c1">💬</div>
+        <div class="ach-name">Discours indirect</div>
+        <div class="ach-footer">
+          <span class="ach-level">C1</span>
+          <span class="ach-stars">⭐⭐⭐</span>
+        </div>
+      </div>
+
+      <div class="ach-card">
+        <div class="ach-icon c1">⚡</div>
+        <div class="ach-name">Gérondif</div>
+        <div class="ach-footer">
+          <span class="ach-level">C1</span>
+          <span class="ach-stars">⭐⭐⭐</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ SHARE PAGE ══════════════════════════ -->
+<p class="section-label">Collection Share Page (Duolingo Edit)</p>
+
+<div class="share-phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <a href="#" style="font-size:12px;font-weight:800;color:#fff;background:var(--green);padding:7px 14px;border-radius:10px;text-decoration:none;border:2px solid var(--green-dark);box-shadow:0 3px 0 var(--green-dark);text-transform:uppercase;">Join</a>
+  </div>
+
+  <div class="share-header">
+    <div class="share-name">Nithin Sebastian</div>
+    <div class="share-meta">C1 · French grammar</div>
+    <div class="share-count-row">
+      <div class="share-count-num">50</div>
+      <div class="share-count-info">
+        <div class="share-count-label">Maîtres earned</div>
+        <div class="share-count-sub">Top 5% of learners</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="share-body">
+
+    <div class="shields-row" style="margin-bottom:20px">
+      <div class="shield">
+        <div class="shield-badge a1">A1<div class="shield-check">★</div></div>
+        <div class="shield-lbl">A1</div>
+      </div>
+      <div class="shield">
+        <div class="shield-badge a2">A2<div class="shield-check">★</div></div>
+        <div class="shield-lbl">A2</div>
+      </div>
+      <div class="shield">
+        <div class="shield-badge b1">B1<div class="shield-check">★</div></div>
+        <div class="shield-lbl">B1</div>
+      </div>
+      <div class="shield">
+        <div class="shield-badge b2">B2<div class="shield-check">★</div></div>
+        <div class="shield-lbl">B2</div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-header">
+        <span class="progress-title">C1</span>
+        <span class="progress-count">6 / 14 mastered</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+
+    <div class="cards-grid" style="margin-bottom:24px">
+      <div class="ach-card"><div class="ach-icon c1">🌀</div><div class="ach-name">Subjonctif présent</div><div class="ach-footer"><span class="ach-level">C1</span><span class="ach-stars">⭐⭐⭐</span></div></div>
+      <div class="ach-card"><div class="ach-icon c1">⏳</div><div class="ach-name">Conditionnel passé</div><div class="ach-footer"><span class="ach-level">C1</span><span class="ach-stars">⭐⭐⭐</span></div></div>
+      <div class="ach-card"><div class="ach-icon c1">🔗</div><div class="ach-name">Pronoms relatifs</div><div class="ach-footer"><span class="ach-level">C1</span><span class="ach-stars">⭐⭐⭐</span></div></div>
+      <div class="ach-card"><div class="ach-icon c1">🔄</div><div class="ach-name">Voix passive</div><div class="ach-footer"><span class="ach-level">C1</span><span class="ach-stars">⭐⭐⭐</span></div></div>
+      <div class="ach-card"><div class="ach-icon c1">💬</div><div class="ach-name">Discours indirect</div><div class="ach-footer"><span class="ach-level">C1</span><span class="ach-stars">⭐⭐⭐</span></div></div>
+      <div class="ach-card"><div class="ach-icon c1">⚡</div><div class="ach-name">Gérondif</div><div class="ach-footer"><span class="ach-level">C1</span><span class="ach-stars">⭐⭐⭐</span></div></div>
+    </div>
+
+    <a href="#" class="cta-btn">Start learning French</a>
+
+  </div>
+</div>
+
+</body>
+</html>

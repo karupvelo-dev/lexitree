@@ -1,0 +1,287 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+.root{display:flex;height:780px;font-family:'DM Sans',sans-serif;background:#FFFFFF;border:0.5px solid #E3E2DF;border-radius:12px;overflow:hidden;}
+
+.sidebar{width:220px;min-width:220px;background:#F7F6F3;border-right:0.5px solid #E3E2DF;display:flex;flex-direction:column;padding:12px 0;}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:8px 14px 16px;border-bottom:0.5px solid #E3E2DF;margin-bottom:8px;}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:17px;color:#1C1B18;}
+.sb-logo-text span{color:#C4603A;font-style:italic;}
+.sb-section{padding:0 8px;margin-bottom:4px;}
+.sb-label{font-size:10px;font-weight:500;letter-spacing:0.7px;text-transform:uppercase;color:#A9A6A0;padding:6px 8px 4px;}
+.sb-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:#5C5850;transition:background 0.1s;}
+.sb-item:hover{background:#EDECE9;}
+.sb-item.active{background:#EDECE9;color:#1C1B18;font-weight:500;}
+.sb-item svg{width:14px;height:14px;flex-shrink:0;opacity:0.6;}
+.sb-item.active svg{opacity:1;}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sb-progress{margin:auto 0 0;padding:12px 14px 4px;border-top:0.5px solid #E3E2DF;}
+.sb-prog-label{font-size:11px;color:#A9A6A0;margin-bottom:6px;}
+.sb-prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.sb-prog-bar{flex:1;height:4px;background:#E3E2DF;border-radius:2px;overflow:hidden;}
+.sb-prog-fill{height:100%;background:#C4603A;border-radius:2px;}
+.sb-prog-val{font-size:11px;color:#5C5850;font-weight:500;min-width:28px;text-align:right;}
+.sb-streak{display:flex;align-items:center;gap:6px;font-size:12px;color:#5C5850;}
+.sb-streak-dot{width:7px;height:7px;border-radius:50%;background:#C4603A;}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;background:#FFFFFF;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-bottom:0.5px solid #E3E2DF;}
+.topbar-breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:#A9A6A0;}
+.topbar-breadcrumb span{color:#1C1B18;font-weight:500;}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.tb-btn{font-size:12px;font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:6px;border:0.5px solid #D5D0C8;background:#fff;color:#5C5850;cursor:pointer;}
+.tb-btn.primary{background:#1C1B18;color:#FAF8F3;border-color:#1C1B18;}
+
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+
+.page-header{padding:32px 48px 0;}
+.page-icon{width:40px;height:40px;border-radius:8px;background:#FFF3EC;border:0.5px solid #E8A882;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.page-icon svg{width:20px;height:20px;}
+.page-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:500;color:#1C1B18;line-height:1.2;margin-bottom:4px;}
+.page-title em{color:#C4603A;}
+.page-sub{font-size:13px;color:#A9A6A0;margin-bottom:24px;}
+
+.props-row{display:flex;gap:0;margin-bottom:24px;border-top:0.5px solid #E3E2DF;border-bottom:0.5px solid #E3E2DF;}
+.prop{display:flex;align-items:center;gap:10px;padding:8px 0;flex:1;border-right:0.5px solid #E3E2DF;}
+.prop:last-child{border-right:none;}
+.prop-key{font-size:11px;color:#A9A6A0;width:64px;flex-shrink:0;padding-left:0;}
+.prop-val{font-size:12px;color:#1C1B18;font-weight:500;}
+.prop-badge{font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px;}
+
+.divider{height:0.5px;background:#E3E2DF;margin:0 48px 20px;}
+
+.body-area{padding:0 48px;flex:1;}
+
+.notion-callout{background:#FFF9F5;border:0.5px solid #F0C4A8;border-radius:8px;padding:14px 16px;margin-bottom:20px;display:flex;gap:12px;}
+.callout-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.callout-text{font-size:13px;color:#4A2510;line-height:1.6;}
+.callout-text strong{font-weight:500;font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:#C4603A;}
+
+.ex-section-title{font-size:11px;font-weight:500;letter-spacing:0.7px;text-transform:uppercase;color:#A9A6A0;margin-bottom:12px;}
+
+.exercise-card{background:#FAFAF8;border:0.5px solid #E3E2DF;border-radius:8px;padding:20px 22px;margin-bottom:12px;}
+.ex-meta{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.ex-tag{font-size:10px;font-weight:500;letter-spacing:0.5px;padding:2px 8px;border-radius:4px;}
+.ex-tag.fill{background:#EAF3DE;color:#27500A;}
+.ex-tag.mc{background:#EEEDFE;color:#534AB7;}
+.ex-tag.fix{background:#FFF3EC;color:#833D20;}
+.ex-topic{font-size:11px;color:#A9A6A0;}
+.ex-dot{width:3px;height:3px;border-radius:50%;background:#D5D0C8;}
+
+.ex-q{font-family:'Playfair Display',serif;font-size:17px;color:#1C1B18;line-height:1.5;margin-bottom:16px;}
+.ex-q .blank{display:inline-block;border-bottom:1.5px solid #C4603A;min-width:56px;color:#C4603A;}
+
+.options-row{display:flex;gap:8px;flex-wrap:wrap;}
+.opt{font-size:13px;font-family:'DM Sans',sans-serif;padding:6px 16px;border-radius:6px;border:0.5px solid #D5D0C8;background:#fff;color:#1C1B18;cursor:pointer;}
+.opt.correct{background:#EAF3DE;border-color:#4A9E6A;color:#27500A;}
+.opt.wrong{background:#FCEBEB;border-color:#E24B4A;color:#501313;}
+.opt:hover:not(.correct):not(.wrong){background:#F0EDE5;}
+
+.feedback-inline{display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding-top:12px;border-top:0.5px solid #E3E2DF;}
+.fb-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.fb-icon.ok{background:#EAF3DE;}
+.fb-icon.err{background:#FCEBEB;}
+.fb-icon svg{width:9px;height:9px;}
+.fb-text{font-size:12px;color:#5C5850;line-height:1.55;}
+.fb-text em{font-family:'Playfair Display',serif;font-style:italic;color:#C4603A;font-size:13px;}
+
+.story-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:#A9A6A0;cursor:pointer;margin-bottom:16px;padding:0;}
+.story-toggle svg{width:12px;height:12px;}
+.story-block{background:#F7F6F3;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#5C5850;line-height:1.6;border-left:2px solid #E3E2DF;border-radius:0;}
+.story-block strong{color:#1C1B18;font-weight:500;}
+
+.session-footer{padding:16px 48px;border-top:0.5px solid #E3E2DF;display:flex;align-items:center;justify-content:space-between;}
+.prog-steps{display:flex;gap:4px;align-items:center;}
+.step{width:28px;height:3px;border-radius:2px;background:#E3E2DF;}
+.step.done{background:#C4603A;}
+.step.active{background:#1C1B18;}
+.prog-count{font-size:12px;color:#A9A6A0;margin-left:8px;}
+.footer-actions{display:flex;gap:8px;}
+.f-btn{font-size:13px;font-family:'DM Sans',sans-serif;padding:7px 18px;border-radius:6px;cursor:pointer;}
+.f-btn.ghost{background:transparent;border:0.5px solid #D5D0C8;color:#5C5850;}
+.f-btn.solid{background:#1C1B18;border:none;color:#FAF8F3;font-weight:500;}
+</style>
+
+<h2 class="sr-only">Parler — desktop app mockup in Notion style showing exercise session</h2>
+
+<div class="root">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">par<span>ler</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Learn</div>
+      <div class="sb-item active">
+        <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Today's session
+      </div>
+      <div class="sb-item">
+        <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4.5V7L8.5 8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Progress
+      </div>
+      <div class="sb-item">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 11L5 2l3 6 2-3 2 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Grammar map
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Topics</div>
+      <div class="sb-item">
+        <div class="sb-dot" style="background:#4A9E6A;"></div>
+        Articles
+      </div>
+      <div class="sb-item">
+        <div class="sb-dot" style="background:#4A9E6A;"></div>
+        Passé composé
+      </div>
+      <div class="sb-item active">
+        <div class="sb-dot" style="background:#C4603A;"></div>
+        Subjonctif
+      </div>
+      <div class="sb-item">
+        <div class="sb-dot" style="background:#D5D0C8;"></div>
+        Conditionnel
+      </div>
+      <div class="sb-item">
+        <div class="sb-dot" style="background:#D5D0C8;"></div>
+        Pronoms relatifs
+      </div>
+    </div>
+
+    <div class="sb-progress">
+      <div class="sb-prog-label">B1 → B2</div>
+      <div class="sb-prog-row">
+        <div class="sb-prog-bar"><div class="sb-prog-fill" style="width:62%"></div></div>
+        <div class="sb-prog-val">62%</div>
+      </div>
+      <div class="sb-streak">
+        <div class="sb-streak-dot"></div>
+        7-day streak · 142 xp today
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        Today's session
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="#A9A6A0" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Subjonctif</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="tb-btn">Skip topic</button>
+        <button class="tb-btn primary">Submit answer</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="page-header">
+        <div class="page-icon">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M4 15L8 5l4 8 2.5-4L17 15" stroke="#C4603A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="page-title">Le subjonctif <em>présent</em></div>
+        <div class="page-sub">B1 · Mood & modality · 4 exercises in this set</div>
+
+        <div class="props-row">
+          <div class="prop" style="padding-left:0;">
+            <div class="prop-key">Level</div>
+            <div><span class="prop-badge" style="background:#EAF3DE;color:#27500A;">B1</span></div>
+          </div>
+          <div class="prop" style="padding-left:16px;">
+            <div class="prop-key">Accuracy</div>
+            <div class="prop-val">84%</div>
+          </div>
+          <div class="prop" style="padding-left:16px;">
+            <div class="prop-key">Last seen</div>
+            <div class="prop-val" style="color:#A9A6A0;font-weight:400;">2 days ago</div>
+          </div>
+          <div class="prop" style="padding-left:16px;">
+            <div class="prop-key">Source</div>
+            <div><span class="prop-badge" style="background:#EEEDFE;color:#534AB7;">community</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="body-area">
+        <div class="notion-callout">
+          <div class="callout-icon" style="font-size:14px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="#C4603A" stroke-width="1.2"/><path d="M7 6v4M7 4.5v.5" stroke="#C4603A" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="callout-text">After expressions of necessity or emotion — <strong>il faut que, vouloir que, bien que</strong> — the following verb must be in the subjunctive. Think of it as grammar's emotional register.</div>
+        </div>
+
+        <div class="story-toggle">
+          <svg viewBox="0 0 12 12" fill="none"><path d="M4 5l2 2 2-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Story context — Marie's morning
+        </div>
+        <div class="story-block"><strong>Marie</strong> is already running late and her flatmate keeps interrupting. She needs to explain why she can't stay and chat — but must do it politely...</div>
+
+        <div class="ex-section-title">Exercise 3 of 4</div>
+
+        <div class="exercise-card">
+          <div class="ex-meta">
+            <span class="ex-tag mc">Multiple choice</span>
+            <div class="ex-dot"></div>
+            <span class="ex-topic">Subjonctif · il faut que</span>
+          </div>
+
+          <div class="ex-q">
+            Il faut que Marie <span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> avant huit heures.
+          </div>
+
+          <div class="options-row">
+            <div class="opt wrong">partir</div>
+            <div class="opt">partira</div>
+            <div class="opt correct">parte</div>
+            <div class="opt">est partie</div>
+          </div>
+
+          <div class="feedback-inline">
+            <div class="fb-icon err">
+              <svg viewBox="0 0 9 9" fill="none"><path d="M2 2l5 5M7 2L2 7" stroke="#A32D2D" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </div>
+            <div class="fb-text">You chose <em>partir</em> (infinitive) — but after <em>il faut que</em>, French requires the subjunctive. The subjunctive of <em>partir</em> for third-person singular is <em>parte</em>. Notice: it often looks like the present tense minus the final consonant.</div>
+          </div>
+        </div>
+
+        <div class="exercise-card" style="opacity:0.45;">
+          <div class="ex-meta">
+            <span class="ex-tag fill">Fill in the blank</span>
+            <div class="ex-dot"></div>
+            <span class="ex-topic">Subjonctif · bien que</span>
+          </div>
+          <div class="ex-q">Bien qu'elle <span class="blank">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> (avoir) faim, elle ne s'arrête pas.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="session-footer">
+      <div style="display:flex;align-items:center;">
+        <div class="prog-steps">
+          <div class="step done"></div>
+          <div class="step done"></div>
+          <div class="step active"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+          <div class="step"></div>
+        </div>
+        <div class="prog-count">3 of 10</div>
+      </div>
+      <div class="footer-actions">
+        <button class="f-btn ghost">← Back</button>
+        <button class="f-btn solid">Next exercise →</button>
+      </div>
+    </div>
+  </div>
+</div>

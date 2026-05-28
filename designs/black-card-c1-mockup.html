@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maître Vault — C1 User Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --white: #fff;
+      --dark: #1a1a1a;
+      --mid: #555;
+      --light: #888;
+      --border: #e8e5df;
+      --gold: #C9A84C;
+      --gold-bright: #F0DC8A;
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --ch: 162px;
+      --cr: 9px;
+      --peek-down: 22px;
+      --peek-up: 32px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #dedad5; font-family: var(--font-sans); color: var(--dark); padding: 40px 20px 80px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #999; text-align: center;
+      margin: 56px 0 20px;
+    }
+    .section-label:first-of-type { margin-top: 0; }
+
+    .phone {
+      max-width: 430px; margin: 0 auto; background: var(--bg);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .dark-phone {
+      max-width: 430px; margin: 0 auto; background: var(--bg);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+    .nav-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: #1a1a1a;
+      display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 700;
+    }
+    .dark-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .dark-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; color: var(--dark); letter-spacing: -0.02em; }
+    .dark-cta { font-size: 11px; font-weight: 600; color: var(--mid); padding: 5px 12px; border: 1px solid var(--border); border-radius: 100px; text-decoration: none; }
+
+    /* ── Profile header ── */
+    .profile-header { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 18px 14px; }
+    .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .big-avatar {
+      width: 40px; height: 40px; border-radius: 50%; background: #1a1a1a;
+      display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .profile-sub { font-size: 11px; color: var(--light); }
+    .stats-row { display: flex; }
+    .stat { flex: 1; text-align: center; padding: 8px 0; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+    .stat-val.gold { color: var(--gold); }
+    .stat-lbl { font-size: 9px; color: var(--light); margin-top: 1px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; background: var(--white); border-bottom: 1px solid var(--border); }
+    .tab { flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--light); }
+    .tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+
+    /* ── Vault ── */
+    .vault { padding: 20px 14px 36px; }
+
+    /* ── Completed levels row ── */
+    .completed-section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--light); margin-bottom: 10px;
+    }
+    .completed-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .completed-card {
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      border-radius: 8px;
+      padding: 9px 8px 8px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .completed-card::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 15%; right: 15%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    }
+    .completed-card-level {
+      font-family: var(--font-serif);
+      font-size: 15px; font-weight: 700;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    .completed-card-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .completed-card-label {
+      font-size: 7px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(201,168,76,0.6);
+    }
+    .completed-card-crown { font-size: 11px; line-height: 1; }
+
+    /* Subtle gold sheen on completed cards */
+    .completed-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ── Divider between completed + active ── */
+    .vault-divider {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    }
+    .vault-divider::before, .vault-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .vault-divider span {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--light); white-space: nowrap;
+    }
+
+    /* ── Active tableau — 2 wide columns ── */
+    .tableau-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 128px);
+      gap: 8px;
+      align-items: start;
+    }
+
+    /* ── Column header ── */
+    .col-header { margin-bottom: 12px; }
+    .col-header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .col-level { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); }
+    .col-count { font-size: 10px; color: var(--light); }
+    .col-progress {
+      height: 2px; background: var(--border); border-radius: 1px; overflow: hidden;
+    }
+    .col-progress-fill {
+      height: 100%; background: var(--gold); border-radius: 1px;
+    }
+
+    /* ── Cascade ── */
+    .cascade { display: flex; flex-direction: column; }
+
+    .cc {
+      width: 100%; height: var(--ch); border-radius: var(--cr);
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .cc:not(:first-child).down { margin-top: calc(-1 * (var(--ch) - var(--peek-down))); }
+    .cc:not(:first-child).up   { margin-top: calc(-1 * (var(--ch) - var(--peek-up))); }
+
+    /* Face-down */
+    .cc.down {
+      background: #0f0f0f; border: 1px solid #222;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 1px 0 #1a1a1a;
+    }
+    .cc.down::before {
+      content: ''; position: absolute; inset: 6px; border: 1px solid #1c1c1c; border-radius: 5px;
+      background-image:
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 10px),
+        repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 10px);
+    }
+    .cc.down .back-icon {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; opacity: 0.07; z-index: 1; font-family: var(--font-serif);
+    }
+    .cc.down .pip-tl, .cc.down .pip-br {
+      position: absolute; font-size: 9px; opacity: 0.12; font-family: var(--font-serif); color: #fff;
+    }
+    .cc.down .pip-tl { top: 5px; left: 7px; }
+    .cc.down .pip-br { bottom: 5px; right: 7px; transform: rotate(180deg); }
+
+    /* Face-up */
+    .cc.up {
+      background: #0c0c0c; border: 1px solid var(--gold);
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.1), 0 4px 14px rgba(0,0,0,0.55);
+    }
+    .cc.up::before {
+      content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    }
+    .cc.up .card-face {
+      position: absolute; inset: 0; padding: 8px 9px 8px; display: flex; flex-direction: column;
+    }
+    .card-top-row { display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+    .card-name-top { font-family: var(--font-serif); font-size: 10px; color: rgba(255,255,255,0.82); line-height: 1.25; max-width: 72%; }
+    .card-level-top { font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(201,168,76,0.55); flex-shrink: 0; }
+    .card-bottom-row { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; }
+    .card-parfait { font-size: 7px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(201,168,76,0.5); }
+    .card-crown-sm { font-size: 14px; line-height: 1; }
+    .card-score { text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; }
+    .card-score-num { font-size: 28px; font-weight: 900; color: rgba(255,255,255,0.06); letter-spacing: -0.04em; font-family: var(--font-serif); }
+
+    /* ── Share page gold line ── */
+    .gold-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-bright) 50%, var(--gold) 70%, transparent);
+    }
+
+    .share-btn {
+      display: block; width: 100%; padding: 16px;
+      background: #4F72F5; color: #fff; text-align: center;
+      font-family: var(--font-serif); font-size: 17px; font-weight: 600;
+      border-radius: 10px; text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+    .share-btn span { position: relative; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  PROFILE VAULT — C1 USER                             -->
+<!-- ══════════════════════════════════════════════════════ -->
+<p class="section-label">Profile — Maîtres Tab (C1 User)</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <div class="nav-avatar">N</div>
+  </div>
+
+  <div class="profile-header">
+    <div class="profile-row">
+      <div class="big-avatar">N</div>
+      <div>
+        <div class="profile-name">Nithin Sebastian</div>
+        <div class="profile-sub">C1 · 14 day streak 🔥</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val gold">50</div><div class="stat-lbl">Maîtres</div></div>
+      <div class="stat"><div class="stat-val">142</div><div class="stat-lbl">Sessions</div></div>
+      <div class="stat"><div class="stat-val">83%</div><div class="stat-lbl">Accuracy</div></div>
+      <div class="stat"><div class="stat-val">91</div><div class="stat-lbl">Vocab</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">Stats</div>
+    <div class="tab">Concepts</div>
+    <div class="tab active">♛ Maîtres</div>
+  </div>
+
+  <div class="vault">
+
+    <!-- ── Completed levels ── -->
+    <div class="completed-section-label">Completed levels</div>
+    <div class="completed-grid">
+
+      <div class="completed-card">
+        <div class="completed-card-level">A1</div>
+        <div class="completed-card-bottom">
+          <span class="completed-card-label">8/8</span>
+          <span class="completed-card-crown">👑</span>
+        </div>
+      </div>
+
+      <div class="completed-card">
+        <div class="completed-card-level">A2</div>
+        <div class="completed-card-bottom">
+          <span class="completed-card-label">10/10</span>
+          <span class="completed-card-crown">👑</span>
+        </div>
+      </div>
+
+      <div class="completed-card">
+        <div class="completed-card-level">B1</div>
+        <div class="completed-card-bottom">
+          <span class="completed-card-label">12/12</span>
+          <span class="completed-card-crown">👑</span>
+        </div>
+      </div>
+
+      <div class="completed-card">
+        <div class="completed-card-level">B2</div>
+        <div class="completed-card-bottom">
+          <span class="completed-card-label">14/14</span>
+          <span class="completed-card-crown">👑</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Divider ── -->
+    <div class="vault-divider"><span>In progress</span></div>
+
+    <!-- ── Active tableau — C1 + C2 ── -->
+    <div class="tableau-2">
+
+      <!-- C1 — 6 earned, 8 unearned -->
+      <div>
+        <div class="col-header">
+          <div class="col-header-row">
+            <span class="col-level">C1</span>
+            <span class="col-count">6 / 14</span>
+          </div>
+          <div class="col-progress"><div class="col-progress-fill" style="width:43%"></div></div>
+        </div>
+        <div class="cascade">
+          <!-- 8 face-down -->
+          <div class="cc down" style="z-index:1"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:2"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:3"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:4"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:5"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:6"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:7"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:8"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <!-- 6 face-up earned -->
+          <div class="cc up" style="z-index:9">
+            <div class="card-face"><div class="card-top-row"><span class="card-name-top">Subjonctif présent</span><span class="card-level-top">C1</span></div></div>
+          </div>
+          <div class="cc up" style="z-index:10">
+            <div class="card-face"><div class="card-top-row"><span class="card-name-top">Conditionnel passé</span><span class="card-level-top">C1</span></div></div>
+          </div>
+          <div class="cc up" style="z-index:11">
+            <div class="card-face"><div class="card-top-row"><span class="card-name-top">Pronoms relatifs</span><span class="card-level-top">C1</span></div></div>
+          </div>
+          <div class="cc up" style="z-index:12">
+            <div class="card-face"><div class="card-top-row"><span class="card-name-top">Voix passive</span><span class="card-level-top">C1</span></div></div>
+          </div>
+          <div class="cc up" style="z-index:13">
+            <div class="card-face"><div class="card-top-row"><span class="card-name-top">Discours indirect</span><span class="card-level-top">C1</span></div></div>
+          </div>
+          <!-- Last: fully visible -->
+          <div class="cc up" style="z-index:14">
+            <div class="card-face">
+              <div class="card-top-row"><span class="card-name-top">Gérondif</span><span class="card-level-top">C1</span></div>
+              <div class="card-score"><span class="card-score-num">7/7</span></div>
+              <div class="card-bottom-row"><span class="card-parfait">Maître</span><span class="card-crown-sm">👑</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C2 — 0 earned, 16 unearned -->
+      <div>
+        <div class="col-header">
+          <div class="col-header-row">
+            <span class="col-level">C2</span>
+            <span class="col-count" style="color:#bbb">0 / 16</span>
+          </div>
+          <div class="col-progress"><div class="col-progress-fill" style="width:0%"></div></div>
+        </div>
+        <div class="cascade">
+          <div class="cc down" style="z-index:1"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:2"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:3"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:4"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:5"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:6"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:7"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:8"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:9"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:10"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:11"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:12"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:13"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:14"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:15"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:16"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+        </div>
+      </div>
+
+    </div><!-- /tableau-2 -->
+  </div><!-- /vault -->
+</div><!-- /phone -->
+
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  SHARE PAGE — C1 USER                                -->
+<!-- ══════════════════════════════════════════════════════ -->
+<p class="section-label">Collection Share Page (C1 User)</p>
+
+<div class="dark-phone">
+  <div class="dark-nav">
+    <span class="dark-logo">LexiTree</span>
+    <a href="#" class="dark-cta">Try it free →</a>
+  </div>
+
+  <!-- Header -->
+  <div style="padding:18px 18px 0">
+    <div class="gold-line" style="margin-bottom:16px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--dark)">Nithin Sebastian</div>
+        <div style="font-size:10px;color:var(--light);margin-top:1px;letter-spacing:0.04em">C1 · French grammar</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Lora',serif;font-size:22px;font-weight:700;color:#C9A84C;letter-spacing:-0.02em;line-height:1">50</div>
+        <div style="font-size:8px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:rgba(201,168,76,0.75)">Maîtres</div>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--border)"></div>
+  </div>
+
+  <!-- Completed levels (light version) -->
+  <div style="padding:14px 14px 0">
+    <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--light);margin-bottom:8px">Completed</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px">
+
+      <div style="background:#0c0c0c;border:1px solid #C9A84C;border-radius:7px;padding:8px 7px 7px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-1px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,#F0DC8A,transparent)"></div>
+        <div style="font-family:'Lora',serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:5px">A1</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:7px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(201,168,76,0.6)">8/8</span>
+          <span style="font-size:10px">👑</span>
+        </div>
+      </div>
+
+      <div style="background:#0c0c0c;border:1px solid #C9A84C;border-radius:7px;padding:8px 7px 7px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-1px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,#F0DC8A,transparent)"></div>
+        <div style="font-family:'Lora',serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:5px">A2</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:7px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(201,168,76,0.6)">10/10</span>
+          <span style="font-size:10px">👑</span>
+        </div>
+      </div>
+
+      <div style="background:#0c0c0c;border:1px solid #C9A84C;border-radius:7px;padding:8px 7px 7px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-1px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,#F0DC8A,transparent)"></div>
+        <div style="font-family:'Lora',serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:5px">B1</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:7px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(201,168,76,0.6)">12/12</span>
+          <span style="font-size:10px">👑</span>
+        </div>
+      </div>
+
+      <div style="background:#0c0c0c;border:1px solid #C9A84C;border-radius:7px;padding:8px 7px 7px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-1px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,#F0DC8A,transparent)"></div>
+        <div style="font-family:'Lora',serif;font-size:14px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:5px">B2</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:7px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(201,168,76,0.6)">14/14</span>
+          <span style="font-size:10px">👑</span>
+        </div>
+      </div>
+
+    </div>
+    <div style="height:1px;background:var(--border);margin-bottom:14px"></div>
+  </div>
+
+  <!-- Active tableau -->
+  <div style="padding:0 14px 24px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--light);margin-bottom:12px">In progress</div>
+    <div class="tableau-2">
+
+      <!-- C1 -->
+      <div>
+        <div class="col-header">
+          <div class="col-header-row">
+            <span class="col-level">C1</span>
+            <span class="col-count">6 / 14</span>
+          </div>
+          <div class="col-progress"><div class="col-progress-fill" style="width:43%"></div></div>
+        </div>
+        <div class="cascade">
+          <div class="cc down" style="z-index:1"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:2"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:3"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:4"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:5"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:6"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:7"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:8"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc up" style="z-index:9"><div class="card-face"><div class="card-top-row"><span class="card-name-top">Subjonctif présent</span><span class="card-level-top">C1</span></div></div></div>
+          <div class="cc up" style="z-index:10"><div class="card-face"><div class="card-top-row"><span class="card-name-top">Conditionnel passé</span><span class="card-level-top">C1</span></div></div></div>
+          <div class="cc up" style="z-index:11"><div class="card-face"><div class="card-top-row"><span class="card-name-top">Pronoms relatifs</span><span class="card-level-top">C1</span></div></div></div>
+          <div class="cc up" style="z-index:12"><div class="card-face"><div class="card-top-row"><span class="card-name-top">Voix passive</span><span class="card-level-top">C1</span></div></div></div>
+          <div class="cc up" style="z-index:13"><div class="card-face"><div class="card-top-row"><span class="card-name-top">Discours indirect</span><span class="card-level-top">C1</span></div></div></div>
+          <div class="cc up" style="z-index:14">
+            <div class="card-face">
+              <div class="card-top-row"><span class="card-name-top">Gérondif</span><span class="card-level-top">C1</span></div>
+              <div class="card-score"><span class="card-score-num">7/7</span></div>
+              <div class="card-bottom-row"><span class="card-parfait">Maître</span><span class="card-crown-sm">👑</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C2 -->
+      <div>
+        <div class="col-header">
+          <div class="col-header-row">
+            <span class="col-level">C2</span>
+            <span class="col-count">0 / 16</span>
+          </div>
+          <div class="col-progress"><div class="col-progress-fill" style="width:0%"></div></div>
+        </div>
+        <div class="cascade">
+          <div class="cc down" style="z-index:1"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:2"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:3"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:4"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:5"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:6"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:7"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:8"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:9"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:10"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:11"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:12"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:13"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:14"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:15"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+          <div class="cc down" style="z-index:16"><div class="back-icon">♠</div><span class="pip-tl">LT</span><span class="pip-br">LT</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div style="padding:0 14px 28px">
+    <a href="#" class="share-btn">Start learning French</a>
+  </div>
+
+</div>
+
+</body>
+</html>

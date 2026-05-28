@@ -5,7 +5,7 @@ import { callMistral } from '@/lib/mistral'
 
 const SESSION_SIZE = 7
 const BANK_SERVE_THRESHOLD = 7   // serve from bank once we have a full session's worth
-const BANK_TARGET = 50           // keep growing in background until we reach this per concept
+const BANK_TARGET = 70           // keep growing in background until we reach this per concept
 
 function pickRandom(arr, n) {
   const shuffled = [...arr].sort(() => Math.random() - 0.5)
@@ -47,12 +47,13 @@ export async function POST(request) {
           .then(({ questions: newQs }) => {
             const normalized = newQs.map(q => ({
               ...q,
+              all_correct: q.allCorrect ?? null,
               wrong_explanations: q.wrongExplanations ?? null,
               vocabulary_word: q.vocabularyWord ?? null,
               vocabulary_pos: q.vocabularyWord
                 ? (vocabularyWords.find(v => v.word === q.vocabularyWord)?.pos ?? null)
                 : null,
-            })).filter(validateQuestion)
+            })).filter(q => validateQuestion(q, concept.slug))
             if (normalized.length > 0) return saveToBank(level, concept.slug, normalized)
           })
           .catch(err => console.error('Background bank growth error:', err))
@@ -69,6 +70,7 @@ export async function POST(request) {
     const questions = rawQuestions.map(q => ({
       ...q,
       options: [...q.options].sort(() => Math.random() - 0.5),
+      all_correct: q.allCorrect ?? null,
       wrong_explanations: q.wrongExplanations ?? null,
       vocabulary_word: q.vocabularyWord ?? null,
       vocabulary_pos: q.vocabularyWord
@@ -76,7 +78,7 @@ export async function POST(request) {
         : null,
     }))
 
-    const validQuestions = questions.filter(validateQuestion)
+    const validQuestions = questions.filter(q => validateQuestion(q, concept.slug))
     if (validQuestions.length > 0) {
       saveToBank(level, concept.slug, validQuestions).catch(err =>
         console.error('Failed to save to bank:', err)
@@ -108,7 +110,8 @@ async function fetchCachedLesson(level, conceptSlug) {
 async function generateQuestions(level, concept, lesson = null, count = SESSION_SIZE, vocabularyWords = []) {
   const lessonContext = lesson ? buildLessonContext(lesson) : ''
 
-  const vocabRuleNum = lessonContext ? '14' : '13'
+  const conceptKeyRuleNum = lessonContext ? '14' : '13'
+  const vocabRuleNum = lessonContext ? '15' : '14'
   const vocabInstruction = vocabularyWords.length > 0
     ? `\n${vocabRuleNum}. VOCABULARY — use each of the following words exactly once across the ${count} questions, placing each in whichever question it fits most naturally. The word may appear conjugated in the blank, in the sentence for context, or in a supporting clause. Add a "vocabularyWord" field to that question in the JSON with the exact word used (match the list exactly).
 Words: ${vocabularyWords.map(v => v.word).join(', ')}`
@@ -123,24 +126,26 @@ ${lessonContext}
 Generate ${count} fill-in-the-blank multiple-choice questions.
 
 QUALITY RULES — every question must satisfy all of these:
-1. ONE unambiguous correct answer. The sentence must make only one option grammatically valid.
+1. Identify ALL grammatically valid answers. If multiple options correctly complete the sentence, list every valid option in an "allCorrect" array (e.g. ["Commences-tu", "Est-ce que tu commences"]). The "answer" field must still hold one canonical form. "wrongExplanations" must only cover options NOT in "allCorrect" — do not write an explanation for a valid answer.
 2. Design a forcing cue that fits this specific concept and level. The cue must make exactly one option grammatically correct based on the grammar being tested. Do not use grammar structures from levels above ${level}.
    - Use exactly one blank (___). Never put two blanks in one question.
    - The forcing cue must come from sentence context only (words around the blank) — not from a second blank testing a different grammar point.
 3. Every wrong option must fail for a specific grammatical reason tied to ${concept.name}.
 4. Do not write contexts where two options are pragmatically interchangeable.
 5. Tests ONLY ${concept.name} — no other grammar.
-6. Mark blank(s) with ___.
-7. Exactly 4 options per question.
+6. Mark blank(s) with ___. The "question" field must contain ONLY the sentence — never embed the options or any list of choices inside the question text, as they are displayed separately in the UI.
+7. Exactly 4 options per question. All 4 must be distinct strings — no two options may be identical.
 8. Answer must exactly match one of the 4 options character-for-character.
 9. Vary contexts: dialogue, short narrative, everyday situation. No two questions with the same context type.
-10. Explanation in English, 1–2 sentences explaining why the correct answer is right. Name the forcing cue.
-11. wrongExplanations: REQUIRED. For every incorrect option, write one sentence that (a) names the tense or form of that option, and (b) explains why it conflicts with the specific forcing cue in the sentence. Do NOT name or hint at the correct tense. Example: "allons is present tense — but 'Demain' signals an action that hasn't happened yet." Keys must exactly match the option strings character-for-character. This field must always be present with exactly 3 entries (one per wrong option).
+10. Explanation in English, 1–2 sentences explaining why the correct answer is right. Reference the specific word in the sentence that determines the answer — write it naturally as part of the explanation, not as a labelled term (e.g. "after 'peux', the next verb…" not "the forcing cue is 'peux'").
+11. wrongExplanations: REQUIRED. For each wrong option, write in this exact format: "[wrong word(s)] → [correct word(s)] — [one sentence]". The swap shows only the key differing word(s), not the full option. Write the sentence as a fluent speaker explaining to a friend — point at the actual word in the sentence that locks the answer, and say what it means in plain terms. Never name grammar categories. Forbidden words: 'infinitive', 'conjugated', 'subjunctive', 'indicative', 'past participle', 'auxiliary', 'partitive', 'pronominal', 'article', 'preposition', 'agreement', 'clause', 'tense', 'verb form', 'form', 'forcing cue', 'grammatical'. Good: "expliques → expliquer — after 'peux', the second verb stays in its plain dictionary shape". Bad: "expliques → expliquer — 'peux' requires the infinitive form". Good: "allons → irons — 'demain' points ahead in time, so the verb has to match". Bad: "allons → irons — 'Demain' signals future tense". Keys must exactly match the option strings character-for-character. This field must always be present with exactly 3 entries (one per wrong option).
 12. BLANK CHECK — before finalising each question: mentally substitute ___ with your correct answer. The resulting sentence must be grammatically complete with no repeated words. The blank must replace the ENTIRE tested phrase. If any word in your correct answer already appears immediately after ___ in the sentence template, you have split incorrectly — remove that word from the template and put it only in the options.
-${lessonContext ? '13. Use different verbs and vocabulary from the lesson examples — test the same patterns, not the same sentences.' : ''}${vocabInstruction}
+${lessonContext ? '13. Use different verbs and vocabulary from the lesson examples — test the same patterns, not the same sentences.' : ''}
+${conceptKeyRuleNum}. CONCEPT KEY — every question must include a "conceptKey" field set to exactly: "${concept.slug}". Do not change this value. If you find yourself writing a question that does not test ${concept.name}, discard it and write a new one.${vocabInstruction}
 
 Return ONLY this JSON — no markdown, no extra text:
-{"questions":[{"question":"...","options":["...","...","...","..."],"answer":"...","explanation":"...","wrongExplanations":{"wrong option 1":"why wrong","wrong option 2":"why wrong","wrong option 3":"why wrong"},"vocabularyWord":"..."}]}`
+{"questions":[{"question":"...","options":["...","...","...","..."],"answer":"...","allCorrect":["..."],"explanation":"...","wrongExplanations":{"wrong option 1":"why wrong","wrong option 2":"why wrong","wrong option 3":"why wrong"},"conceptKey":"${concept.slug}","vocabularyWord":"..."}]}
+Note: "allCorrect" must include the canonical answer plus any other valid options. If only one option is valid, "allCorrect" should contain just that one answer.`
 
   // const message = await client.messages.create({
   //   model: 'claude-sonnet-4-6',
@@ -184,13 +189,14 @@ function buildLessonContext(lesson) {
   return lines.join('\n')
 }
 
-function validateQuestion(q) {
+function validateQuestion(q, expectedSlug) {
   if (typeof q.question !== 'string' || !q.question.includes('___')) return false
   if (!Array.isArray(q.options) || q.options.length !== 4) return false
   if (q.options.some(o => typeof o !== 'string' || !o.trim())) return false
   if (typeof q.answer !== 'string' || !q.options.includes(q.answer)) return false
   if (typeof q.explanation !== 'string' || !q.explanation.trim()) return false
-  const wrongOptions = q.options.filter(o => o !== q.answer)
+  const validAnswers = new Set([q.answer, ...(q.all_correct ?? q.allCorrect ?? [])])
+  const wrongOptions = q.options.filter(o => !validAnswers.has(o))
   const explanations = q.wrong_explanations ?? q.wrongExplanations ?? {}
   if (wrongOptions.some(o => !explanations[o])) return false
 
@@ -206,6 +212,24 @@ function validateQuestion(q) {
   const answerTokens = q.answer.toLowerCase().split(/\s+/)
   if (afterBlank && answerTokens.includes(afterBlank)) return false
 
+  // Check 3: all options must be distinct strings
+  if (new Set(q.options).size !== q.options.length) return false
+
+  // Check 4 (concept gate): AI must label each question with the expected concept slug
+  if (expectedSlug !== undefined && q.conceptKey !== expectedSlug) return false
+
+  // Check 5: for multi-blank questions, every blank position must vary across options
+  const numBlanks = (q.question.match(/___/g) ?? []).length
+  if (numBlanks > 1) {
+    const parts = q.options.map(o => o.split(/\s*[,/]\s*/))
+    if (parts.every(p => p.length === numBlanks)) {
+      for (let i = 0; i < numBlanks; i++) {
+        const vals = parts.map(p => p[i])
+        if (new Set(vals).size === 1) return false
+      }
+    }
+  }
+
   return true
 }
 
@@ -217,6 +241,7 @@ async function saveToBank(level, conceptSlug, questions) {
     question: q.question,
     options: q.options,
     answer: q.answer,
+    all_correct: q.all_correct ?? null,
     explanation: q.explanation,
     wrong_explanations: q.wrong_explanations ?? q.wrongExplanations ?? null,
     vocabulary_word: q.vocabulary_word ?? null,

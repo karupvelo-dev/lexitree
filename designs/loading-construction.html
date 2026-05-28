@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Loading — Construction Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0ede8;
+    padding: 48px 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #999;
+    text-align: center; margin-bottom: 48px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #aaa; text-align: center;
+  }
+  .desc {
+    font-size: 11px; color: #999; text-align: center; line-height: 1.5;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e8e5df;
+    border-radius: 16px;
+    padding: 48px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 220px;
+    text-align: center;
+    gap: 24px;
+  }
+  .sub {
+    font-size: 13px;
+    color: #bbb;
+    font-weight: 400;
+  }
+  .sub-fr {
+    font-family: 'Lora', serif;
+    font-size: 14px;
+    color: #888;
+    font-weight: 500;
+  }
+
+  /* ── A: 7 Question Cards Stacking ── */
+  .stack-wrap {
+    position: relative;
+    width: 72px;
+    height: 52px;
+  }
+  .stack-card {
+    position: absolute;
+    width: 72px;
+    height: 44px;
+    background: #fff;
+    border: 1.5px solid #e8e5df;
+    border-radius: 6px;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(12px);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .stack-card:nth-child(1) { animation: stackIn 0.3s ease 0.1s forwards; }
+  .stack-card:nth-child(2) { animation: stackIn 0.3s ease 0.5s forwards; bottom: 4px; }
+  .stack-card:nth-child(3) { animation: stackIn 0.3s ease 0.9s forwards; bottom: 8px; }
+  .stack-card:nth-child(4) { animation: stackIn 0.3s ease 1.3s forwards; bottom: 12px; }
+  .stack-card:nth-child(5) { animation: stackIn 0.3s ease 1.7s forwards; bottom: 16px; }
+  .stack-card:nth-child(6) { animation: stackIn 0.3s ease 2.1s forwards; bottom: 20px; }
+  .stack-card:nth-child(7) {
+    animation: stackIn 0.3s ease 2.5s forwards, stackPulse 1.2s ease 2.8s infinite;
+    bottom: 24px;
+    border-color: #1a1a1a;
+  }
+  @keyframes stackIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes stackPulse {
+    0%, 100% { border-color: #1a1a1a; }
+    50%       { border-color: #bbb; }
+  }
+
+  /* ── B: Growing Tree ── */
+  .tree-svg {
+    overflow: visible;
+  }
+  .tree-line {
+    fill: none;
+    stroke: #1a1a1a;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+  }
+  /* trunk */
+  .t-trunk  { animation: draw 0.4s ease 0.2s forwards; stroke-dasharray: 40; stroke-dashoffset: 40; }
+  /* main branches */
+  .t-bl     { animation: draw 0.3s ease 0.7s forwards; stroke-dasharray: 30; stroke-dashoffset: 30; }
+  .t-br     { animation: draw 0.3s ease 0.9s forwards; stroke-dasharray: 30; stroke-dashoffset: 30; }
+  /* sub branches */
+  .t-bll    { animation: draw 0.25s ease 1.1s forwards; stroke-dasharray: 20; stroke-dashoffset: 20; }
+  .t-blr    { animation: draw 0.25s ease 1.25s forwards; stroke-dasharray: 20; stroke-dashoffset: 20; }
+  .t-brl    { animation: draw 0.25s ease 1.35s forwards; stroke-dasharray: 20; stroke-dashoffset: 20; }
+  .t-brr    { animation: draw 0.25s ease 1.5s forwards; stroke-dasharray: 20; stroke-dashoffset: 20; }
+  /* leaves */
+  .t-leaf   {
+    fill: #1a1a1a;
+    r: 2.5;
+    opacity: 0;
+    animation: leafPop 0.2s ease forwards;
+  }
+  .t-leaf:nth-child(8)  { animation-delay: 1.3s; }
+  .t-leaf:nth-child(9)  { animation-delay: 1.45s; }
+  .t-leaf:nth-child(10) { animation-delay: 1.55s; }
+  .t-leaf:nth-child(11) { animation-delay: 1.7s; }
+  .t-leaf:nth-child(12) { animation-delay: 1.8s; }
+  .t-leaf:nth-child(13) { animation-delay: 1.9s; }
+
+  @keyframes draw {
+    to { stroke-dashoffset: 0; }
+  }
+  @keyframes leafPop {
+    0%   { opacity: 0; transform: scale(0); }
+    60%  { opacity: 1; transform: scale(1.3); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ── C: Brick by brick ── */
+  .bricks {
+    display: grid;
+    grid-template-columns: repeat(5, 16px);
+    grid-template-rows: repeat(3, 12px);
+    gap: 3px;
+  }
+  .brick {
+    background: #1a1a1a;
+    border-radius: 2px;
+    opacity: 0;
+    transform: scale(0.6);
+    animation: brickIn 0.18s ease forwards;
+  }
+  /* Row 3 (bottom) appears first */
+  .brick:nth-child(11) { animation-delay: 0.1s; }
+  .brick:nth-child(12) { animation-delay: 0.2s; }
+  .brick:nth-child(13) { animation-delay: 0.3s; }
+  .brick:nth-child(14) { animation-delay: 0.4s; }
+  .brick:nth-child(15) { animation-delay: 0.5s; }
+  /* Row 2 */
+  .brick:nth-child(6)  { animation-delay: 0.7s; }
+  .brick:nth-child(7)  { animation-delay: 0.8s; }
+  .brick:nth-child(8)  { animation-delay: 0.9s; }
+  .brick:nth-child(9)  { animation-delay: 1.0s; }
+  .brick:nth-child(10) { animation-delay: 1.1s; }
+  /* Row 1 (top) */
+  .brick:nth-child(1)  { animation-delay: 1.3s; }
+  .brick:nth-child(2)  { animation-delay: 1.4s; }
+  .brick:nth-child(3)  { animation-delay: 1.5s; }
+  .brick:nth-child(4)  { animation-delay: 1.6s; }
+  .brick:nth-child(5)  { animation-delay: 1.7s; }
+
+  @keyframes brickIn {
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<h1>Loading — Construction Options</h1>
+
+<div class="grid">
+
+  <!-- A: Card Stack -->
+  <div class="col">
+    <div class="label">A · 7 Cards Stacking</div>
+    <div class="card">
+      <div class="stack-wrap">
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+      </div>
+      <div>
+        <div class="sub-fr">Préparation des questions…</div>
+        <div class="sub">Building your 7 questions</div>
+      </div>
+    </div>
+    <div class="desc">Each card slides up and stacks.<br/>Final card pulses when complete.<br/>Direct metaphor — 7 questions being built.</div>
+  </div>
+
+  <!-- B: Tree Growing -->
+  <div class="col">
+    <div class="label">B · Tree Growing</div>
+    <div class="card">
+      <svg class="tree-svg" width="80" height="90" viewBox="0 0 80 90">
+        <!-- trunk -->
+        <line class="tree-line t-trunk" x1="40" y1="85" x2="40" y2="55" />
+        <!-- main branches -->
+        <line class="tree-line t-bl"   x1="40" y1="65" x2="18" y2="42" />
+        <line class="tree-line t-br"   x1="40" y1="60" x2="62" y2="38" />
+        <!-- sub branches left -->
+        <line class="tree-line t-bll"  x1="18" y1="42" x2="8"  y2="26" />
+        <line class="tree-line t-blr"  x1="18" y1="42" x2="28" y2="28" />
+        <!-- sub branches right -->
+        <line class="tree-line t-brl"  x1="62" y1="38" x2="52" y2="22" />
+        <line class="tree-line t-brr"  x1="62" y1="38" x2="72" y2="24" />
+        <!-- leaves -->
+        <circle class="t-leaf" cx="8"  cy="22" />
+        <circle class="t-leaf" cx="28" cy="24" />
+        <circle class="t-leaf" cx="52" cy="18" />
+        <circle class="t-leaf" cx="72" cy="20" />
+        <circle class="t-leaf" cx="40" cy="52" />
+        <circle class="t-leaf" cx="20" cy="38" />
+      </svg>
+      <div>
+        <div class="sub-fr">Votre leçon prend forme…</div>
+        <div class="sub">Your lesson is taking shape</div>
+      </div>
+    </div>
+    <div class="desc">Trunk draws up, branches extend,<br/>leaves pop at the tips.<br/>Tied directly to the LexiTree brand.</div>
+  </div>
+
+  <!-- C: Bricks -->
+  <div class="col">
+    <div class="label">C · Brick by Brick</div>
+    <div class="card">
+      <div class="bricks">
+        <!-- Row 1 (top) — rendered first in DOM, appears last -->
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <!-- Row 2 -->
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <!-- Row 3 (bottom) — appears first -->
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+        <div class="brick"></div>
+      </div>
+      <div>
+        <div class="sub-fr">Construction en cours…</div>
+        <div class="sub">Laying the foundations</div>
+      </div>
+    </div>
+    <div class="desc">15 blocks appear bottom-up,<br/>row by row, snapping into place.<br/>Most literal "construction" metaphor.</div>
+  </div>
+
+</div>
+
+<!-- Replay button -->
+<div style="text-align:center; margin-top:40px;">
+  <button onclick="location.reload()" style="font-size:12px; font-weight:600; color:#888; background:none; border:1px solid #ddd; border-radius:500px; padding:8px 20px; cursor:pointer; font-family:'Inter',sans-serif;">
+    Replay animations ↺
+  </button>
+</div>
+
+</body>
+</html>

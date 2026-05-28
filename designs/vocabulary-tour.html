@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexitree — Tour de French</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #EDE4CE;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 20px 48px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.app { width: 100%; max-width: 1060px; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  padding: 0 2px;
+}
+
+.header-left .eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #8a7a5a; margin-bottom: 5px;
+}
+
+.header-left h1 {
+  font-size: 28px; font-weight: 800; color: #1a1408;
+  letter-spacing: -0.02em;
+}
+
+.header-left h1 span { color: #C4612A; }
+
+.header-right { display: flex; gap: 28px; align-items: flex-end; }
+
+.stat { text-align: right; }
+.stat .val { display: block; font-size: 24px; font-weight: 700; color: #1a1408; line-height: 1; letter-spacing: -0.02em; }
+.stat .lbl { display: block; font-size: 10px; color: #8a7a5a; margin-top: 3px; letter-spacing: 0.07em; text-transform: uppercase; }
+
+/* ── Race card ───────────────────────────────────────────────────────── */
+.race-card {
+  background: #F5EDD8;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.06);
+  padding: 24px 20px 28px;
+  overflow: hidden;
+}
+
+/* ── Stage strip ─────────────────────────────────────────────────────── */
+.stage-strip {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  overflow-x: auto;
+}
+
+.stage-wrap {
+  flex-shrink: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Stage header ────────────────────────────────────────────────────── */
+.stage-header {
+  padding: 0 4px 6px;
+}
+
+.stage-num {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #8a7a5a; margin-bottom: 2px;
+}
+
+.stage-name {
+  font-size: 10px; font-weight: 600; color: #3a2e18;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.stage-name.current-name { font-size: 12px; color: #C4612A; }
+
+.stage-km {
+  font-size: 9px; color: #9a8a6a; margin-top: 1px;
+}
+
+/* ── Stamp (completed) ───────────────────────────────────────────────── */
+.stamp {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -60%) rotate(-18deg);
+  border: 2px solid #3A7A3A;
+  border-radius: 50%;
+  width: 56px; height: 56px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.stamp-text {
+  font-size: 6px; font-weight: 800; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #3A7A3A; text-align: center;
+  line-height: 1.3;
+}
+
+/* ── Legend ──────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.leg-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #6a5a3a; letter-spacing: 0.03em;
+}
+
+.leg-flag {
+  width: 12px; height: 9px; border-radius: 1px; border: 1px solid rgba(0,0,0,0.15);
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────── */
+#tooltip {
+  position: fixed; z-index: 999; pointer-events: none;
+  opacity: 0; transition: opacity 0.12s ease;
+  background: #1a1408; color: #f0e8d0;
+  border-radius: 8px; padding: 12px 16px; min-width: 180px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+}
+#tooltip.show { opacity: 1; }
+.tt-word { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.tt-pos  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #8a7a5a; margin-bottom: 7px; }
+.tt-def  { font-size: 13px; color: #b0a080; line-height: 1.5; margin-bottom: 10px; }
+.tt-bar  { display: flex; gap: 4px; align-items: center; }
+.tt-pip  { width: 7px; height: 7px; border-radius: 50%; background: #2a2010; border: 1px solid #3a3020; flex-shrink: 0; }
+.tt-pip.on { background: currentColor; border-color: currentColor; }
+.tt-lbl  { font-size: 10px; color: #6a5a3a; margin-left: 6px; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div class="header-left">
+      <div class="eyebrow">Lexitree · Vocabulaire</div>
+      <h1>Tour de <span>French</span></h1>
+    </div>
+    <div class="header-right">
+      <div class="stat">
+        <span class="val" id="s-mastered">–</span>
+        <span class="lbl">maillots jaunes</span>
+      </div>
+      <div class="stat">
+        <span class="val">Étape 3</span>
+        <span class="lbl">en course</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="race-card">
+    <div class="stage-strip" id="strip"></div>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item">
+      <div class="leg-flag" style="background:#F8F8F5;"></div>
+      Maillot blanc — non vu
+    </div>
+    <div class="leg-item">
+      <div class="leg-flag" style="background:#4CAF68;"></div>
+      Maillot vert — aperçu
+    </div>
+    <div class="leg-item">
+      <div class="leg-flag" style="background:#E84040; background: radial-gradient(circle at 30% 30%, white 2px, transparent 2px), radial-gradient(circle at 70% 60%, white 2px, transparent 2px), #E84040;"></div>
+      Maillot à pois — connu
+    </div>
+    <div class="leg-item">
+      <div class="leg-flag" style="background:#F5C400;"></div>
+      Maillot jaune — maîtrisé
+    </div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-word" id="tt-w"></div>
+  <div class="tt-pos"  id="tt-p"></div>
+  <div class="tt-def"  id="tt-d"></div>
+  <div class="tt-bar"  id="tt-b"></div>
+</div>
+
+<script>
+
+// ── Mastery constants ─────────────────────────────────────────────────────────
+
+const M = { UNSEEN:0, SEEN:1, KNOWN:2, MASTERED:3 };
+const JERSEY = {
+  [M.UNSEEN]:  { fill:'#F8F8F5', stroke:'#C8C0A8', label:'Maillot blanc',   pips:0 },
+  [M.SEEN]:    { fill:'#4CAF68', stroke:'#3A9A55', label:'Maillot vert',    pips:2 },
+  [M.KNOWN]:   { fill:'#E84040', stroke:'#C83030', label:'Maillot à pois',  pips:4 },
+  [M.MASTERED]:{ fill:'#F5C400', stroke:'#D4A800', label:'Maillot jaune',   pips:6 },
+};
+
+// ── Stage definitions ─────────────────────────────────────────────────────────
+
+const STAGES = [
+  {
+    id:'A1', num:1, cefr:'A1',
+    name:'Prologue',
+    subname:'Paris — Paris',
+    km:'8 km',
+    type:'contre-la-montre',
+    status:'done',
+    width: 88,
+    terrainColor:'#4A7A3A',
+    // elevation: normalized [x, y] points (y=0 flat, y=1 peak)
+    elev:[[0,0.07],[0.25,0.06],[0.5,0.05],[0.75,0.06],[1,0.07]],
+    words:[
+      {w:'avoir',  m:M.MASTERED}, {w:'être',   m:M.MASTERED},
+      {w:'faire',  m:M.MASTERED}, {w:'aller',  m:M.MASTERED},
+      {w:'grand',  m:M.MASTERED}, {w:'petit',  m:M.MASTERED},
+      {w:'bien',   m:M.MASTERED}, {w:'mal',    m:M.KNOWN   },
+    ]
+  },
+  {
+    id:'A2', num:2, cefr:'A2',
+    name:'La Plaine',
+    subname:'Tours — Bordeaux',
+    km:'165 km',
+    type:'plaine',
+    status:'done',
+    width: 108,
+    terrainColor:'#5A8A4A',
+    elev:[[0,0.12],[0.15,0.09],[0.3,0.18],[0.45,0.13],[0.6,0.20],[0.75,0.15],[0.9,0.11],[1,0.13]],
+    words:[
+      {w:'penser', m:M.MASTERED}, {w:'croire', m:M.MASTERED},
+      {w:'prendre',m:M.KNOWN   }, {w:'venir',  m:M.KNOWN   },
+      {w:'content',m:M.MASTERED}, {w:'fort',   m:M.KNOWN   },
+      {w:'souvent',m:M.MASTERED}, {w:'parfois',m:M.SEEN    },
+    ]
+  },
+  {
+    id:'B1', num:3, cefr:'B1',
+    name:'Moyenne Montagne',
+    subname:'Pau — Col du Tourmalet',
+    km:'182 km',
+    type:'montagne',
+    status:'current',
+    width: 456,
+    terrainColor:'#C4612A',
+    elev:[
+      [0,0.14],[0.08,0.12],[0.18,0.16],[0.28,0.32],
+      [0.38,0.52],[0.47,0.68],[0.54,0.78],[0.60,0.82],
+      [0.66,0.76],[0.73,0.55],[0.80,0.34],[0.88,0.18],[0.95,0.12],[1,0.13]
+    ],
+    words:[
+      {w:'parvenir',   m:M.KNOWN,  def:'to manage / to succeed in'},
+      {w:'accomplir',  m:M.SEEN,   def:'to accomplish / carry out'},
+      {w:'promettre',  m:M.UNSEEN, def:'to promise'},
+      {w:'réussir',    m:M.UNSEEN, def:'to succeed / to pass'},
+      {w:'ambitieux',  m:M.KNOWN,  def:'ambitious'},
+      {w:'jaloux',     m:M.UNSEEN, def:'jealous / envious'},
+      {w:'rapidement', m:M.SEEN,   def:'quickly / rapidly'},
+      {w:'absolument', m:M.UNSEEN, def:'absolutely'},
+    ]
+  },
+  {
+    id:'B2', num:4, cefr:'B2',
+    name:'Haute Montagne',
+    subname:"Bourg-d'Oisans — Alpe d'Huez",
+    km:'148 km',
+    type:'montagne',
+    status:'locked',
+    width: 116,
+    terrainColor:'#9898A8',
+    elev:[[0,0.16],[0.15,0.20],[0.28,0.40],[0.38,0.62],[0.48,0.82],[0.54,0.92],[0.60,0.88],[0.70,0.62],[0.82,0.34],[0.92,0.19],[1,0.15]],
+    words:[
+      {w:"s'avérer",m:M.UNSEEN},{w:'préconiser',m:M.UNSEEN},{w:'néanmoins',m:M.UNSEEN},{w:'toutefois',m:M.UNSEEN},
+      {w:'nuancé',m:M.UNSEEN},{w:'pertinent',m:M.UNSEEN},{w:'davantage',m:M.UNSEEN},{w:'voire',m:M.UNSEEN},
+    ]
+  },
+  {
+    id:'C1', num:5, cefr:'C1',
+    name:'Contre-la-montre',
+    subname:'Libourne — Saint-Émilion',
+    km:'55 km',
+    type:'clm',
+    status:'locked',
+    width: 108,
+    terrainColor:'#A8A8B8',
+    elev:[[0,0.14],[0.15,0.26],[0.28,0.44],[0.40,0.58],[0.50,0.54],[0.60,0.64],[0.72,0.40],[0.86,0.22],[1,0.13]],
+    words:[
+      {w:'appréhender',m:M.UNSEEN},{w:'susciter',m:M.UNSEEN},{w:'prévaloir',m:M.UNSEEN},{w:'nuancer',m:M.UNSEEN},
+      {w:'prépondérant',m:M.UNSEEN},{w:'concomitant',m:M.UNSEEN},{w:'délétère',m:M.UNSEEN},{w:'véhément',m:M.UNSEEN},
+    ]
+  },
+  {
+    id:'C2', num:6, cefr:'C2',
+    name:'Champs-Élysées',
+    subname:'Vincennes — Paris',
+    km:'95 km',
+    type:'sprint',
+    status:'locked',
+    width: 96,
+    terrainColor:'#C0C0C8',
+    elev:[[0,0.06],[0.25,0.06],[0.5,0.06],[0.75,0.06],[1,0.06]],
+    words:[
+      {w:'atermoyer',m:M.UNSEEN},{w:'circonvenir',m:M.UNSEEN},{w:'délétère',m:M.UNSEEN},{w:'incommoder',m:M.UNSEEN},
+      {w:'acrimonieux',m:M.UNSEEN},{w:'véhément',m:M.UNSEEN},{w:'circonspect',m:M.UNSEEN},{w:'prodiguer',m:M.UNSEEN},
+    ]
+  },
+];
+
+// ── SVG helpers ───────────────────────────────────────────────────────────────
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// Convert normalized elevation points to SVG path
+// elevPts: [[x_norm, y_norm], ...]
+// w: panel width, h: elevation area height, base: y of the ground
+function elevPath(elevPts, w, h) {
+  // y_norm: 0 = flat (bottom), 1 = tallest (top of chart)
+  const pts = elevPts.map(([nx, ny]) => ({
+    x: nx * w,
+    y: h - ny * h * 0.88 // scale slightly so peaks don't hit top edge
+  }));
+
+  // Build smooth path using quadratic bezier (midpoint control)
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1], curr = pts[i];
+    const cpx = (prev.x + curr.x) / 2;
+    const cpy = (prev.y + curr.y) / 2;
+    d += ` Q${prev.x.toFixed(1)},${prev.y.toFixed(1)} ${cpx.toFixed(1)},${cpy.toFixed(1)}`;
+  }
+  // Last point
+  const last = pts[pts.length - 1];
+  d += ` L${last.x.toFixed(1)},${last.y.toFixed(1)}`;
+  // Close fill area
+  d += ` L${w},${h} L0,${h} Z`;
+  return d;
+}
+
+// Smooth road line (just the top edge, no fill)
+function roadPath(elevPts, w, h) {
+  const pts = elevPts.map(([nx, ny]) => ({
+    x: nx * w,
+    y: h - ny * h * 0.88
+  }));
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i-1], curr = pts[i];
+    const cpx = (prev.x + curr.x) / 2;
+    const cpy = (prev.y + curr.y) / 2;
+    d += ` Q${prev.x.toFixed(1)},${prev.y.toFixed(1)} ${cpx.toFixed(1)},${cpy.toFixed(1)}`;
+  }
+  const last = pts[pts.length-1];
+  d += ` L${last.x.toFixed(1)},${last.y.toFixed(1)}`;
+  return d;
+}
+
+// Get road y at a given x (approximate — linear interpolation between elevation points)
+function roadYatX(elevPts, nx, h) {
+  for (let i = 1; i < elevPts.length; i++) {
+    const [x0, y0] = elevPts[i-1];
+    const [x1, y1] = elevPts[i];
+    if (nx >= x0 && nx <= x1) {
+      const t = (nx - x0) / (x1 - x0);
+      const yn = y0 + t * (y1 - y0);
+      return h - yn * h * 0.88;
+    }
+  }
+  return h;
+}
+
+// ── Build a stage SVG ─────────────────────────────────────────────────────────
+
+function buildStageSVG(stage) {
+  const w = stage.width;
+  const EH = stage.status === 'current' ? 188 : 145; // elevation area height
+  const MH = stage.status === 'current' ? 88  : 0;   // marker area height below
+  const TOTAL_H = EH + MH;
+
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${TOTAL_H}`);
+  svg.setAttribute('width', w);
+  svg.setAttribute('height', TOTAL_H);
+  svg.style.display = 'block';
+
+  // ── Defs (sky gradient, glow) ──────────────────────────────────────────
+  const defs = document.createElementNS(SVG_NS, 'defs');
+
+  const skyGrad = document.createElementNS(SVG_NS, 'linearGradient');
+  skyGrad.setAttribute('id', `sky-${stage.id}`);
+  skyGrad.setAttribute('x1','0'); skyGrad.setAttribute('y1','0');
+  skyGrad.setAttribute('x2','0'); skyGrad.setAttribute('y2','1');
+  [['0%','#C8DFF5'],['60%','#E8D8B8'],['100%','#F5EDD8']].forEach(([off,col]) => {
+    const s = document.createElementNS(SVG_NS, 'stop');
+    s.setAttribute('offset',off); s.setAttribute('stop-color',col);
+    skyGrad.appendChild(s);
+  });
+  defs.appendChild(skyGrad);
+  svg.appendChild(defs);
+
+  // ── Sky background ─────────────────────────────────────────────────────
+  const bg = document.createElementNS(SVG_NS, 'rect');
+  bg.setAttribute('x','0'); bg.setAttribute('y','0');
+  bg.setAttribute('width',w); bg.setAttribute('height',EH);
+  bg.setAttribute('fill', `url(#sky-${stage.id})`);
+  svg.appendChild(bg);
+
+  // ── Terrain fill ───────────────────────────────────────────────────────
+  const fillCol = stage.status === 'locked' ? '#C8C4B8' : stage.terrainColor;
+  const fillOpacity = stage.status === 'locked' ? '0.5' : '1';
+
+  const terrain = document.createElementNS(SVG_NS, 'path');
+  terrain.setAttribute('d', elevPath(stage.elev, w, EH));
+  terrain.setAttribute('fill', fillCol);
+  terrain.setAttribute('opacity', fillOpacity);
+  svg.appendChild(terrain);
+
+  // ── Terrain shading (overlay gradient for depth) ───────────────────────
+  if (stage.status !== 'locked') {
+    const shade = document.createElementNS(SVG_NS, 'path');
+    shade.setAttribute('d', elevPath(stage.elev, w, EH));
+    shade.setAttribute('fill', 'url(#sky-' + stage.id + ')');
+    shade.setAttribute('opacity', '0.12');
+    svg.appendChild(shade);
+  }
+
+  // ── Road line ──────────────────────────────────────────────────────────
+  const roadCol = stage.status === 'locked' ? '#a8a4a0' : '#2A1F10';
+  const roadWidth = stage.status === 'current' ? 2.5 : 1.5;
+
+  const road = document.createElementNS(SVG_NS, 'path');
+  road.setAttribute('d', roadPath(stage.elev, w, EH));
+  road.setAttribute('fill', 'none');
+  road.setAttribute('stroke', roadCol);
+  road.setAttribute('stroke-width', roadWidth);
+  road.setAttribute('stroke-linecap', 'round');
+  road.setAttribute('stroke-linejoin', 'round');
+  road.setAttribute('opacity', stage.status === 'locked' ? '0.5' : '1');
+  svg.appendChild(road);
+
+  // ── Mountain pass label (current stage only, at peak) ─────────────────
+  if (stage.status === 'current') {
+    // Find highest point
+    let peakX = 0, peakY = 1;
+    stage.elev.forEach(([nx, ny]) => { if (ny > 1 - peakY) { peakX = nx; peakY = 1 - ny; } });
+    const px = peakX * w;
+    const py = EH - (1 - peakY) * EH * 0.88 - 14;
+
+    const flag = document.createElementNS(SVG_NS, 'rect');
+    flag.setAttribute('x', px - 1); flag.setAttribute('y', py - 20);
+    flag.setAttribute('width', 1.5); flag.setAttribute('height', 20);
+    flag.setAttribute('fill', '#2A1F10');
+    svg.appendChild(flag);
+
+    const flagRect = document.createElementNS(SVG_NS, 'rect');
+    flagRect.setAttribute('x', px + 0.5); flagRect.setAttribute('y', py - 20);
+    flagRect.setAttribute('width', 22); flagRect.setAttribute('height', 11);
+    flagRect.setAttribute('fill', '#C4612A'); flagRect.setAttribute('rx', 1);
+    svg.appendChild(flagRect);
+
+    const flagText = document.createElementNS(SVG_NS, 'text');
+    flagText.setAttribute('x', px + 11); flagText.setAttribute('y', py - 12);
+    flagText.setAttribute('text-anchor', 'middle');
+    flagText.setAttribute('font-size', '6'); flagText.setAttribute('font-weight', '700');
+    flagText.setAttribute('fill', 'white');
+    flagText.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+    flagText.textContent = 'Col';
+    svg.appendChild(flagText);
+  }
+
+  // ── Cyclist icon (current stage only, at start of route) ──────────────
+  if (stage.status === 'current') {
+    const cy_x = stage.words.length > 0 ? (1 / (stage.words.length + 1)) * w * 0.25 : 20;
+    const startY = roadYatX(stage.elev, 0, EH);
+    const cy_y = startY - 18;
+
+    // Simple cyclist silhouette
+    const cyclistG = document.createElementNS(SVG_NS, 'g');
+    cyclistG.setAttribute('transform', `translate(${12},${cy_y})`);
+
+    // Body
+    const body = document.createElementNS(SVG_NS, 'ellipse');
+    body.setAttribute('cx','0'); body.setAttribute('cy','4');
+    body.setAttribute('rx','5'); body.setAttribute('ry','3.5');
+    body.setAttribute('fill','#F5C400'); body.setAttribute('transform','rotate(-25)');
+    cyclistG.appendChild(body);
+
+    // Head
+    const head = document.createElementNS(SVG_NS, 'circle');
+    head.setAttribute('cx','4'); head.setAttribute('cy','-3');
+    head.setAttribute('r','3.5'); head.setAttribute('fill','#F5C400');
+    cyclistG.appendChild(head);
+
+    // Wheels
+    [[-4, 9],[6, 9]].forEach(([wx, wy]) => {
+      const wheel = document.createElementNS(SVG_NS, 'circle');
+      wheel.setAttribute('cx', wx); wheel.setAttribute('cy', wy);
+      wheel.setAttribute('r', '4.5');
+      wheel.setAttribute('fill','none'); wheel.setAttribute('stroke','#2A1F10');
+      wheel.setAttribute('stroke-width','1.5');
+      cyclistG.appendChild(wheel);
+    });
+
+    svg.appendChild(cyclistG);
+  }
+
+  // ── Locked overlay ─────────────────────────────────────────────────────
+  if (stage.status === 'locked') {
+    const overlay = document.createElementNS(SVG_NS, 'rect');
+    overlay.setAttribute('x','0'); overlay.setAttribute('y','0');
+    overlay.setAttribute('width',w); overlay.setAttribute('height',EH);
+    overlay.setAttribute('fill','rgba(237,228,206,0.55)');
+    svg.appendChild(overlay);
+
+    // Lock icon (simple)
+    const cx = w / 2, cy = EH * 0.45;
+    const lockG = document.createElementNS(SVG_NS, 'g');
+    lockG.setAttribute('opacity','0.5');
+
+    const lockBody = document.createElementNS(SVG_NS, 'rect');
+    lockBody.setAttribute('x', cx-7); lockBody.setAttribute('y', cy);
+    lockBody.setAttribute('width','14'); lockBody.setAttribute('height','11');
+    lockBody.setAttribute('rx','2'); lockBody.setAttribute('fill','#6a5a3a');
+    lockG.appendChild(lockBody);
+
+    const lockArc = document.createElementNS(SVG_NS, 'path');
+    lockArc.setAttribute('d', `M${cx-5},${cy} a5,5 0 0 1 10,0`);
+    lockArc.setAttribute('fill','none'); lockArc.setAttribute('stroke','#6a5a3a');
+    lockArc.setAttribute('stroke-width','2.5'); lockArc.setAttribute('stroke-linecap','round');
+    lockG.appendChild(lockArc);
+
+    svg.appendChild(lockG);
+  }
+
+  // ── Marker area (below elevation) — current stage only ────────────────
+  if (stage.status === 'current') {
+    // Ground strip
+    const ground = document.createElementNS(SVG_NS, 'rect');
+    ground.setAttribute('x','0'); ground.setAttribute('y', EH);
+    ground.setAttribute('width', w); ground.setAttribute('height', MH);
+    ground.setAttribute('fill','#F5EDD8');
+    svg.appendChild(ground);
+
+    // Divider line
+    const divLine = document.createElementNS(SVG_NS, 'line');
+    divLine.setAttribute('x1','0'); divLine.setAttribute('y1', EH);
+    divLine.setAttribute('x2', w); divLine.setAttribute('y2', EH);
+    divLine.setAttribute('stroke','#D8CDB0'); divLine.setAttribute('stroke-width','0.5');
+    svg.appendChild(divLine);
+
+    // Word markers
+    const n = stage.words.length;
+    stage.words.forEach((word, i) => {
+      const x = ((i + 1) / (n + 1)) * w;
+      const jersey = JERSEY[word.m];
+
+      // Km marker post (vertical line)
+      const post = document.createElementNS(SVG_NS, 'line');
+      post.setAttribute('x1', x); post.setAttribute('y1', EH + 4);
+      post.setAttribute('x2', x); post.setAttribute('y2', EH + 30);
+      post.setAttribute('stroke','#4a3a22'); post.setAttribute('stroke-width','1.5');
+      svg.appendChild(post);
+
+      // Red-white stripes on post (Tour de France km marker style)
+      for (let s = 0; s < 4; s++) {
+        const stripe = document.createElementNS(SVG_NS, 'rect');
+        stripe.setAttribute('x', x - 1.5); stripe.setAttribute('y', EH + 4 + s * 6.5);
+        stripe.setAttribute('width','3'); stripe.setAttribute('height','3');
+        stripe.setAttribute('fill', s % 2 === 0 ? '#C02020' : '#FFFFFF');
+        svg.appendChild(stripe);
+      }
+
+      // Flag
+      const flagPost = document.createElementNS(SVG_NS, 'line');
+      flagPost.setAttribute('x1', x); flagPost.setAttribute('y1', EH + 4);
+      flagPost.setAttribute('x2', x); flagPost.setAttribute('y2', EH + 4);
+      svg.appendChild(flagPost);
+
+      const flagRect = document.createElementNS(SVG_NS, 'rect');
+      flagRect.setAttribute('x', x); flagRect.setAttribute('y', EH + 4);
+      flagRect.setAttribute('width','11'); flagRect.setAttribute('height','8');
+      flagRect.setAttribute('fill', jersey.fill);
+      flagRect.setAttribute('stroke', jersey.stroke);
+      flagRect.setAttribute('stroke-width','0.5');
+      flagRect.setAttribute('rx','1');
+      svg.appendChild(flagRect);
+
+      // Polka dots on KNOWN jersey
+      if (word.m === M.KNOWN) {
+        [[3,3],[8,5],[5,7]].forEach(([dx,dy]) => {
+          const dot = document.createElementNS(SVG_NS, 'circle');
+          dot.setAttribute('cx', x + dx); dot.setAttribute('cy', EH + 4 + dy);
+          dot.setAttribute('r', '1'); dot.setAttribute('fill', 'white');
+          svg.appendChild(dot);
+        });
+      }
+
+      // Word label (-45°)
+      const lbl = document.createElementNS(SVG_NS, 'text');
+      lbl.setAttribute('x', x + 2);
+      lbl.setAttribute('y', EH + 36);
+      lbl.setAttribute('transform', `rotate(-45 ${x + 2} ${EH + 36})`);
+      lbl.setAttribute('text-anchor', 'start');
+      lbl.setAttribute('font-size', '9');
+      lbl.setAttribute('font-weight', word.m === M.MASTERED ? '700' : '400');
+      lbl.setAttribute('fill', word.m === M.MASTERED ? '#1a1408' :
+                                word.m === M.KNOWN    ? '#4a3a22' :
+                                word.m === M.SEEN     ? '#7a6a4a' : '#a09070');
+      lbl.setAttribute('font-family', '-apple-system,BlinkMacSystemFont,sans-serif');
+      lbl.setAttribute('pointer-events', 'none');
+      lbl.textContent = word.w;
+      svg.appendChild(lbl);
+
+      // Invisible hit target for hover
+      const hit = document.createElementNS(SVG_NS, 'rect');
+      hit.setAttribute('x', x - 10); hit.setAttribute('y', EH);
+      hit.setAttribute('width','20'); hit.setAttribute('height', MH);
+      hit.setAttribute('fill','transparent');
+      hit.setAttribute('class','marker-hit');
+      hit.setAttribute('data-word', word.w);
+      hit.setAttribute('data-pos', 'verbe');
+      hit.setAttribute('data-def', word.def || '—');
+      hit.setAttribute('data-mastery', word.m);
+      hit.setAttribute('data-color', jersey.fill);
+      hit.setAttribute('data-mlabel', jersey.label);
+      hit.style.cursor = 'pointer';
+      svg.appendChild(hit);
+    });
+  }
+
+  // ── Compact: dot markers (done/locked stages) ─────────────────────────
+  if (stage.status === 'done') {
+    // Small dots at the base of the terrain for completed words
+    const n = stage.words.length;
+    stage.words.forEach((word, i) => {
+      const x = ((i + 1) / (n + 1)) * w;
+      const ry = roadYatX(stage.elev, (i + 1) / (n + 1), EH);
+      const jersey = JERSEY[word.m];
+
+      const dot = document.createElementNS(SVG_NS, 'circle');
+      dot.setAttribute('cx', x); dot.setAttribute('cy', ry - 4);
+      dot.setAttribute('r', '3');
+      dot.setAttribute('fill', jersey.fill);
+      dot.setAttribute('stroke', jersey.stroke);
+      dot.setAttribute('stroke-width', '0.5');
+      svg.appendChild(dot);
+    });
+  }
+
+  // ── Stage stamp (completed) ────────────────────────────────────────────
+  // Rendered in HTML overlay, not SVG
+
+  return svg;
+}
+
+// ── Render all stages ─────────────────────────────────────────────────────────
+
+function buildStageHeader(stage) {
+  const div = document.createElement('div');
+  div.className = 'stage-header';
+
+  const numEl = document.createElement('div');
+  numEl.className = 'stage-num';
+  numEl.textContent = `Étape ${stage.num}`;
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'stage-name' + (stage.status === 'current' ? ' current-name' : '');
+  nameEl.textContent = stage.name;
+  nameEl.title = stage.subname;
+
+  const kmEl = document.createElement('div');
+  kmEl.className = 'stage-km';
+  kmEl.textContent = stage.status === 'locked' ? stage.cefr : stage.km;
+
+  div.appendChild(numEl);
+  div.appendChild(nameEl);
+  div.appendChild(kmEl);
+  return div;
+}
+
+const strip = document.getElementById('strip');
+
+STAGES.forEach(stage => {
+  const wrap = document.createElement('div');
+  wrap.className = 'stage-wrap';
+  wrap.style.width = stage.width + 'px';
+  wrap.style.position = 'relative';
+
+  // Header
+  wrap.appendChild(buildStageHeader(stage));
+
+  // SVG
+  wrap.appendChild(buildStageSVG(stage));
+
+  // Stamp for completed stages
+  if (stage.status === 'done') {
+    const stamp = document.createElement('div');
+    stamp.className = 'stamp';
+    stamp.innerHTML = `<div class="stamp-text">Étape<br>terminée<br>✓</div>`;
+    stamp.style.top = '62%';
+    wrap.appendChild(stamp);
+  }
+
+  // Current stage highlight border
+  if (stage.status === 'current') {
+    wrap.style.outline = '2px solid #C4612A';
+    wrap.style.outlineOffset = '2px';
+    wrap.style.borderRadius = '6px';
+  }
+
+  strip.appendChild(wrap);
+});
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+let mastered = 0;
+STAGES.forEach(s => s.words.forEach(w => { if (w.m === M.MASTERED) mastered++; }));
+document.getElementById('s-mastered').textContent = mastered;
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+const tip = document.getElementById('tooltip');
+const ttW = document.getElementById('tt-w');
+const ttP = document.getElementById('tt-p');
+const ttD = document.getElementById('tt-d');
+const ttB = document.getElementById('tt-b');
+
+document.addEventListener('mousemove', e => {
+  const el = e.target;
+  if (!el.classList.contains('marker-hit')) { tip.classList.remove('show'); return; }
+
+  const m    = parseInt(el.dataset.mastery);
+  const jer  = JERSEY[m];
+  ttW.textContent = el.dataset.word;
+  ttW.style.color = jer.stroke;
+  ttP.textContent = el.dataset.pos;
+  ttD.textContent = el.dataset.def;
+
+  ttB.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'tt-pip' + (i < jer.pips ? ' on' : '');
+    if (i < jer.pips) p.style.color = jer.stroke;
+    ttB.appendChild(p);
+  }
+  const lbl = document.createElement('span');
+  lbl.className = 'tt-lbl';
+  lbl.textContent = jer.label;
+  ttB.appendChild(lbl);
+
+  const bx = Math.min(e.clientX + 14, innerWidth - 210);
+  const by = Math.min(e.clientY - 14, innerHeight - 140);
+  tip.style.left = bx + 'px'; tip.style.top = by + 'px';
+  tip.classList.add('show');
+});
+
+</script>
+</body>
+</html>

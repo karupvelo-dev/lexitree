@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — A: Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #000000; --mid: #545454; --light: #ADADAD;
+      --border: #E2E2E2; --bg: #F6F6F6; --white: #FFFFFF;
+      --green: #0E8345; --green-light: #D4EDDA;
+      --red: #D1293D; --red-light: #FDECEA;
+      --amber: #D97706; --amber-light: #FEF3C7;
+      --font-sans: 'Inter', system-ui, sans-serif;
+    }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    /* ── Top bar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      background: var(--white); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+    }
+    .back-btn {
+      background: none; border: none; font-size: 14px; font-weight: 500;
+      color: var(--mid); cursor: pointer; display: flex; align-items: center; gap: 6px;
+    }
+    .topbar-title { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+    .topbar-right { width: 60px; }
+
+    /* ── Page ── */
+    .page { max-width: 480px; margin: 0 auto; padding: 24px 16px 100px; }
+
+    /* ── Identity row ── */
+    .identity {
+      display: flex; align-items: center; gap: 16px;
+      padding: 20px; background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 16px;
+    }
+    .avatar {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--dark); color: var(--white);
+      font-size: 22px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .identity-info { flex: 1; min-width: 0; }
+    .identity-name { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .identity-email { font-size: 13px; color: var(--light); margin-bottom: 8px; }
+    .level-badge {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 4px;
+      background: var(--bg); color: var(--dark); border: 1px solid var(--border);
+    }
+
+    /* ── Stats grid ── */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .stat-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 16px;
+    }
+    .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--light); margin-bottom: 6px; }
+    .stat-value { font-size: 32px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; margin-bottom: 2px; }
+    .stat-sub { font-size: 12px; color: var(--mid); }
+    .stat-card.streak .stat-value { color: var(--amber); }
+    .stat-card.streak { border-color: var(--amber-light); background: var(--amber-light); }
+    .stat-card.green .stat-value { color: var(--green); }
+
+    /* ── 7-day bar ── */
+    .week-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 16px; margin-bottom: 16px;
+    }
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--light); margin-bottom: 14px; }
+    .day-bars { display: flex; gap: 6px; align-items: flex-end; height: 48px; margin-bottom: 6px; }
+    .day-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+    .day-bar { width: 100%; border-radius: 3px; background: var(--border); }
+    .day-bar.done { background: var(--dark); }
+    .day-bar.today { background: var(--dark); outline: 2px solid var(--dark); outline-offset: 2px; }
+    .day-label { font-size: 9px; color: var(--light); }
+
+    /* ── Level progress ── */
+    .level-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 16px; margin-bottom: 16px;
+    }
+    .level-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .level-name { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+    .level-cefr { font-size: 13px; color: var(--mid); }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+    .progress-fill { height: 100%; background: var(--dark); border-radius: 3px; transition: width 0.6s ease; }
+    .progress-hint { font-size: 12px; color: var(--light); }
+
+    /* ── Actions ── */
+    .actions { display: flex; flex-direction: column; gap: 8px; }
+    .action-btn {
+      width: 100%; padding: 14px 20px; border-radius: 500px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid var(--border); background: var(--white); color: var(--dark);
+      text-align: left; transition: border-color 0.12s;
+    }
+    .action-btn:hover { border-color: var(--dark); }
+    .action-btn.danger { color: var(--red); border-color: var(--red-light); background: var(--red-light); }
+    .action-icon { font-size: 16px; }
+    .action-text { flex: 1; }
+    .action-arrow { color: var(--light); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <!-- Top bar -->
+  <div class="topbar">
+    <button class="back-btn">← Back</button>
+    <span class="topbar-title">Profile</span>
+    <div class="topbar-right"></div>
+  </div>
+
+  <div class="page">
+
+    <!-- Identity -->
+    <div class="identity">
+      <div class="avatar">S</div>
+      <div class="identity-info">
+        <div class="identity-name">Sophie Martin</div>
+        <div class="identity-email">sophie.m@gmail.com</div>
+        <span class="level-badge">B1 — Intermediate</span>
+      </div>
+    </div>
+
+    <!-- Stats grid -->
+    <div class="stats-grid">
+      <div class="stat-card streak">
+        <div class="stat-label">🔥 Streak</div>
+        <div class="stat-value">14</div>
+        <div class="stat-sub">days in a row</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Sessions</div>
+        <div class="stat-value">23</div>
+        <div class="stat-sub">completed</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-value">74%</div>
+        <div class="stat-sub">first attempt avg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Vocab Score</div>
+        <div class="stat-value">61</div>
+        <div class="stat-sub">48 words seen</div>
+      </div>
+    </div>
+
+    <!-- 7-day activity -->
+    <div class="week-card">
+      <div class="section-label">This week</div>
+      <div class="day-bars">
+        <div class="day-bar-wrap"><div class="day-bar done" style="height:40px"></div><div class="day-label">Mon</div></div>
+        <div class="day-bar-wrap"><div class="day-bar done" style="height:40px"></div><div class="day-label">Tue</div></div>
+        <div class="day-bar-wrap"><div class="day-bar done" style="height:40px"></div><div class="day-label">Wed</div></div>
+        <div class="day-bar-wrap"><div class="day-bar" style="height:8px;background:var(--border)"></div><div class="day-label">Thu</div></div>
+        <div class="day-bar-wrap"><div class="day-bar done" style="height:40px"></div><div class="day-label">Fri</div></div>
+        <div class="day-bar-wrap"><div class="day-bar done" style="height:40px"></div><div class="day-label">Sat</div></div>
+        <div class="day-bar-wrap"><div class="day-bar today" style="height:40px"></div><div class="day-label">Sun</div></div>
+      </div>
+    </div>
+
+    <!-- Level progress -->
+    <div class="level-card">
+      <div class="section-label">Level progress</div>
+      <div class="level-row">
+        <div class="level-name">Intermediate · B1</div>
+        <div class="level-cefr">→ B2</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width: 62%"></div></div>
+      <div class="progress-hint">12 of 19 B1 concepts attempted · 70%+ accuracy needed</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="action-btn">
+        <span class="action-icon">🎯</span>
+        <span class="action-text">Change level</span>
+        <span class="action-arrow">›</span>
+      </button>
+      <button class="action-btn danger">
+        <span class="action-icon">→</span>
+        <span class="action-text">Sign out</span>
+      </button>
+    </div>
+
+  </div>
+</body>
+</html>

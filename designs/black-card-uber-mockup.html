@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maître Vault — Uber Edit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000;
+      --surface: #161616;
+      --surface2: #1f1f1f;
+      --border: rgba(255,255,255,0.08);
+      --text: #fff;
+      --text-2: rgba(255,255,255,0.5);
+      --text-3: rgba(255,255,255,0.25);
+      --green: #06C167;
+      --green-dim: rgba(6,193,103,0.12);
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #111; font-family: var(--font);
+      color: var(--text); padding: 40px 20px 80px;
+    }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #666; text-align: center;
+      margin: 40px 0 16px;
+    }
+
+    .phone {
+      max-width: 430px; margin: 0 auto; background: var(--bg);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 24px 64px rgba(0,0,0,0.8);
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-size: 17px; font-weight: 900; letter-spacing: -0.04em; color: var(--text); }
+    .nav-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: var(--text-2);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 32px 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-name { font-size: 13px; font-weight: 500; color: var(--text-2); margin-bottom: 4px; }
+    .hero-count { font-size: 72px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; color: var(--text); }
+    .hero-label { font-size: 13px; font-weight: 500; color: var(--text-2); margin-top: 4px; letter-spacing: 0.01em; }
+
+    /* ── Level status row ── */
+    .levels {
+      padding: 16px 20px;
+      display: flex; gap: 6px; align-items: center;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .level-chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 6px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .level-chip.done {
+      background: var(--green-dim);
+      color: var(--green);
+    }
+    .level-chip.done .chip-check { font-size: 10px; }
+    .level-chip.active {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .level-chip.active .chip-count { color: var(--text-2); font-weight: 500; }
+    .level-chip.locked {
+      background: transparent;
+      color: var(--text-3);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ── Concepts grid ── */
+    .grid-header {
+      padding: 20px 20px 12px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-2);
+    }
+    .concepts-grid {
+      padding: 0 20px 32px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .concept-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px 14px 12px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      min-height: 80px;
+      border: 1px solid var(--border);
+    }
+    .concept-name {
+      font-size: 13px; font-weight: 600; color: var(--text);
+      line-height: 1.3; margin-bottom: 12px;
+    }
+    .concept-footer {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .concept-level {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-3);
+    }
+    .maitre-chip {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--green);
+      background: var(--green-dim);
+      padding: 3px 7px; border-radius: 100px;
+    }
+  </style>
+</head>
+<body>
+
+<p class="section-label">Profile — Maîtres (Uber Edit)</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <div class="nav-avatar">N</div>
+  </div>
+
+  <!-- Hero count -->
+  <div class="hero">
+    <div class="hero-name">Nithin Sebastian</div>
+    <div class="hero-count">50</div>
+    <div class="hero-label">Maîtres earned</div>
+  </div>
+
+  <!-- Level status -->
+  <div class="levels">
+    <div class="level-chip done"><span class="chip-check">✓</span> A1</div>
+    <div class="level-chip done"><span class="chip-check">✓</span> A2</div>
+    <div class="level-chip done"><span class="chip-check">✓</span> B1</div>
+    <div class="level-chip done"><span class="chip-check">✓</span> B2</div>
+    <div class="level-chip active">C1 <span class="chip-count">6/14</span></div>
+    <div class="level-chip locked">C2</div>
+  </div>
+
+  <!-- Earned concepts -->
+  <div class="grid-header">C1 Maîtres</div>
+  <div class="concepts-grid">
+
+    <div class="concept-card">
+      <div class="concept-name">Subjonctif présent</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Conditionnel passé</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Pronoms relatifs</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Voix passive</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Discours indirect</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Gérondif</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ SHARE PAGE ══════════════════════════ -->
+<p class="section-label">Collection Share Page (Uber Edit)</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <a href="#" style="font-size:13px;font-weight:700;color:#000;background:#06C167;padding:7px 14px;border-radius:100px;text-decoration:none;">Try it</a>
+  </div>
+
+  <div class="hero">
+    <div class="hero-name">Nithin Sebastian · C1</div>
+    <div class="hero-count">50</div>
+    <div class="hero-label">Maîtres earned</div>
+  </div>
+
+  <div class="levels">
+    <div class="level-chip done"><span class="chip-check">✓</span> A1</div>
+    <div class="level-chip done"><span class="chip-check">✓</span> A2</div>
+    <div class="level-chip done"><span class="chip-check">✓</span> B1</div>
+    <div class="level-chip done"><span class="chip-check">✓</span> B2</div>
+    <div class="level-chip active">C1 <span class="chip-count">6/14</span></div>
+    <div class="level-chip locked">C2</div>
+  </div>
+
+  <div class="grid-header">C1 Maîtres</div>
+  <div class="concepts-grid">
+
+    <div class="concept-card">
+      <div class="concept-name">Subjonctif présent</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Conditionnel passé</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Pronoms relatifs</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Voix passive</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Discours indirect</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+    <div class="concept-card">
+      <div class="concept-name">Gérondif</div>
+      <div class="concept-footer">
+        <span class="concept-level">C1</span>
+        <span class="maitre-chip">Maître</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="padding:0 20px 32px">
+    <a href="#" style="display:block;width:100%;padding:16px;background:#06C167;color:#000;text-align:center;font-size:15px;font-weight:800;border-radius:12px;text-decoration:none;letter-spacing:-0.01em;">Start learning French</a>
+  </div>
+</div>
+
+</body>
+</html>

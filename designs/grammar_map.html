@@ -1,0 +1,415 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+.root{display:flex;height:780px;font-family:'DM Sans',sans-serif;background:#FFFFFF;border:0.5px solid #E3E2DF;border-radius:12px;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-width:220px;background:#F7F6F3;border-right:0.5px solid #E3E2DF;display:flex;flex-direction:column;padding:12px 0;}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:8px 14px 16px;border-bottom:0.5px solid #E3E2DF;margin-bottom:8px;}
+.sb-logo-text{font-family:'Playfair Display',serif;font-size:17px;color:#1C1B18;}
+.sb-logo-text span{color:#C4603A;font-style:italic;}
+.sb-section{padding:0 8px;margin-bottom:4px;}
+.sb-label{font-size:10px;font-weight:500;letter-spacing:0.7px;text-transform:uppercase;color:#A9A6A0;padding:6px 8px 4px;}
+.sb-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;color:#5C5850;}
+.sb-item.active{background:#EDECE9;color:#1C1B18;font-weight:500;}
+.sb-item svg{width:14px;height:14px;flex-shrink:0;opacity:0.6;}
+.sb-item.active svg{opacity:1;}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.sb-progress{margin:auto 0 0;padding:12px 14px 4px;border-top:0.5px solid #E3E2DF;}
+.sb-prog-label{font-size:11px;color:#A9A6A0;margin-bottom:6px;}
+.sb-prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.sb-prog-bar{flex:1;height:4px;background:#E3E2DF;border-radius:2px;overflow:hidden;}
+.sb-prog-fill{height:100%;background:#C4603A;border-radius:2px;}
+.sb-prog-val{font-size:11px;color:#5C5850;font-weight:500;min-width:28px;text-align:right;}
+.sb-streak{display:flex;align-items:center;gap:6px;font-size:12px;color:#5C5850;}
+.sb-streak-dot{width:7px;height:7px;border-radius:50%;background:#C4603A;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid #E3E2DF;flex-shrink:0;}
+.topbar-bc{display:flex;align-items:center;gap:6px;font-size:13px;color:#A9A6A0;}
+.topbar-bc span{color:#1C1B18;font-weight:500;}
+.topbar-actions{display:flex;gap:8px;}
+.tb-btn{font-size:12px;font-family:'DM Sans',sans-serif;padding:5px 12px;border-radius:6px;border:0.5px solid #D5D0C8;background:#fff;color:#5C5850;cursor:pointer;}
+.tb-btn.primary{background:#1C1B18;color:#FAF8F3;border-color:#1C1B18;}
+
+/* Summary bar */
+.prog-summary{display:flex;align-items:center;border-bottom:0.5px solid #E3E2DF;flex-shrink:0;background:#FAFAF8;}
+.ps-item{display:flex;align-items:center;gap:7px;font-size:11.5px;color:#5C5850;padding:9px 16px;border-right:0.5px solid #E3E2DF;}
+.ps-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ps-total{margin-left:auto;padding:9px 16px;font-size:11px;color:#A9A6A0;}
+
+/* MAP BODY */
+.map-body{flex:1;display:flex;overflow:hidden;}
+
+/* Graph */
+.graph-scroll{flex:1;overflow-x:auto;overflow-y:auto;padding:20px 24px;}
+.graph-scroll::-webkit-scrollbar{height:5px;width:5px;}
+.graph-scroll::-webkit-scrollbar-thumb{background:#D5D0C8;border-radius:3px;}
+.graph-scroll::-webkit-scrollbar-track{background:transparent;}
+.graph-inner{display:flex;align-items:flex-start;min-width:max-content;gap:0;}
+
+/* Level column */
+.lvl-col{width:134px;display:flex;flex-direction:column;}
+.lvl-header{margin-bottom:12px;}
+.lvl-badge{display:inline-flex;font-size:11px;font-weight:500;padding:3px 9px;border-radius:4px;letter-spacing:0.3px;margin-bottom:3px;}
+.lvl-badge.mastered{background:#EAF3DE;color:#27500A;}
+.lvl-badge.current{background:#FFF3EC;color:#C4603A;}
+.lvl-badge.locked{background:#F2F1EE;color:#A9A6A0;}
+.lvl-sublabel{font-size:10px;color:#A9A6A0;}
+.lvl-sublabel.g{color:#4A9E6A;}
+.lvl-sublabel.o{color:#C4603A;}
+.lvl-nodes{display:flex;flex-direction:column;gap:5px;}
+
+/* Nodes */
+.node{font-size:11px;padding:5px 9px;border-radius:5px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;transition:filter 0.1s;}
+.node.mastered{background:#EAF3DE;border:0.5px solid #4A9E6A;color:#27500A;}
+.node.active{background:#FFF3EC;border:1.5px solid #C4603A;color:#C4603A;font-weight:500;}
+.node.open{background:#FFFFFF;border:0.5px solid #D5D0C8;color:#5C5850;}
+.node.locked{background:#F7F6F3;border:0.5px solid #E3E2DF;color:#C0BDB6;}
+.node:hover:not(.locked){filter:brightness(0.94);}
+.node.selected{box-shadow:0 0 0 2px #C4603A,0 0 0 4px rgba(196,96,58,0.15);position:relative;z-index:1;}
+
+/* Level arrow */
+.lvl-arrow{width:20px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:center;padding-top:30px;}
+
+/* DETAIL PANEL */
+.detail-panel{width:230px;min-width:230px;border-left:0.5px solid #E3E2DF;background:#FAFAF8;display:flex;flex-direction:column;overflow-y:auto;}
+.detail-panel::-webkit-scrollbar{width:4px;}
+.detail-panel::-webkit-scrollbar-thumb{background:#D5D0C8;border-radius:2px;}
+.dp-head{padding:18px 16px 14px;border-bottom:0.5px solid #E3E2DF;}
+.dp-eyebrow{font-size:10px;font-weight:500;letter-spacing:0.7px;text-transform:uppercase;color:#A9A6A0;margin-bottom:8px;}
+.dp-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:400;color:#1C1B18;line-height:1.3;margin-bottom:8px;}
+.dp-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.dp-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;}
+.dp-sec{padding:12px 16px;border-bottom:0.5px solid #E3E2DF;}
+.dp-sec-label{font-size:10px;font-weight:500;letter-spacing:0.6px;text-transform:uppercase;color:#A9A6A0;margin-bottom:10px;}
+
+/* Mastery ring */
+.mastery-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ring-wrap{position:relative;width:44px;height:44px;flex-shrink:0;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#1C1B18;}
+.mstats{display:flex;flex-direction:column;gap:2px;}
+.mstat{font-size:11px;color:#5C5850;}
+.mstat strong{font-weight:500;color:#1C1B18;}
+.mstat.sub{color:#A9A6A0;font-size:10px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-cell{background:#fff;border:0.5px solid #E3E2DF;border-radius:5px;padding:7px 9px;}
+.sc-val{font-size:15px;font-weight:500;color:#1C1B18;}
+.sc-key{font-size:10px;color:#A9A6A0;margin-top:1px;}
+
+/* Chain */
+.chain{display:flex;flex-direction:column;gap:5px;}
+.chain-row{display:flex;align-items:center;gap:7px;font-size:11px;color:#5C5850;}
+.cdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.chain-note{font-size:10px;color:#A9A6A0;margin-top:7px;padding:5px 8px;background:#F2F1EE;border-radius:4px;line-height:1.4;}
+
+/* Footer */
+.dp-foot{padding:12px 16px;margin-top:auto;}
+.prac-btn{width:100%;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:9px;border-radius:7px;background:#1C1B18;color:#FAF8F3;border:none;cursor:pointer;}
+.prac-sub{font-size:10px;color:#A9A6A0;text-align:center;margin-top:5px;}
+</style>
+
+<h2 class="sr-only">Parler — Grammar Map showing knowledge tree for B1 learner, Subjonctif présent selected</h2>
+
+<div class="root">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">par<span>ler</span></div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Learn</div>
+      <div class="sb-item">
+        <svg viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5h6M4 7h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Today's session
+      </div>
+      <div class="sb-item">
+        <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 4.5V7L8.5 8.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Progress
+      </div>
+      <div class="sb-item active">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 11L5 2l3 6 2-3 2 6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Grammar map
+      </div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-label">Topics</div>
+      <div class="sb-item"><div class="sb-dot" style="background:#4A9E6A;"></div>Articles</div>
+      <div class="sb-item"><div class="sb-dot" style="background:#4A9E6A;"></div>Passé composé</div>
+      <div class="sb-item active"><div class="sb-dot" style="background:#C4603A;"></div>Subjonctif</div>
+      <div class="sb-item"><div class="sb-dot" style="background:#D5D0C8;"></div>Conditionnel</div>
+      <div class="sb-item"><div class="sb-dot" style="background:#D5D0C8;"></div>Pronoms relatifs</div>
+    </div>
+    <div class="sb-progress">
+      <div class="sb-prog-label">B1 → B2</div>
+      <div class="sb-prog-row">
+        <div class="sb-prog-bar"><div class="sb-prog-fill" style="width:62%"></div></div>
+        <div class="sb-prog-val">62%</div>
+      </div>
+      <div class="sb-streak"><div class="sb-streak-dot"></div>7-day streak · 142 xp today</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="topbar">
+      <div class="topbar-bc">
+        Grammar map
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="#A9A6A0" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span>Subjonctif présent</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="tb-btn">All levels</button>
+        <button class="tb-btn primary">Practice now</button>
+      </div>
+    </div>
+
+    <div class="prog-summary">
+      <div class="ps-item"><div class="ps-dot" style="background:#4A9E6A;"></div>32 mastered</div>
+      <div class="ps-item"><div class="ps-dot" style="background:#C4603A;"></div>3 in progress</div>
+      <div class="ps-item"><div class="ps-dot" style="background:#D5D0C8;"></div>9 open</div>
+      <div class="ps-item"><div class="ps-dot" style="background:#E3E2DF;"></div>34 locked</div>
+      <div class="ps-total">78 concepts total</div>
+    </div>
+
+    <div class="map-body">
+
+      <div class="graph-scroll" id="gs">
+        <div class="graph-inner">
+
+          <!-- A1 -->
+          <div class="lvl-col">
+            <div class="lvl-header">
+              <div class="lvl-badge mastered">A1</div>
+              <div class="lvl-sublabel g">14 / 14 mastered</div>
+            </div>
+            <div class="lvl-nodes">
+              <div class="node mastered">Pronoms sujets</div>
+              <div class="node mastered">Être et avoir</div>
+              <div class="node mastered">Verbes en -er</div>
+              <div class="node mastered">Articles déf./indéf.</div>
+              <div class="node mastered">Adjectifs qualif.</div>
+              <div class="node mastered">Négation de base</div>
+              <div class="node mastered">Questions simples</div>
+              <div class="node mastered">Nombres</div>
+              <div class="node mastered">Prépositions lieu</div>
+              <div class="node mastered">Adj. possessifs</div>
+              <div class="node mastered">Impératif présent</div>
+              <div class="node mastered">Genre et accord</div>
+              <div class="node mastered">C'est / Il est</div>
+              <div class="node mastered">Il y a</div>
+            </div>
+          </div>
+
+          <div class="lvl-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="#4A9E6A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <!-- A2 -->
+          <div class="lvl-col">
+            <div class="lvl-header">
+              <div class="lvl-badge mastered">A2</div>
+              <div class="lvl-sublabel g">15 / 15 mastered</div>
+            </div>
+            <div class="lvl-nodes">
+              <div class="node mastered">Passé composé (avoir)</div>
+              <div class="node mastered">Passé composé (être)</div>
+              <div class="node mastered">L'imparfait</div>
+              <div class="node mastered">Futur proche</div>
+              <div class="node mastered">Verbes en -ir/-re</div>
+              <div class="node mastered">Verbes irréguliers</div>
+              <div class="node mastered">Articles contractés</div>
+              <div class="node mastered">Articles partitifs</div>
+              <div class="node mastered">Place de l'adjectif</div>
+              <div class="node mastered">Les adverbes</div>
+              <div class="node mastered">Pronoms COD</div>
+              <div class="node mastered">Pronoms COI</div>
+              <div class="node mastered">Adj. démonstratifs</div>
+              <div class="node mastered">Verbes pronominaux</div>
+              <div class="node mastered">Le comparatif</div>
+            </div>
+          </div>
+
+          <div class="lvl-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="#C4603A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <!-- B1 CURRENT -->
+          <div class="lvl-col">
+            <div class="lvl-header">
+              <div class="lvl-badge current">B1 · now</div>
+              <div class="lvl-sublabel o">3 mastered · 3 in progress</div>
+            </div>
+            <div class="lvl-nodes">
+              <div class="node mastered">Imparfait vs passé c.</div>
+              <div class="node mastered">Futur simple</div>
+              <div class="node mastered">Conditionnel présent</div>
+              <div class="node active selected">Subjonctif présent</div>
+              <div class="node active">Pronoms relatifs</div>
+              <div class="node active">Pronoms toniques</div>
+              <div class="node open">Y et en</div>
+              <div class="node open">Double pronoms</div>
+              <div class="node open">Le superlatif</div>
+              <div class="node open">Négation étendue</div>
+              <div class="node open">Pronoms interrogatifs</div>
+              <div class="node open">Depuis/pendant/il y a</div>
+              <div class="node open">Faire causatif</div>
+              <div class="node open">Le gérondif</div>
+              <div class="node open">Si clauses (type 1)</div>
+            </div>
+          </div>
+
+          <div class="lvl-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="#C0BDB6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <!-- B2 locked -->
+          <div class="lvl-col">
+            <div class="lvl-header">
+              <div class="lvl-badge locked">B2</div>
+              <div class="lvl-sublabel">14 locked</div>
+            </div>
+            <div class="lvl-nodes">
+              <div class="node locked">Subjonctif étendu</div>
+              <div class="node locked">Plus-que-parfait</div>
+              <div class="node locked">Futur antérieur</div>
+              <div class="node locked">Conditionnel passé</div>
+              <div class="node locked">La voix passive</div>
+              <div class="node locked">Si clauses 2 et 3</div>
+              <div class="node locked">Discours indirect</div>
+              <div class="node locked">La nominalisation</div>
+              <div class="node locked">Pronoms rel. cx.</div>
+              <div class="node locked">Concessifs/opposition</div>
+              <div class="node locked">Cause/conséquence</div>
+              <div class="node locked">Constructions inf.</div>
+              <div class="node locked">Struct. emphatiques</div>
+              <div class="node locked">Registre de langue</div>
+            </div>
+          </div>
+
+          <div class="lvl-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="#C0BDB6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <!-- C1 locked -->
+          <div class="lvl-col">
+            <div class="lvl-header">
+              <div class="lvl-badge locked">C1</div>
+              <div class="lvl-sublabel">12 locked</div>
+            </div>
+            <div class="lvl-nodes">
+              <div class="node locked">Subjonctif passé</div>
+              <div class="node locked">Subjonctif imparfait</div>
+              <div class="node locked">Le passé simple</div>
+              <div class="node locked">Le passé antérieur</div>
+              <div class="node locked">Conditionnel journ.</div>
+              <div class="node locked">Négation nuancée</div>
+              <div class="node locked">Nominalisation abstr.</div>
+              <div class="node locked">Connecteurs discurs.</div>
+              <div class="node locked">Participes implicites</div>
+              <div class="node locked">Passif complexe</div>
+              <div class="node locked">Inversion stylistique</div>
+              <div class="node locked">Constructions idiom.</div>
+            </div>
+          </div>
+
+          <div class="lvl-arrow">
+            <svg width="16" height="14" viewBox="0 0 16 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="#C0BDB6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+
+          <!-- C2 locked -->
+          <div class="lvl-col">
+            <div class="lvl-header">
+              <div class="lvl-badge locked">C2</div>
+              <div class="lvl-sublabel">8 locked</div>
+            </div>
+            <div class="lvl-nodes">
+              <div class="node locked">Temps littéraires</div>
+              <div class="node locked">Struct. rhétoriques</div>
+              <div class="node locked">Précision lexicale</div>
+              <div class="node locked">Variations régionales</div>
+              <div class="node locked">Vocab. archaïque</div>
+              <div class="node locked">Registre stylistique</div>
+              <div class="node locked">Ellipse syntaxique</div>
+              <div class="node locked">Ironie et implicature</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DETAIL PANEL -->
+      <div class="detail-panel">
+        <div class="dp-head">
+          <div class="dp-eyebrow">Selected concept</div>
+          <div class="dp-name">Subjonctif présent</div>
+          <div class="dp-tags">
+            <span class="dp-tag" style="background:#FFF3EC;color:#C4603A;">B1</span>
+            <span class="dp-tag" style="background:#EEEDFE;color:#534AB7;">in progress</span>
+            <span class="dp-tag" style="background:#EAF3DE;color:#27500A;">community</span>
+          </div>
+        </div>
+
+        <div class="dp-sec">
+          <div class="dp-sec-label">Mastery</div>
+          <div class="mastery-row">
+            <div class="ring-wrap">
+              <svg width="44" height="44" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="16" fill="none" stroke="#E3E2DF" stroke-width="4"/>
+                <circle cx="22" cy="22" r="16" fill="none" stroke="#C4603A" stroke-width="4"
+                  stroke-dasharray="100.5" stroke-dashoffset="27" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-val">73%</div>
+            </div>
+            <div class="mstats">
+              <div class="mstat"><strong>73%</strong> accuracy</div>
+              <div class="mstat"><strong>18</strong> exercises done</div>
+              <div class="mstat sub">2 more to assess mastery</div>
+            </div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-cell"><div class="sc-val">18</div><div class="sc-key">Exercises</div></div>
+            <div class="stat-cell"><div class="sc-val">73%</div><div class="sc-key">Accuracy</div></div>
+            <div class="stat-cell"><div class="sc-val">2d</div><div class="sc-key">Last seen</div></div>
+            <div class="stat-cell"><div class="sc-val" style="font-size:12px;color:#C4603A;padding-top:2px;">active</div><div class="sc-key">Status</div></div>
+          </div>
+        </div>
+
+        <div class="dp-sec">
+          <div class="dp-sec-label">Builds on ↑</div>
+          <div class="chain">
+            <div class="chain-row"><div class="cdot" style="background:#4A9E6A;"></div>L'imparfait (A2)</div>
+            <div class="chain-row"><div class="cdot" style="background:#4A9E6A;"></div>Verbes irréguliers (A2)</div>
+            <div class="chain-row"><div class="cdot" style="background:#4A9E6A;"></div>Pronoms COI (A2)</div>
+          </div>
+          <div class="chain-note">Requires prerequisite mapping to populate automatically</div>
+        </div>
+
+        <div class="dp-sec">
+          <div class="dp-sec-label">Unlocks ↓</div>
+          <div class="chain">
+            <div class="chain-row"><div class="cdot" style="background:#D5D0C8;"></div>Subjonctif étendu (B2)</div>
+            <div class="chain-row"><div class="cdot" style="background:#D5D0C8;"></div>Subjonctif passé (C1)</div>
+            <div class="chain-row"><div class="cdot" style="background:#D5D0C8;"></div>Subjonctif imparfait (C1)</div>
+          </div>
+          <div class="chain-note">Requires prerequisite mapping to populate automatically</div>
+        </div>
+
+        <div class="dp-foot">
+          <button class="prac-btn">Practice this concept</button>
+          <div class="prac-sub">~10 min · 10 exercises</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('gs').scrollLeft = 270;
+</script>

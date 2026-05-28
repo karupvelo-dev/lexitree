@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { Sidebar } from '@/components/Sidebar'
 import { supabaseBrowser } from '@/lib/supabase-browser'
 import {
   A1_ORDER, A1_CONCEPTS,
@@ -23,26 +24,26 @@ const LEVEL_DATA = {
 
 const LEVEL_ORDER = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
-const LEVEL_META = {
-  A1:  { label: 'A1',  concepts: 14 },
-  A2:  { label: 'A2',  concepts: 15 },
-  B1:  { label: 'B1',  concepts: 15 },
-  B2:  { label: 'B2',  concepts: 14 },
-  C1:  { label: 'C1',  concepts: 12 },
-  C2:  { label: 'C2',  concepts: 8  },
-}
+const LEVEL_META = Object.fromEntries(
+  LEVEL_ORDER.map(lvl => [lvl, { label: lvl, concepts: LEVEL_DATA[lvl].order.length }])
+)
 
 export default function MapPage() {
   const router = useRouter()
   const { user, signInWithGoogle, signOut } = useAuth()
   const [selected, setSelected] = useState(null)
   const [performance, setPerformance] = useState({})
-  const [userLevel, setUserLevel] = useState('B1')
+  const [userLevel, setUserLevel] = useState(null)
+  const [mobileLevel, setMobileLevel] = useState(null)
+  const [levelLoaded, setLevelLoaded] = useState(false)
   const graphRef = useRef(null)
 
   useEffect(() => {
-    const level = localStorage.getItem('lexitree_level') ?? 'B1'
+    const level = localStorage.getItem('lexitree_level')
+    setLevelLoaded(true)
+    if (!level) return
     setUserLevel(level)
+    setMobileLevel(level ?? 'A1')
 
     // Scroll so the current level column is roughly centred
     if (graphRef.current) {
@@ -53,7 +54,10 @@ export default function MapPage() {
 
   // Fetch latest session per concept across all levels to colour nodes
   useEffect(() => {
-    if (!user) return
+    if (!user) {
+      setPerformance({})
+      return
+    }
     supabaseBrowser
       .from('sessions')
       .select('concept, score, total')
@@ -79,8 +83,24 @@ export default function MapPage() {
     router.push('/session')
   }
 
+  const isSignedOut = user === null
+
+  const mobileNodes = (() => {
+    if (!mobileLevel || !LEVEL_DATA[mobileLevel]) return []
+    const isLocked = isSignedOut && mobileLevel !== 'A1'
+    const effectiveLevel = isSignedOut ? 'A1' : userLevel
+    const isAccessible = !isLocked && !!effectiveLevel && LEVEL_ORDER.indexOf(mobileLevel) <= LEVEL_ORDER.indexOf(effectiveLevel)
+    const { order, concepts } = LEVEL_DATA[mobileLevel]
+    return order.map(slug => ({
+      slug,
+      label: concepts[slug].mapLabel,
+      state: isLocked ? 'locked' : isAccessible ? (performance[slug] ?? 'open') : 'grey',
+      concept: isLocked ? { locked: true, level: mobileLevel } : isAccessible ? { ...concepts[slug], level: mobileLevel } : null,
+    }))
+  })()
+
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'var(--font-sans)', background: 'var(--bg)', overflow: 'hidden' }}>
+    <div className="mobile-header-offset" style={{ display: 'flex', height: '100vh', fontFamily: 'var(--font-sans)', background: 'var(--bg)', overflow: 'hidden' }}>
       <style>{`
         .gm-scrollbar::-webkit-scrollbar { height: 5px; width: 5px; }
         .gm-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -88,42 +108,31 @@ export default function MapPage() {
         .dp-scrollbar::-webkit-scrollbar { width: 4px; }
         .dp-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
         .gm-node:hover { filter: brightness(0.96); }
+        .gm-map-mobile { display: none; }
+        @media (max-width: 768px) {
+          .gm-desktop-panel { display: none !important; }
+          .gm-map-desktop { display: none !important; }
+          .gm-map-mobile { display: flex !important; flex-direction: column; flex: 1; overflow: hidden; }
+          .gm-level-tabs::-webkit-scrollbar { display: none; }
+          .gm-summary-bar span { display: none; }
+          .gm-summary-bar { padding: 6px 8px; gap: 6px; }
+          .gm-mobile-sheet {
+            position: fixed; left: 0; right: 0; bottom: 60px; z-index: 150;
+            background: var(--white); border-top: 1px solid var(--border);
+            border-radius: 16px 16px 0 0; max-height: 65vh; overflow-y: auto;
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.10);
+            transform: translateY(100%); transition: transform 0.25s ease;
+            pointer-events: none;
+          }
+          .gm-mobile-sheet.open { transform: translateY(0); pointer-events: auto; }
+        }
+        @media (min-width: 769px) {
+          .gm-mobile-sheet { display: none !important; }
+        }
       `}</style>
 
       {/* ── SIDEBAR ── */}
-      <div style={{ width: 220, minWidth: 220, background: 'var(--white)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', padding: '12px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px 16px', borderBottom: '1px solid var(--border)', marginBottom: 8 }}>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 17, color: 'var(--dark)' }}>
-            Lexitree<span style={{ color: 'var(--terracotta)', fontStyle: 'italic' }}>.</span>
-          </span>
-        </div>
-
-        <div style={{ padding: '0 8px', marginBottom: 4 }}>
-          <div style={sbLabel}>Learn</div>
-          <SbItem href="/session" label="Today's session" icon={<TodayIcon />} />
-          <SbItem href="/map"     label="Grammar map"    icon={<MapIcon />}   active />
-          <SbItem href="/archive" label="Archive"        icon={<ArchiveIcon />} />
-        </div>
-
-        <div style={{ marginTop: 'auto', padding: '12px 14px 4px', borderTop: '1px solid var(--border)' }}>
-          {user === null && (
-            <button onClick={signInWithGoogle} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 10px', background: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 12, color: 'var(--mid)', cursor: 'pointer' }}>
-              <GoogleIcon size={13} /> Sign in to save progress
-            </button>
-          )}
-          {user && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0' }}>
-              <UserAvatar user={user} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, color: 'var(--dark)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {user.user_metadata?.full_name ?? user.email}
-                </div>
-                <button onClick={signOut} style={{ fontSize: 11, color: 'var(--light)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Sign out</button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <Sidebar active="map" user={user} signInWithGoogle={signInWithGoogle} signOut={signOut} />
 
       {/* ── MAIN ── */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -131,56 +140,58 @@ export default function MapPage() {
         {/* Topbar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--light)' }}>
-            Grammar map
+            <h1 style={{ fontSize: 13, fontWeight: 'inherit', color: 'inherit', margin: 0 }}>Grammar map</h1>
             {selected && <>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="var(--light)" strokeWidth="1.2" strokeLinecap="round"/></svg>
               <span style={{ color: 'var(--dark)', fontWeight: 500 }}>{selected.nameFr}</span>
             </>}
           </div>
           {selected && (
-            <button onClick={() => handlePractice(selected)} style={{ fontSize: 12, fontFamily: 'var(--font-sans)', padding: '5px 12px', borderRadius: 'var(--radius)', border: 'none', background: 'var(--dark)', color: 'var(--white)', cursor: 'pointer' }}>
+            <button onClick={() => handlePractice(selected)} style={{ fontSize: 12, fontFamily: 'var(--font-sans)', padding: '5px 14px', borderRadius: '500px', border: 'none', background: 'var(--dark)', color: 'var(--white)', cursor: 'pointer', fontWeight: 600 }}>
               Practice now
             </button>
           )}
         </div>
 
         {/* Summary bar */}
-        <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', flexShrink: 0, background: 'var(--white)' }}>
+        <div className="gm-summary-bar" style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid var(--border)', flexShrink: 0, background: 'var(--white)' }}>
           <SummaryDot color="var(--border)" label="not practiced" />
           <SummaryDot color="var(--green)" label="good (≥70%)" />
           <SummaryDot color="#D97706" label="needs work" />
           <SummaryDot color="var(--red)" label="struggling" />
           <div style={{ marginLeft: 'auto', padding: '9px 16px', fontSize: 11, color: 'var(--light)' }}>
-            {userLevel} · {LEVEL_META[userLevel]?.concepts ?? '–'} concepts
+            {userLevel ? `${userLevel} · ${LEVEL_META[userLevel]?.concepts ?? '–'} concepts` : null}
           </div>
         </div>
 
         {/* Map body */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
 
-          {/* Graph scroll */}
-          <div ref={graphRef} className="gm-scrollbar" style={{ flex: 1, overflowX: 'auto', overflowY: 'auto', padding: '20px 24px', background: 'var(--bg)' }}>
+          {/* Graph scroll — desktop only */}
+          <div ref={graphRef} className="gm-scrollbar gm-map-desktop" style={{ flex: 1, overflowX: 'auto', overflowY: 'auto', padding: '20px 24px', background: 'var(--bg)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', minWidth: 'max-content', gap: 0 }}>
 
               {LEVEL_ORDER.map((lvl, i) => {
-                const isCurrent = lvl === userLevel
-                const isAccessible = LEVEL_ORDER.indexOf(lvl) <= LEVEL_ORDER.indexOf(userLevel)
-                const isBeforeCurrent = LEVEL_ORDER.indexOf(userLevel) === i + 1
+                const isLocked = isSignedOut && lvl !== 'A1'
+                const effectiveLevel = isSignedOut ? 'A1' : userLevel
+                const isCurrent = !isSignedOut && lvl === userLevel
+                const isAccessible = !isLocked && !!effectiveLevel && LEVEL_ORDER.indexOf(lvl) <= LEVEL_ORDER.indexOf(effectiveLevel)
+                const isBeforeCurrent = !isSignedOut && LEVEL_ORDER.indexOf(userLevel) === i + 1
                 const meta = LEVEL_META[lvl]
 
                 const { order, concepts } = LEVEL_DATA[lvl]
                 const nodes = order.map(slug => ({
                   slug,
                   label: concepts[slug].mapLabel,
-                  state: isAccessible ? (performance[slug] ?? 'open') : 'grey',
-                  concept: isAccessible ? { ...concepts[slug], level: lvl } : null,
+                  state: isLocked ? 'locked' : isAccessible ? (performance[slug] ?? 'open') : 'grey',
+                  concept: isLocked ? { locked: true, level: lvl } : isAccessible ? { ...concepts[slug], level: lvl } : null,
                 }))
 
                 return (
                   <div key={lvl} style={{ display: 'flex', alignItems: 'flex-start' }}>
                     <LevelCol
                       level={isCurrent ? `${lvl} · now` : lvl}
-                      badge={isCurrent ? 'current' : isAccessible ? 'accessible' : 'grey'}
+                      badge={isLocked ? 'locked' : isCurrent ? 'current' : isAccessible ? 'accessible' : 'grey'}
                       sublabel={`${meta.concepts} concepts`}
                       sublabelColor={isCurrent ? 'var(--terracotta)' : 'var(--light)'}
                       nodes={nodes}
@@ -197,9 +208,99 @@ export default function MapPage() {
             </div>
           </div>
 
-          {/* Detail panel */}
-          <div className="dp-scrollbar" style={{ width: 230, minWidth: 230, borderLeft: '1px solid var(--border)', background: 'var(--white)', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-            {selected ? <DetailPanel concept={selected} onPractice={handlePractice} /> : <EmptyDetail />}
+          {/* Mobile: level tabs + vertical concept list */}
+          <div className="gm-map-mobile">
+            {/* Level tab strip */}
+            <div className="gm-level-tabs" style={{ display: 'flex', gap: 6, padding: '10px 16px', borderBottom: '1px solid var(--border)', overflowX: 'auto', flexShrink: 0, WebkitOverflowScrolling: 'touch' }}>
+              {LEVEL_ORDER.map(lvl => {
+                const isTab = lvl === mobileLevel
+                const isLocked = isSignedOut && lvl !== 'A1'
+                const effectiveLevel = isSignedOut ? 'A1' : userLevel
+                const isAccessible = !isLocked && !!effectiveLevel && LEVEL_ORDER.indexOf(lvl) <= LEVEL_ORDER.indexOf(effectiveLevel)
+                return (
+                  <button
+                    key={lvl}
+                    onClick={() => { setMobileLevel(lvl); setSelected(null) }}
+                    style={{
+                      flexShrink: 0,
+                      padding: '5px 14px',
+                      borderRadius: 20,
+                      fontSize: 12,
+                      fontWeight: isTab ? 600 : 400,
+                      fontFamily: 'var(--font-sans)',
+                      border: isTab ? 'none' : '1px solid var(--border)',
+                      background: isTab ? (isLocked ? 'var(--light)' : 'var(--terracotta)') : 'var(--white)',
+                      color: isTab ? 'var(--white)' : isLocked ? 'var(--light)' : isAccessible ? 'var(--dark)' : 'var(--light)',
+                      cursor: 'pointer',
+                      opacity: (!isAccessible && !isLocked && !isTab) ? 0.5 : 1,
+                    }}
+                  >
+                    {isLocked ? `🔒 ${lvl}` : lvl}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Vertical concept list */}
+            <div style={{ flex: 1, overflowY: 'auto', background: 'var(--white)' }}>
+              {mobileNodes.map((node, i) => {
+                const isSelected = selected?.slug === node.slug
+                const dotColor = { open: 'transparent', good: 'var(--green)', medium: '#D97706', poor: 'var(--red)', grey: 'transparent' }[node.state] ?? 'transparent'
+                const dotBorder = (node.state === 'open' || node.state === 'grey') ? '1.5px solid var(--border)' : 'none'
+                return (
+                  <div
+                    key={i}
+                    onClick={node.concept ? () => setSelected(isSelected ? null : node.concept) : undefined}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '13px 16px',
+                      borderBottom: '1px solid var(--border)',
+                      background: isSelected ? 'var(--terracotta-bg)' : 'var(--white)',
+                      cursor: node.concept ? 'pointer' : 'default',
+                      opacity: node.state === 'grey' ? 0.5 : 1,
+                    }}
+                  >
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, border: dotBorder, flexShrink: 0 }} />
+                    <span style={{ flex: 1, fontSize: 14, color: isSelected ? 'var(--terracotta)' : node.state === 'grey' ? 'var(--light)' : 'var(--dark)', fontWeight: isSelected ? 500 : 400 }}>
+                      {node.label}
+                    </span>
+                    {node.concept && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M4.5 3l3 3-3 3" stroke={isSelected ? 'var(--terracotta)' : 'var(--light)'} strokeWidth="1.2" strokeLinecap="round"/>
+                      </svg>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Detail panel — desktop only */}
+          <div className="dp-scrollbar gm-desktop-panel" style={{ width: 230, minWidth: 230, borderLeft: '1px solid var(--border)', background: 'var(--white)', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+            {selected?.locked
+              ? <LockedDetail onSignIn={signInWithGoogle} />
+              : selected
+                ? <DetailPanel concept={selected} onPractice={handlePractice} />
+                : <EmptyDetail />}
+          </div>
+
+          {/* Mobile bottom sheet */}
+          <div className={`gm-mobile-sheet${selected ? ' open' : ''}`}>
+            <div style={{ padding: '10px 16px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 4, background: 'var(--border)', borderRadius: 2 }} />
+              <button
+                onClick={() => setSelected(null)}
+                style={{ position: 'absolute', right: 16, top: 10, background: 'none', border: 'none', fontSize: 20, color: 'var(--light)', cursor: 'pointer', lineHeight: 1, padding: 4 }}
+              >
+                ×
+              </button>
+            </div>
+            {selected && (selected.locked
+              ? <LockedDetail onSignIn={signInWithGoogle} />
+              : <DetailPanel concept={selected} onPractice={handlePractice} />
+            )}
           </div>
 
         </div>
@@ -215,6 +316,7 @@ function LevelCol({ level, badge, sublabel, sublabelColor, nodes, selected, onSe
     current:    { background: 'var(--terracotta-bg)', color: 'var(--terracotta)' },
     accessible: { background: 'var(--white)',          color: 'var(--mid)',        border: '1px solid var(--border)' },
     grey:       { background: 'var(--bg)',             color: 'var(--light)',      border: '1px solid var(--border)', opacity: 0.6 },
+    locked:     { background: 'var(--bg)',             color: 'var(--light)',      border: '1px solid var(--border)', opacity: 0.5 },
   }
 
   return (
@@ -239,6 +341,7 @@ function LevelCol({ level, badge, sublabel, sublabelColor, nodes, selected, onSe
 function Node({ node, isSelected, onSelect }) {
   const styles = {
     grey:   { background: 'var(--bg)',        border: '1px solid var(--border)', color: 'var(--light)', opacity: 0.55, cursor: 'default' },
+    locked: { background: 'var(--bg)',        border: '1px solid var(--border)', color: 'var(--light)', opacity: 0.55 },
     open:   { background: 'var(--white)',     border: '1px solid var(--border)', color: 'var(--dark)' },
     good:   { background: 'var(--green-light)', border: '1px solid var(--green)', color: 'var(--green)' },
     medium: { background: '#FEF3C7',          border: '1px solid #D97706',       color: '#92400E' },
@@ -292,7 +395,7 @@ function DetailPanel({ concept, onPractice }) {
     <>
       <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid var(--border)' }}>
         <div style={dpEyebrow}>Selected concept</div>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 17, fontWeight: 400, color: 'var(--dark)', lineHeight: 1.3, marginBottom: 8 }}>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--dark)', lineHeight: 1.3, marginBottom: 8, letterSpacing: '-0.02em' }}>
           {concept.nameFr}
         </div>
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
@@ -317,17 +420,10 @@ function DetailPanel({ concept, onPractice }) {
         </div>
       </div>
 
-      <div style={dpSec}>
-        <div style={dpSecLabel}>Examples</div>
-        <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: 12, color: 'var(--dark)', lineHeight: 1.7 }}>
-          {concept.keyTerms}
-        </p>
-      </div>
-
       <div style={{ padding: '12px 16px', marginTop: 'auto' }}>
         <button
           onClick={() => onPractice(concept)}
-          style={{ width: '100%', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500, padding: 9, borderRadius: 'var(--radius)', background: 'var(--dark)', color: 'var(--white)', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s' }}
+          style={{ width: '100%', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, padding: '0 16px', minHeight: 40, borderRadius: '500px', background: 'var(--dark)', color: 'var(--white)', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
           onMouseOut={e => e.currentTarget.style.opacity = '1'}
         >
@@ -350,14 +446,25 @@ function EmptyDetail() {
   )
 }
 
-// ─── Sidebar helpers ──────────────────────────────────────────────────────────
-
-function SbItem({ href, label, icon, active }) {
+function LockedDetail({ onSignIn }) {
   return (
-    <a href={href} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', borderRadius: 'var(--radius)', fontSize: 13, color: active ? 'var(--dark)' : 'var(--mid)', fontWeight: active ? 500 : 400, background: active ? 'var(--terracotta-bg)' : 'transparent', textDecoration: 'none' }}>
-      {icon}
-      {label}
-    </a>
+    <div style={{ padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div>
+        <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase', color: 'var(--light)', marginBottom: 8 }}>Locked</div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--dark)', letterSpacing: '-0.02em', lineHeight: 1.3 }}>Sign in to unlock A2–C2</div>
+      </div>
+      <p style={{ fontSize: 12, color: 'var(--mid)', lineHeight: 1.65, margin: 0 }}>
+        Create a free account, take the 7-question placement test, and unlock the levels that match your French.
+      </p>
+      <button
+        onClick={onSignIn}
+        style={{ width: '100%', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, padding: '0 16px', minHeight: 40, borderRadius: '500px', background: 'var(--dark)', color: 'var(--white)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.15s' }}
+        onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
+        onMouseOut={e => e.currentTarget.style.opacity = '1'}
+      >
+        Sign in with Google
+      </button>
+    </div>
   )
 }
 
@@ -367,45 +474,8 @@ function Tag({ bg, color, children }) {
   return <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 4, background: bg, color }}>{children}</span>
 }
 
-function GoogleIcon({ size = 16 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
-      <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
-      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
-      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
-      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
-    </svg>
-  )
-}
-
-function UserAvatar({ user }) {
-  const name = user.user_metadata?.full_name ?? user.email ?? '?'
-  const avatar = user.user_metadata?.avatar_url
-  if (avatar) return <img src={avatar} alt={name} width={24} height={24} style={{ borderRadius: '50%', flexShrink: 0 }} />
-  return (
-    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#C4603A', color: '#fff', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      {name[0].toUpperCase()}
-    </div>
-  )
-}
-
-// ─── SVG icons ────────────────────────────────────────────────────────────────
-
-const iconStyle = { width: 14, height: 14, flexShrink: 0 }
-
-function TodayIcon() {
-  return <svg viewBox="0 0 14 14" fill="none" style={iconStyle}><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.2"/><path d="M4 5h6M4 7h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-}
-function MapIcon() {
-  return <svg viewBox="0 0 14 14" fill="none" style={iconStyle}><path d="M2 11L5 2l3 6 2-3 2 6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-}
-function ArchiveIcon() {
-  return <svg viewBox="0 0 14 14" fill="none" style={iconStyle}><path d="M1.5 4.5h11M1.5 4.5a1 1 0 011-1h9a1 1 0 011 1M1.5 4.5v7a1 1 0 001 1h9a1 1 0 001-1v-7M5.5 7h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
-}
-
 // ─── Style constants ──────────────────────────────────────────────────────────
 
-const sbLabel = { fontSize: 10, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase', color: 'var(--light)', padding: '6px 8px 4px' }
 const dpEyebrow = { fontSize: 10, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase', color: 'var(--light)', marginBottom: 8 }
 const dpSec = { padding: '12px 16px', borderBottom: '1px solid var(--border)' }
 const dpSecLabel = { fontSize: 10, fontWeight: 500, letterSpacing: '0.6px', textTransform: 'uppercase', color: 'var(--light)', marginBottom: 10 }

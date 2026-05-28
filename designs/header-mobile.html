@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Header — 3 Options</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #000; --mid: #545454; --light: #ADADAD;
+      --border: #E2E2E2; --bg: #F6F6F6; --white: #fff;
+      --green: #0E8345; --green-light: #D4EDDA;
+      --red: #D1293D;
+      --amber: #D97706; --amber-bg: #FEF3C7; --amber-border: #F59E0B;
+      --font: 'Inter', system-ui, sans-serif;
+      --font-serif: 'Lora', Georgia, serif;
+    }
+
+    body {
+      font-family: var(--font); background: #111; color: var(--dark);
+      -webkit-font-smoothing: antialiased;
+      padding: 48px 24px 80px; display: flex; flex-direction: column; align-items: center; gap: 80px;
+    }
+
+    /* ── Section labels ── */
+    .section { display: flex; flex-direction: column; align-items: center; gap: 0; width: 100%; max-width: 1100px; }
+    .section-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); margin-bottom: 6px; align-self: flex-start;
+    }
+    .section-desc { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 28px; align-self: flex-start; line-height: 1.5; }
+    .options-row { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; }
+
+    /* ── Phone frame ── */
+    .phone-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .option-label {
+      font-size: 13px; font-weight: 700; color: white; letter-spacing: -0.01em;
+    }
+    .option-sub { font-size: 11px; color: rgba(255,255,255,0.45); text-align: center; max-width: 200px; line-height: 1.5; }
+    .recommended-badge {
+      display: inline-block; background: var(--amber); color: white;
+      font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 500px;
+      letter-spacing: 0.06em; text-transform: uppercase; margin-top: 2px;
+    }
+
+    .phone {
+      width: 240px; background: var(--bg); border-radius: 24px; overflow: hidden;
+      box-shadow: 0 24px 56px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    /* ── Fake screen content ── */
+    .content-area { padding: 20px 16px; }
+    .content-label { font-size: 11px; color: var(--light); margin-bottom: 6px; }
+    .content-title { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 4px; font-family: var(--font-serif); }
+    .content-sub { font-size: 13px; color: var(--mid); margin-bottom: 16px; }
+    .content-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; font-size: 12px; color: var(--mid); line-height: 1.6;
+    }
+    .content-btn {
+      width: 100%; margin-top: 14px; padding: 0 16px; height: 44px; border-radius: 500px;
+      background: var(--dark); color: white; border: none; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; letter-spacing: 0.01em;
+    }
+
+    /* ── Bottom nav ── */
+    .bottom-nav {
+      display: flex; background: var(--white); border-top: 1px solid var(--border); height: 56px;
+    }
+    .nav-tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; font-size: 9px; color: var(--light);
+    }
+    .nav-tab.active { color: var(--dark); }
+    .nav-icon { font-size: 15px; line-height: 1; }
+
+    /* ══════════════════════════════════════
+       HEADER VARIANTS
+    ══════════════════════════════════════ */
+
+    /* ── Shared header base ── */
+    .header {
+      display: flex; align-items: center;
+      height: 56px; padding: 0 16px;
+      background: var(--white); border-bottom: 1px solid var(--border);
+      position: relative; flex-shrink: 0;
+    }
+    .logo {
+      font-size: 16px; font-weight: 800; letter-spacing: -0.05em;
+      color: var(--dark); text-decoration: none;
+    }
+    .spacer { flex: 1; }
+
+    /* Avatar */
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--dark); color: white;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; cursor: pointer;
+    }
+
+    /* Sign in button */
+    .signin-btn {
+      padding: 0 14px; height: 32px; border-radius: 500px;
+      background: var(--dark); color: white;
+      font-size: 11px; font-weight: 700; border: none; cursor: pointer;
+      display: flex; align-items: center; letter-spacing: 0.01em;
+    }
+
+    /* ── OPTION A: Minimal — avatar only, streak as dot badge ── */
+    .avatar-wrap { position: relative; }
+    .streak-dot {
+      position: absolute; top: -2px; right: -2px;
+      background: var(--amber); color: white;
+      font-size: 8px; font-weight: 800; border-radius: 500px;
+      padding: 1px 4px; border: 1.5px solid var(--white);
+      line-height: 1.4; white-space: nowrap;
+    }
+
+    /* ── OPTION B: Streak chip + avatar ── */
+    .streak-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 500px;
+      background: var(--amber-bg); border: 1.5px solid var(--amber-border);
+      font-size: 12px; font-weight: 800; color: var(--amber);
+      letter-spacing: -0.01em; margin-right: 10px; cursor: pointer;
+    }
+
+    /* ── OPTION C: Full stats strip ── */
+    .stats-strip {
+      display: flex; align-items: center; gap: 8px; margin-right: 10px;
+    }
+    .stat-pill {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 3px 8px; border-radius: 500px;
+      background: var(--bg); border: 1px solid var(--border);
+      font-size: 10px; font-weight: 700; color: var(--mid);
+    }
+    .stat-pill.amber { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber); }
+    .stat-pill.green { background: var(--green-light); border-color: var(--green); color: var(--green); }
+
+    /* ── Logged-out variants ── */
+    .signin-text {
+      font-size: 12px; font-weight: 600; color: var(--mid); cursor: pointer;
+      background: none; border: none; padding: 0;
+    }
+
+    /* Dividers between sections */
+    .divider { width: 100%; max-width: 1100px; height: 1px; background: rgba(255,255,255,0.08); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     SECTION 1: LOGGED-IN HEADER
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Section 1 — Logged in · streak active</div>
+  <div class="section-desc">User has a 14-day streak. Avatar taps → profile page. Streak taps → profile page. No more accidental sign-out.</div>
+  <div class="options-row">
+
+    <!-- OPTION A -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <div class="avatar-wrap">
+            <div class="avatar">N</div>
+            <div class="streak-dot">🔥14</div>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">A — Minimal</div>
+      <div class="option-sub">Streak as a badge dot on the avatar. Cleanest, least distraction.</div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <div class="streak-chip">🔥 14</div>
+          <div class="avatar">N</div>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">B — Streak chip</div>
+      <div class="option-sub">Amber pill shows streak prominently next to avatar. High motivation visibility.</div>
+      <div class="recommended-badge">Recommended</div>
+    </div>
+
+    <!-- OPTION C -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <div class="stats-strip">
+            <div class="stat-pill amber">🔥 14</div>
+            <div class="stat-pill green">B1</div>
+            <div class="stat-pill">74%</div>
+          </div>
+          <div class="avatar">N</div>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">C — Stats strip</div>
+      <div class="option-sub">Streak + level + accuracy all visible. Most information, tightest fit.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════
+     SECTION 2: LOGGED-OUT HEADER
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Section 2 — Logged out</div>
+  <div class="section-desc">Guest user. No streak shown. CTA to sign in visible in header at all times.</div>
+  <div class="options-row">
+
+    <!-- OPTION A -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <button class="signin-text">Sign in →</button>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">A — Text link</div>
+      <div class="option-sub">Minimal "Sign in →" text. Doesn't compete with content.</div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <button class="signin-btn">Sign in</button>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">B — Pill button</div>
+      <div class="option-sub">Black pill button. High visibility, clear CTA. Uber's exact pattern.</div>
+      <div class="recommended-badge">Recommended</div>
+    </div>
+
+    <!-- OPTION C -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <button class="signin-btn" style="background:var(--white);color:var(--dark);border:1.5px solid var(--border);">Sign in</button>
+          &nbsp;
+          <button class="signin-btn" style="font-size:10px;padding:0 10px;">Get started</button>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">C — Sign in + Get started</div>
+      <div class="option-sub">Two CTAs: returning users and new users. More cluttered but higher conversion surface.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════
+     SECTION 3: HEADER STYLE ITSELF
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Section 3 — Header background treatment</div>
+  <div class="section-desc">Same content (Option B logged-in), different visual treatment for the header bar itself.</div>
+  <div class="options-row">
+
+    <!-- OPTION A: White -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header" style="background:var(--white);border-bottom:1px solid var(--border);">
+          <span class="logo">LexiTree</span>
+          <div class="spacer"></div>
+          <div class="streak-chip">🔥 14</div>
+          <div class="avatar">N</div>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">A — White header</div>
+      <div class="option-sub">Same white as sidebar. Clean, invisible chrome. Uber default.</div>
+      <div class="recommended-badge">Recommended</div>
+    </div>
+
+    <!-- OPTION B: Transparent / blurred -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div style="position:relative;">
+          <div class="header" style="background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,0,0,0.06);position:absolute;top:0;left:0;right:0;z-index:10;">
+            <span class="logo">LexiTree</span>
+            <div class="spacer"></div>
+            <div class="streak-chip">🔥 14</div>
+            <div class="avatar">N</div>
+          </div>
+          <div class="content-area" style="padding-top:76px;">
+            <div class="content-label">Today's session</div>
+            <div class="content-title">Être et avoir</div>
+            <div class="content-sub">Être and avoir</div>
+            <div class="content-card">
+              Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+              <div class="content-btn">Start today's lesson →</div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">B — Frosted glass</div>
+      <div class="option-sub">Translucent blur. Content scrolls underneath header. iOS-native feel.</div>
+    </div>
+
+    <!-- OPTION C: Black header -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="header" style="background:var(--dark);border-bottom:none;">
+          <span class="logo" style="color:white;">LexiTree</span>
+          <div class="spacer"></div>
+          <div class="streak-chip" style="background:rgba(217,119,6,0.2);border-color:rgba(245,158,11,0.5);color:#FBB040;">🔥 14</div>
+          <div class="avatar" style="background:rgba(255,255,255,0.15);color:white;">N</div>
+        </div>
+        <div class="content-area">
+          <div class="content-label">Today's session</div>
+          <div class="content-title">Être et avoir</div>
+          <div class="content-sub">Être and avoir</div>
+          <div class="content-card">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            <div class="content-btn">Start today's lesson →</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-tab active"><div class="nav-icon">📖</div>Today</div>
+          <div class="nav-tab"><div class="nav-icon">🗺</div>Map</div>
+          <div class="nav-tab"><div class="nav-icon">📝</div>Vocab</div>
+        </div>
+      </div>
+      <div class="option-label">C — Black header</div>
+      <div class="option-sub">Full black bar. High contrast, bold brand presence. Dramatic.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════
+     SECTION 4: DESKTOP — SIDEBAR + TOPBAR
+══════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Section 4 — Desktop: how header fits with existing sidebar</div>
+  <div class="section-desc">Sidebar stays. A slim top bar appears inside the content area only, carrying level badge + streak. Keeps desktop layout intact.</div>
+  <div class="options-row">
+
+    <!-- OPTION A: Topbar inside content only -->
+    <div class="phone-wrap" style="width:100%;max-width:680px;">
+      <div style="display:flex;width:100%;background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 24px 56px rgba(0,0,0,0.5);">
+        <!-- Sidebar -->
+        <div style="width:140px;background:white;border-right:1px solid var(--border);padding:16px 10px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+          <div style="font-size:13px;font-weight:800;letter-spacing:-0.05em;color:var(--dark);padding:0 6px;margin-bottom:14px;">LexiTree</div>
+          <div style="font-size:11px;padding:6px 8px;border-radius:6px;background:var(--bg);color:var(--dark);font-weight:500;">📖 Today</div>
+          <div style="font-size:11px;padding:6px 8px;border-radius:6px;color:var(--mid);">🗺 Map</div>
+          <div style="font-size:11px;padding:6px 8px;border-radius:6px;color:var(--mid);">📝 Vocab</div>
+          <div style="font-size:11px;padding:6px 8px;border-radius:6px;color:var(--mid);">📦 Archive</div>
+          <div style="margin-top:auto;padding:8px;background:var(--bg);border-radius:6px;border:1px solid var(--border);">
+            <div style="font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);margin-bottom:3px;">Level</div>
+            <div style="font-size:14px;font-weight:800;color:var(--dark);">B1</div>
+          </div>
+        </div>
+        <!-- Content + topbar -->
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;padding:0 20px;height:48px;background:white;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--light);">Today's session</span>
+            <div style="flex:1;"></div>
+            <div style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:500px;background:var(--amber-bg);border:1px solid var(--amber-border);font-size:11px;font-weight:800;color:var(--amber);margin-right:10px;">🔥 14</div>
+            <div style="width:26px;height:26px;border-radius:50%;background:var(--dark);color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">N</div>
+          </div>
+          <div style="padding:20px;">
+            <div style="font-size:20px;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px;">Être et avoir</div>
+            <div style="font-size:12px;color:var(--mid);margin-bottom:14px;">Être and avoir</div>
+            <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:11px;color:var(--mid);line-height:1.6;">
+              Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="option-label">A — Breadcrumb topbar inside content</div>
+      <div class="option-sub">Topbar only spans the content area. Sidebar stays. Streak + avatar at top right of content. Most incremental change.</div>
+      <div class="recommended-badge">Recommended</div>
+    </div>
+
+    <!-- OPTION B: Full-width topbar above everything -->
+    <div class="phone-wrap" style="width:100%;max-width:680px;">
+      <div style="display:flex;flex-direction:column;background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 24px 56px rgba(0,0,0,0.5);">
+        <!-- Full-width topbar -->
+        <div style="display:flex;align-items:center;padding:0 20px;height:52px;background:white;border-bottom:1px solid var(--border);">
+          <span style="font-size:15px;font-weight:800;letter-spacing:-0.05em;color:var(--dark);margin-right:32px;">LexiTree</span>
+          <div style="display:flex;gap:20px;flex:1;">
+            <span style="font-size:12px;font-weight:600;color:var(--dark);">Today</span>
+            <span style="font-size:12px;color:var(--light);">Map</span>
+            <span style="font-size:12px;color:var(--light);">Vocab</span>
+            <span style="font-size:12px;color:var(--light);">Archive</span>
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:500px;background:var(--amber-bg);border:1px solid var(--amber-border);font-size:12px;font-weight:800;color:var(--amber);margin-right:10px;">🔥 14</div>
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--dark);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">N</div>
+        </div>
+        <div style="display:flex;height:200px;">
+          <div style="width:140px;background:white;border-right:1px solid var(--border);padding:14px 10px;flex-shrink:0;">
+            <div style="font-size:11px;padding:6px 8px;border-radius:6px;background:var(--bg);color:var(--dark);font-weight:500;">📖 Today</div>
+            <div style="font-size:11px;padding:6px 8px;border-radius:6px;color:var(--mid);margin-top:4px;">🗺 Map</div>
+          </div>
+          <div style="flex:1;padding:16px;">
+            <div style="font-size:18px;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px;">Être et avoir</div>
+            <div style="font-size:11px;color:var(--mid);">Être and avoir</div>
+          </div>
+        </div>
+      </div>
+      <div class="option-label">B — Full-width topbar, nav links inline</div>
+      <div class="option-sub">Topbar spans full width with nav links replacing sidebar. More Uber-like. Bigger redesign effort.</div>
+    </div>
+
+    <!-- OPTION C: No sidebar, topbar only -->
+    <div class="phone-wrap" style="width:100%;max-width:680px;">
+      <div style="display:flex;flex-direction:column;background:var(--bg);border-radius:16px;overflow:hidden;box-shadow:0 24px 56px rgba(0,0,0,0.5);">
+        <div style="display:flex;align-items:center;padding:0 24px;height:56px;background:white;border-bottom:1px solid var(--border);">
+          <span style="font-size:16px;font-weight:800;letter-spacing:-0.05em;color:var(--dark);">LexiTree</span>
+          <div style="flex:1;"></div>
+          <div style="display:flex;gap:24px;margin-right:24px;">
+            <span style="font-size:13px;font-weight:600;color:var(--dark);border-bottom:2px solid var(--dark);padding-bottom:2px;">Today</span>
+            <span style="font-size:13px;color:var(--light);">Map</span>
+            <span style="font-size:13px;color:var(--light);">Vocab</span>
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:500px;background:var(--amber-bg);border:1px solid var(--amber-border);font-size:12px;font-weight:800;color:var(--amber);margin-right:10px;">🔥 14</div>
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--dark);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">N</div>
+        </div>
+        <div style="padding:24px;max-width:500px;margin:0 auto;width:100%;">
+          <div style="font-size:11px;color:var(--light);margin-bottom:6px;">Today's session</div>
+          <div style="font-size:22px;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px;">Être et avoir</div>
+          <div style="font-size:12px;color:var(--mid);margin-bottom:14px;">Être and avoir</div>
+          <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:11px;color:var(--mid);line-height:1.6;">
+            Être and avoir are the two foundational verbs in French and the auxiliaries for all compound tenses.
+          </div>
+        </div>
+      </div>
+      <div class="option-label">C — No sidebar, centered content</div>
+      <div class="option-sub">Sidebar removed entirely. Content centered with max-width. Full Uber website layout. Largest redesign.</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

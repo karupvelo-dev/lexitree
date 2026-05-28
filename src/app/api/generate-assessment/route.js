@@ -126,6 +126,7 @@ QUALITY RULES — every question must satisfy all of these:
 
 5. Each question tests its assigned concept ONLY — no other grammar.
 6. Exactly 4 options per question.
+6a. The "question" field must contain ONLY the sentence with ___ as the blank. Never embed the options or any list of choices inside the question text — they are displayed separately in the UI.
 7. The answer must exactly match one of the 4 options character-for-character.
 8. Distractors must be real French forms — just wrong in this context.
 9. Explanation in English, 1–2 sentences. Name the forcing cue that makes this the only valid answer.

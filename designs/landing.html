@@ -1,0 +1,267 @@
+export default function LexiTreeLanding() {
+  return (
+    <div className="min-h-screen bg-[#0B1020] text-white overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-100px] left-[-100px] w-[400px] h-[400px] bg-purple-500/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-100px] right-[-100px] w-[400px] h-[400px] bg-cyan-500/20 rounded-full blur-3xl" />
+      </div>
+
+      {/* NAV */}
+      <nav className="relative z-10 flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
+        <div className="text-2xl font-bold tracking-tight">
+          🌳 LexiTree
+        </div>
+
+        <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
+          <a href="#">Features</a>
+          <a href="#">Progress</a>
+          <a href="#">Pricing</a>
+          <button className="bg-white text-black px-5 py-2 rounded-full font-medium hover:scale-105 transition-transform">
+            Start Free
+          </button>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section className="relative z-10 max-w-7xl mx-auto px-8 pt-10 pb-24 grid lg:grid-cols-2 gap-16 items-center">
+        {/* LEFT */}
+        <div>
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/10 rounded-full px-4 py-2 text-sm text-white/80 mb-6">
+            ✨ Learn visually. Think fluently.
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-black leading-[0.95] tracking-tight mb-6">
+            French finally
+            <span className="text-cyan-400"> clicks.</span>
+          </h1>
+
+          <p className="text-xl text-white/70 leading-relaxed max-w-xl mb-8">
+            Build your language like a living world. Discover connected words,
+            unlock fluency districts, and watch your vocabulary grow visually.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 mb-10">
+            <button className="bg-cyan-400 text-black px-7 py-4 rounded-2xl font-semibold text-lg hover:scale-[1.03] transition-transform shadow-2xl shadow-cyan-500/20">
+              Start Learning Free
+            </button>
+
+            <button className="border border-white/15 bg-white/5 px-7 py-4 rounded-2xl font-semibold text-lg hover:bg-white/10 transition-colors">
+              Watch Demo
+            </button>
+          </div>
+
+          {/* SOCIAL PROOF */}
+          <div className="flex items-center gap-6 text-white/50 text-sm">
+            <div>⭐ 4.9/5 learner rating</div>
+            <div>🔥 120k daily streaks</div>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="relative">
+          <div className="relative bg-white/5 border border-white/10 rounded-[32px] p-8 backdrop-blur-xl shadow-2xl">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <div className="text-white/50 text-sm mb-1">Your French Map</div>
+                <div className="text-2xl font-bold">Travel District</div>
+              </div>
+
+              <div className="bg-cyan-400 text-black px-4 py-2 rounded-full text-sm font-bold">
+                Level 7
+              </div>
+            </div>
+
+            {/* WORD GRAPH */}
+            <div className="relative h-[350px] rounded-3xl bg-[#11182E] overflow-hidden border border-white/5">
+              {/* Connection Lines */}
+              <svg className="absolute inset-0 w-full h-full">
+                <line x1="120" y1="170" x2="200" y2="90" stroke="#38BDF8" strokeOpacity="0.3" strokeWidth="2" />
+                <line x1="120" y1="170" x2="270" y2="170" stroke="#38BDF8" strokeOpacity="0.3" strokeWidth="2" />
+                <line x1="120" y1="170" x2="210" y2="270" stroke="#38BDF8" strokeOpacity="0.3" strokeWidth="2" />
+                <line x1="270" y1="170" x2="350" y2="120" stroke="#38BDF8" strokeOpacity="0.2" strokeWidth="2" />
+              </svg>
+
+              {/* CENTER NODE */}
+              <div className="absolute left-[80px] top-[130px] w-24 h-24 rounded-full bg-cyan-400 text-black flex items-center justify-center font-bold text-lg shadow-2xl shadow-cyan-500/30 animate-pulse">
+                Voyage
+              </div>
+
+              {/* CONNECTED NODES */}
+              <div className="absolute left-[180px] top-[50px] bg-white/10 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md">
+                ✈️ Avion
+              </div>
+
+              <div className="absolute left-[250px] top-[145px] bg-white/10 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md">
+                🏨 Hôtel
+              </div>
+
+              <div className="absolute left-[190px] top-[250px] bg-white/10 border border-white/10 px-5 py-3 rounded-2xl backdrop-blur-md">
+                🍽️ Restaurant
+              </div>
+
+              <div className="absolute left-[340px] top-[90px] bg-purple-500/20 border border-purple-500/20 px-4 py-2 rounded-2xl text-purple-200 text-sm backdrop-blur-md">
+                Locked 🔒
+              </div>
+
+              {/* XP */}
+              <div className="absolute bottom-6 left-6 right-6">
+                <div className="flex items-center justify-between text-sm mb-2 text-white/60">
+                  <span>Progress</span>
+                  <span>78%</span>
+                </div>
+
+                <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full w-[78%] bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* MICRO INTERACTION */}
+            <div className="mt-8 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/20 rounded-3xl p-6">
+              <div className="text-sm text-cyan-200 mb-2">
+                Mini Challenge
+              </div>
+
+              <div className="text-2xl font-bold mb-4">
+                You already know 14 French travel words.
+              </div>
+
+              <div className="flex flex-wrap gap-3 mb-5">
+                {['Taxi', 'Restaurant', 'Menu', 'Hotel'].map((word) => (
+                  <div
+                    key={word}
+                    className="bg-white/10 border border-white/10 px-4 py-2 rounded-full text-sm"
+                  >
+                    {word}
+                  </div>
+                ))}
+              </div>
+
+              <button className="bg-white text-black px-5 py-3 rounded-xl font-semibold hover:scale-105 transition-transform">
+                Unlock My Language Map
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VALUE STRIP */}
+      <section className="relative z-10 border-y border-white/10 bg-white/5 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-8 py-10 grid md:grid-cols-3 gap-8">
+          <div>
+            <div className="text-4xl mb-3">🧠</div>
+            <div className="text-xl font-bold mb-2">See connections</div>
+            <p className="text-white/60 leading-relaxed">
+              Vocabulary grows like a visual map instead of isolated flashcards.
+            </p>
+          </div>
+
+          <div>
+            <div className="text-4xl mb-3">🔥</div>
+            <div className="text-xl font-bold mb-2">Build momentum</div>
+            <p className="text-white/60 leading-relaxed">
+              Daily streaks and unlock systems keep learners consistently engaged.
+            </p>
+          </div>
+
+          <div>
+            <div className="text-4xl mb-3">🚀</div>
+            <div className="text-xl font-bold mb-2">Feel fluent faster</div>
+            <p className="text-white/60 leading-relaxed">
+              The app is designed around confidence and visible progress.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section className="relative z-10 max-w-7xl mx-auto px-8 py-24">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 rounded-full px-4 py-2 text-sm mb-5">
+            Premium Acceleration
+          </div>
+
+          <h2 className="text-5xl font-black tracking-tight mb-4">
+            Become conversational faster.
+          </h2>
+
+          <p className="text-white/60 text-lg max-w-2xl mx-auto">
+            Unlock advanced districts, AI speaking practice, and unlimited map expansion.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* FREE */}
+          <div className="bg-white/5 border border-white/10 rounded-[32px] p-10 backdrop-blur-xl">
+            <div className="text-white/50 mb-3">Free</div>
+            <div className="text-5xl font-black mb-6">₹0</div>
+
+            <div className="space-y-4 text-white/70 mb-10">
+              <div>✓ Daily lessons</div>
+              <div>✓ Basic language map</div>
+              <div>✓ Limited streak rewards</div>
+              <div>✓ Beginner districts</div>
+            </div>
+
+            <button className="w-full border border-white/15 bg-white/5 py-4 rounded-2xl font-semibold hover:bg-white/10 transition-colors">
+              Start Free
+            </button>
+          </div>
+
+          {/* PREMIUM */}
+          <div className="relative bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-[32px] p-10 backdrop-blur-xl overflow-hidden">
+            <div className="absolute top-4 right-4 bg-cyan-400 text-black text-xs font-black px-3 py-1 rounded-full">
+              MOST POPULAR
+            </div>
+
+            <div className="text-cyan-200 mb-3">Premium</div>
+            <div className="flex items-end gap-2 mb-6">
+              <div className="text-5xl font-black">₹499</div>
+              <div className="text-white/60 mb-1">/ month</div>
+            </div>
+
+            <div className="space-y-4 text-white/80 mb-10">
+              <div>✓ AI speaking coach</div>
+              <div>✓ Unlimited districts</div>
+              <div>✓ Smart weak-point review</div>
+              <div>✓ Streak protection</div>
+              <div>✓ Advanced fluency challenges</div>
+            </div>
+
+            <div className="bg-black/20 rounded-2xl p-4 mb-6 border border-white/10">
+              <div className="text-sm text-white/60 mb-1">Estimated fluency pace</div>
+              <div className="flex items-center justify-between text-lg font-semibold">
+                <span>Free → 14 months</span>
+                <span className="text-cyan-300">Premium → 5 months</span>
+              </div>
+            </div>
+
+            <button className="w-full bg-cyan-400 text-black py-4 rounded-2xl font-bold hover:scale-[1.02] transition-transform shadow-2xl shadow-cyan-500/20">
+              Unlock Premium
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="relative z-10 max-w-5xl mx-auto px-8 pb-24 text-center">
+        <div className="bg-white/5 border border-white/10 rounded-[40px] p-12 backdrop-blur-xl">
+          <div className="text-5xl mb-5">🌍</div>
+
+          <h2 className="text-5xl font-black tracking-tight mb-5">
+            Your fluency journey starts visually.
+          </h2>
+
+          <p className="text-white/60 text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
+            Join thousands building their language map every day.
+          </p>
+
+          <button className="bg-white text-black px-8 py-5 rounded-2xl text-lg font-bold hover:scale-105 transition-transform">
+            Create My Language Map
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexitree — Carte du Vocabulaire</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #edeae2;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.app {
+  width: 100%;
+  max-width: 1020px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 28px;
+  padding: 0 4px;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8a8070;
+  margin-bottom: 5px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 300;
+  color: #2a2418;
+  letter-spacing: -0.01em;
+}
+
+.stats {
+  display: flex;
+  gap: 28px;
+  align-items: flex-end;
+}
+
+.stat { text-align: right; }
+
+.stat .val {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2a2418;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.stat .lbl {
+  display: block;
+  font-size: 10px;
+  color: #8a8070;
+  margin-top: 3px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* ── Map card ────────────────────────────────────────────────────────── */
+.map-card {
+  background: #F5F0E8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+  padding: 32px 0 36px;
+  overflow: hidden;
+}
+
+#map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ── Legend ──────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 22px;
+  flex-wrap: wrap;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #6a6058;
+  letter-spacing: 0.04em;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────── */
+#tooltip {
+  position: fixed;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  background: #2a2418;
+  color: #f0ebe0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 180px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+}
+
+#tooltip.show { opacity: 1; }
+.tt-word { font-size: 17px; font-weight: 700; margin-bottom: 2px; }
+.tt-pos  { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #9a907e; margin-bottom: 8px; }
+.tt-def  { font-size: 13px; color: #c8bfaa; line-height: 1.5; margin-bottom: 10px; }
+.tt-bar  { display: flex; gap: 4px; align-items: center; }
+.tt-pip  { width: 7px; height: 7px; border-radius: 50%; background: #3a3028; border: 1px solid #4a4038; flex-shrink: 0; }
+.tt-pip.on { background: currentColor; border-color: currentColor; }
+.tt-mlabel { font-size: 10px; color: #6a6058; margin-left: 5px; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div>
+      <div class="eyebrow">Lexitree · Vocabulaire</div>
+      <h1>Carte du vocabulaire</h1>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="val" id="s-mastered">–</span>
+        <span class="lbl">maîtrisés</span>
+      </div>
+      <div class="stat">
+        <span class="val">B1</span>
+        <span class="lbl">niveau actuel</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="map-card">
+    <svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470"></svg>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item">
+      <svg width="14" height="14"><circle cx="7" cy="7" r="3.5" fill="none" stroke="#a09080" stroke-width="1.5"/></svg>
+      Non vu
+    </div>
+    <div class="leg-item">
+      <svg width="14" height="14"><circle cx="7" cy="7" r="4.5" fill="#b0a898"/></svg>
+      Aperçu (1–2×)
+    </div>
+    <div class="leg-item">
+      <svg width="14" height="14"><circle cx="7" cy="7" r="5.5" fill="#6a6058"/></svg>
+      Connu (3–5×)
+    </div>
+    <div class="leg-item">
+      <svg width="14" height="14"><circle cx="7" cy="7" r="7" fill="#C90E18"/></svg>
+      Maîtrisé (6+×)
+    </div>
+    <div class="leg-item">
+      <svg width="14" height="14"><circle cx="7" cy="7" r="4" fill="none" stroke="#c0bab0" stroke-width="1.5"/></svg>
+      Verrouillé
+    </div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-word" id="tt-w"></div>
+  <div class="tt-pos"  id="tt-p"></div>
+  <div class="tt-def"  id="tt-d"></div>
+  <div class="tt-bar"  id="tt-b"></div>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const SVG_W = 960, SVG_H = 470;
+
+const M = { UNSEEN:0, SEEN:1, KNOWN:2, MASTERED:3, LOCKED:4 };
+const MASTERY_LABELS = ['Non vu', 'Aperçu', 'Connu', 'Maîtrisé', ''];
+const MASTERY_PIPS   = [0, 1, 3, 6, 0];
+
+// Station radius per mastery state
+const RADIUS = { [M.UNSEEN]:3.5, [M.SEEN]:4.5, [M.KNOWN]:5.5, [M.MASTERED]:7, [M.LOCKED]:3.5 };
+
+// Zone layout — x0/x1 are the zone boundaries in SVG coords
+const ZONES = [
+  { id:'A1', x0:75,  x1:157, locked:false, current:false },
+  { id:'A2', x0:162, x1:264, locked:false, current:false },
+  { id:'B1', x0:269, x1:609, locked:false, current:true  },
+  { id:'B2', x0:614, x1:716, locked:true,  current:false },
+  { id:'C1', x0:721, x1:814, locked:true,  current:false },
+  { id:'C2', x0:819, x1:904, locked:true,  current:false },
+];
+
+// Line definitions
+const LINES = [
+  {
+    id: 'V', label: 'Verbes', badge: 'V', color: '#C90E18', y: 148,
+    words: {
+      A1: [
+        {w:'avoir',    m:M.MASTERED}, {w:'être',    m:M.MASTERED}, {w:'faire',   m:M.MASTERED}, {w:'aller',  m:M.MASTERED},
+        {w:'vouloir',  m:M.MASTERED}, {w:'pouvoir', m:M.MASTERED}, {w:'parler',  m:M.KNOWN   }, {w:'manger', m:M.SEEN    },
+      ],
+      A2: [
+        {w:'penser',   m:M.MASTERED}, {w:'croire',  m:M.MASTERED}, {w:'prendre', m:M.KNOWN   }, {w:'venir',  m:M.KNOWN   },
+        {w:'voir',     m:M.SEEN    }, {w:'partir',  m:M.SEEN    }, {w:'savoir',  m:M.UNSEEN  }, {w:'mettre', m:M.MASTERED},
+      ],
+      B1: [
+        {w:'parvenir', m:M.KNOWN   }, {w:'accomplir',m:M.SEEN   }, {w:'promettre',m:M.UNSEEN }, {w:'réussir',m:M.UNSEEN  },
+        {w:'obtenir',  m:M.KNOWN   }, {w:'atteindre',m:M.SEEN   }, {w:'prétendre',m:M.UNSEEN }, {w:'souhaiter',m:M.UNSEEN},
+      ],
+      B2: [{w:"s'avérer",m:M.LOCKED},{w:'préconiser',m:M.LOCKED},{w:'appréhender',m:M.LOCKED},{w:'susciter',m:M.LOCKED},{w:'corroborer',m:M.LOCKED},{w:'prévaloir',m:M.LOCKED},{w:'nuancer',m:M.LOCKED},{w:'atténuer',m:M.LOCKED}],
+      C1: [{w:'atermoyer',m:M.LOCKED},{w:'circonvenir',m:M.LOCKED},{w:'incommoder',m:M.LOCKED},{w:'achopper',m:M.LOCKED},{w:'réfuter',m:M.LOCKED},{w:'infirmer',m:M.LOCKED},{w:'persévérer',m:M.LOCKED},{w:'transcender',m:M.LOCKED}],
+      C2: [{w:'prodiguer',m:M.LOCKED},{w:'déceler',m:M.LOCKED},{w:'perpétuer',m:M.LOCKED},{w:'condescendre',m:M.LOCKED},{w:'prémunir',m:M.LOCKED},{w:'parachever',m:M.LOCKED},{w:'préempter',m:M.LOCKED},{w:'absoudre',m:M.LOCKED}],
+    }
+  },
+  {
+    id: 'A', label: 'Adjectifs', badge: 'A', color: '#003DA5', y: 271,
+    words: {
+      A1: [
+        {w:'grand',    m:M.MASTERED}, {w:'petit',   m:M.MASTERED}, {w:'bon',     m:M.MASTERED}, {w:'beau',   m:M.MASTERED},
+        {w:'vieux',    m:M.MASTERED}, {w:'jeune',   m:M.MASTERED}, {w:'nouveau', m:M.MASTERED}, {w:'premier',m:M.KNOWN   },
+      ],
+      A2: [
+        {w:'content',  m:M.MASTERED}, {w:'triste',  m:M.MASTERED}, {w:'fort',    m:M.KNOWN   }, {w:'faible', m:M.KNOWN   },
+        {w:'propre',   m:M.SEEN    }, {w:'sale',    m:M.SEEN    }, {w:'plein',   m:M.UNSEEN  }, {w:'vide',   m:M.MASTERED},
+      ],
+      B1: [
+        {w:'ambitieux',m:M.KNOWN   }, {w:'jaloux',  m:M.UNSEEN  }, {w:'courageux',m:M.SEEN   }, {w:'sérieux',m:M.KNOWN   },
+        {w:'précis',   m:M.UNSEEN  }, {w:'subtil',  m:M.UNSEEN  }, {w:'complexe', m:M.SEEN   }, {w:'étrange',m:M.UNSEEN  },
+      ],
+      B2: [{w:'nuancé',m:M.LOCKED},{w:'pertinent',m:M.LOCKED},{w:'rigoureux',m:M.LOCKED},{w:'concis',m:M.LOCKED},{w:'éloquent',m:M.LOCKED},{w:'lucide',m:M.LOCKED},{w:'pragmatique',m:M.LOCKED},{w:'équivoque',m:M.LOCKED}],
+      C1: [{w:'prépondérant',m:M.LOCKED},{w:'concomitant',m:M.LOCKED},{w:'récurrent',m:M.LOCKED},{w:'délétère',m:M.LOCKED},{w:'véhément',m:M.LOCKED},{w:'irréfutable',m:M.LOCKED},{w:'ostensible',m:M.LOCKED},{w:'fallacieux',m:M.LOCKED}],
+      C2: [{w:'acrimonieux',m:M.LOCKED},{w:'circonspect',m:M.LOCKED},{w:'apodictique',m:M.LOCKED},{w:'contingent',m:M.LOCKED},{w:'heuristique',m:M.LOCKED},{w:'paradoxal',m:M.LOCKED},{w:'ontologique',m:M.LOCKED},{w:'épistémique',m:M.LOCKED}],
+    }
+  },
+  {
+    id: 'Adv', label: 'Adverbes', badge: 'Adv', color: '#007852', y: 394,
+    words: {
+      A1: [
+        {w:'bien',     m:M.MASTERED}, {w:'mal',     m:M.MASTERED}, {w:'vite',    m:M.MASTERED}, {w:'très',   m:M.MASTERED},
+        {w:'déjà',     m:M.MASTERED}, {w:'encore',  m:M.MASTERED}, {w:'ici',     m:M.MASTERED}, {w:'là',     m:M.KNOWN   },
+      ],
+      A2: [
+        {w:'souvent',  m:M.MASTERED}, {w:'parfois', m:M.KNOWN   }, {w:'toujours',m:M.MASTERED}, {w:'jamais', m:M.MASTERED},
+        {w:'beaucoup', m:M.KNOWN   }, {w:'peu',     m:M.SEEN    }, {w:'assez',   m:M.SEEN    }, {w:'trop',   m:M.MASTERED},
+      ],
+      B1: [
+        {w:'rapidement',m:M.SEEN   }, {w:'absolument',m:M.UNSEEN}, {w:'clairement',m:M.KNOWN }, {w:'sincèrement',m:M.UNSEEN},
+        {w:'désormais', m:M.UNSEEN }, {w:'notamment', m:M.SEEN  }, {w:'davantage', m:M.UNSEEN}, {w:'soudainement',m:M.UNSEEN},
+      ],
+      B2: [{w:'néanmoins',m:M.LOCKED},{w:'toutefois',m:M.LOCKED},{w:'pourtant',m:M.LOCKED},{w:'quoique',m:M.LOCKED},{w:'voire',m:M.LOCKED},{w:'cependant',m:M.LOCKED},{w:'nécessairement',m:M.LOCKED},{w:'inévitablement',m:M.LOCKED}],
+      C1: [{w:'intrinsèquement',m:M.LOCKED},{w:'conséquemment',m:M.LOCKED},{w:'paradoxalement',m:M.LOCKED},{w:'ostensiblement',m:M.LOCKED},{w:'vraisemblablement',m:M.LOCKED},{w:'irrémédiablement',m:M.LOCKED},{w:'indéniablement',m:M.LOCKED},{w:'incontestablement',m:M.LOCKED}],
+      C2: [{w:'péremptoirement',m:M.LOCKED},{w:'nonobstant',m:M.LOCKED},{w:'inexorablement',m:M.LOCKED},{w:'immuablement',m:M.LOCKED},{w:'réciproquement',m:M.LOCKED},{w:'subséquemment',m:M.LOCKED},{w:'conjointement',m:M.LOCKED},{w:'corrélativement',m:M.LOCKED}],
+    }
+  },
+];
+
+// POS labels for tooltip
+const POS_LABELS = { V:'verbe', A:'adjectif', Adv:'adverbe' };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Compute n evenly-spaced station x positions within a zone (with inner padding)
+function stationXs(zone, n) {
+  const pad = 9;
+  const start = zone.x0 + pad, end = zone.x1 - pad;
+  if (n === 1) return [(start + end) / 2];
+  return Array.from({length:n}, (_, i) => start + i * (end - start) / (n - 1));
+}
+
+// Station fill/stroke for each mastery state (non-locked)
+function stationStyle(m, lineColor) {
+  if (m === M.UNSEEN)   return { fill:'none',      stroke:'#a09080', sw:1.5 };
+  if (m === M.SEEN)     return { fill:'#b0a898',   stroke:'#b0a898', sw:0   };
+  if (m === M.KNOWN)    return { fill:'#6a6058',   stroke:'#6a6058', sw:0   };
+  if (m === M.MASTERED) return { fill:lineColor,   stroke:lineColor, sw:0   };
+  return { fill:'none', stroke:'#c8c0b2', sw:1.5 }; // locked
+}
+
+// ── SVG builder ───────────────────────────────────────────────────────────────
+
+function buildSVG() {
+  let s = '';
+
+  // ── 1. Zone backgrounds ──────────────────────────────────────────────────
+
+  // Subtle alternating zone tints
+  const ZONE_TINTS = ['#F5F0E8','#EDE8DF','#F5F0E8','#EDE8DF','#F5F0E8','#EDE8DF'];
+  ZONES.forEach((z, i) => {
+    s += `<rect x="${z.x0}" y="60" width="${z.x1-z.x0}" height="${SVG_H-80}"
+               fill="${ZONE_TINTS[i]}" opacity="0.5"/>`;
+  });
+
+  // B1 current zone — slightly brighter highlight
+  const b1 = ZONES.find(z => z.id === 'B1');
+  s += `<rect x="${b1.x0}" y="60" width="${b1.x1-b1.x0}" height="${SVG_H-80}"
+             fill="#FAFAF5"/>`;
+
+  // ── 2. Zone divider lines ───────────────────────────────────────────────
+
+  // Between zones (not at edges)
+  [[157,162],[264,269],[609,614],[716,721],[814,819]].forEach(([a,b]) => {
+    const mx = (a+b)/2;
+    s += `<line x1="${mx}" y1="68" x2="${mx}" y2="${SVG_H-20}"
+               stroke="#c8c0b0" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+  });
+
+  // ── 3. Zone header labels ───────────────────────────────────────────────
+
+  ZONES.forEach(z => {
+    const cx = (z.x0 + z.x1) / 2;
+    const col = z.locked ? '#bab2a8' : z.current ? '#2a2418' : '#6a6058';
+    const fw  = z.current ? '700' : '500';
+    s += `<text x="${cx}" y="52" text-anchor="middle" font-size="11"
+               font-weight="${fw}" fill="${col}" letter-spacing="0.08"
+               font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+               >${z.id}</text>`;
+    if (z.current) {
+      s += `<text x="${cx}" y="65" text-anchor="middle" font-size="8"
+                 fill="#8a7a68" letter-spacing="0.05"
+                 font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+                 >Intermédiaire</text>`;
+    }
+    if (z.locked) {
+      s += `<text x="${cx}" y="65" text-anchor="middle" font-size="8"
+                 fill="#c0b8ae" letter-spacing="0.05"
+                 font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+                 >— —</text>`;
+    }
+  });
+
+  // ── 4. "Vous êtes ici" indicator ────────────────────────────────────────
+
+  const vei_x = b1.x1;
+  s += `<line x1="${vei_x}" y1="68" x2="${vei_x}" y2="${SVG_H-20}"
+             stroke="#e07800" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.7"/>`;
+
+  // Badge above
+  const badgeText = '← B1 · vous êtes ici';
+  s += `<rect x="${vei_x - 98}" y="28" width="96" height="18" rx="4"
+             fill="#e07800" opacity="0.9"/>`;
+  s += `<text x="${vei_x - 50}" y="40" text-anchor="middle" font-size="8.5"
+             font-weight="600" fill="#ffffff" letter-spacing="0.05"
+             font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+             >${badgeText}</text>`;
+
+  // ── 5. Locked zone overlays ─────────────────────────────────────────────
+
+  const lockedZones = ZONES.filter(z => z.locked);
+  lockedZones.forEach(z => {
+    s += `<rect x="${z.x0}" y="68" width="${z.x1-z.x0}" height="${SVG_H-88}"
+               fill="rgba(230,225,215,0.55)" pointer-events="none"/>`;
+  });
+
+  // ── 6. Lines, badges, stations ──────────────────────────────────────────
+
+  LINES.forEach(line => {
+    const y = line.y;
+    const col = line.color;
+
+    // Track — full width across all zones, grey in locked zones
+    // Unlocked portion
+    const lastUnlocked = ZONES.filter(z => !z.locked)[ZONES.filter(z => !z.locked).length - 1];
+    s += `<line x1="30" y1="${y}" x2="${lastUnlocked.x1}" y2="${y}"
+               stroke="${col}" stroke-width="3" stroke-linecap="round"/>`;
+    // Locked portion (grey)
+    const firstLocked = lockedZones[0];
+    s += `<line x1="${firstLocked.x0}" y1="${y}" x2="${ZONES[ZONES.length-1].x1+20}" y2="${y}"
+               stroke="#c0b8ae" stroke-width="2.5" stroke-linecap="round"/>`;
+
+    // Left terminus badge (circle + letter)
+    s += `<circle cx="30" cy="${y}" r="14" fill="${col}"/>`;
+    s += `<text x="30" y="${y+1}" text-anchor="middle" dominant-baseline="middle"
+               font-size="${line.badge.length > 1 ? 7 : 9}" font-weight="700" fill="#ffffff"
+               font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+               >${line.badge}</text>`;
+
+    // Left line name label
+    s += `<text x="50" y="${y - 16}" text-anchor="start" font-size="8.5"
+               font-weight="600" fill="${col}" letter-spacing="0.05"
+               font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+               >Ligne ${line.badge} — ${line.label}</text>`;
+
+    // Right terminus bar
+    s += `<rect x="${ZONES[ZONES.length-1].x1+18}" y="${y-4}" width="12" height="8"
+               rx="2" fill="#c0b8ae"/>`;
+
+    // ── Stations per zone ──────────────────────────────────────────────
+
+    ZONES.forEach(zone => {
+      const words = line.words[zone.id];
+      if (!words || words.length === 0) return;
+      const xs = stationXs(zone, words.length);
+
+      words.forEach((entry, i) => {
+        const x = xs[i];
+        const { m } = entry;
+        const locked = zone.locked;
+        const current = zone.current;
+
+        if (locked) {
+          // Locked: hollow small grey circle
+          s += `<circle cx="${x}" cy="${y}" r="3.5"
+                         fill="none" stroke="#c0b8ae" stroke-width="1.2"/>`;
+          return;
+        }
+
+        // Unlocked station
+        const st = stationStyle(m, col);
+        const r = RADIUS[m];
+
+        // White backing ring for mastered (creates halo)
+        if (m === M.MASTERED) {
+          s += `<circle cx="${x}" cy="${y}" r="${r+2}" fill="white"/>`;
+        }
+
+        s += `<circle cx="${x}" cy="${y}" r="${r}"
+                       fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"
+                       class="station"
+                       data-word="${entry.w}" data-pos="${POS_LABELS[line.id]}"
+                       data-mastery="${m}" data-current="${current}"
+                       data-color="${col}"
+                       style="cursor:${current ? 'pointer' : 'default'}"/>`;
+
+        // B1 station labels — 45° alternating above/below
+        if (current) {
+          const above = (i % 2 === 0);
+          const pad   = r + 5;
+          const ay    = above ? y - pad : y + pad;
+          const anchor = above ? 'end' : 'start';
+
+          // mastery-tinted label color
+          const labelCol = m === M.MASTERED ? col :
+                           m === M.KNOWN    ? '#4a4038' :
+                           m === M.SEEN     ? '#7a7068' : '#a09888';
+
+          s += `<text
+                   x="${x}" y="${ay}"
+                   transform="rotate(-45 ${x} ${ay})"
+                   text-anchor="${anchor}"
+                   font-size="8.5"
+                   fill="${labelCol}"
+                   font-family="-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif"
+                   class="station-label"
+                   pointer-events="none"
+                 >${entry.w}</text>`;
+        }
+      });
+    });
+  });
+
+  // ── 7. Zone end caps (terminus squares at each zone boundary) ───────────
+
+  // Small square terminus marks at right end of unlocked zones
+  [b1].forEach(z => {
+    LINES.forEach(line => {
+      s += `<rect x="${z.x1-2}" y="${line.y-4}" width="4" height="8" fill="${line.color}"/>`;
+    });
+  });
+
+  return s;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+const svg = document.getElementById('map');
+svg.innerHTML = buildSVG();
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+let totalMastered = 0;
+LINES.forEach(line => {
+  Object.values(line.words).forEach(ws => {
+    ws.forEach(w => { if (w.m === M.MASTERED) totalMastered++; });
+  });
+});
+document.getElementById('s-mastered').textContent = totalMastered;
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+
+const tip   = document.getElementById('tooltip');
+const ttW   = document.getElementById('tt-w');
+const ttP   = document.getElementById('tt-p');
+const ttD   = document.getElementById('tt-d');
+const ttB   = document.getElementById('tt-b');
+
+// Quick definition lookup (sample definitions for demo)
+const DEFS = {
+  parvenir:'to manage / to succeed in', accomplir:'to accomplish / carry out', promettre:'to promise',
+  réussir:'to succeed / to pass', obtenir:'to obtain / to get', atteindre:'to reach / to achieve',
+  prétendre:'to claim / to aspire', souhaiter:'to wish / to hope',
+  ambitieux:'ambitious', jaloux:'jealous / envious', courageux:'courageous / brave',
+  sérieux:'serious / earnest', précis:'precise / exact', subtil:'subtle / refined',
+  complexe:'complex / intricate', étrange:'strange / unusual',
+  rapidement:'quickly / rapidly', absolument:'absolutely', clairement:'clearly',
+  sincèrement:'sincerely / honestly', désormais:'from now on / henceforth',
+  notamment:'notably / in particular', davantage:'more / further', soudainement:'suddenly',
+};
+
+svg.addEventListener('mousemove', e => {
+  const el = e.target;
+  if (!el.classList.contains('station')) return;
+  if (el.dataset.current !== 'true') return;
+
+  const word = el.dataset.word;
+  const m    = parseInt(el.dataset.mastery);
+  const col  = el.dataset.color;
+
+  ttW.textContent = word;
+  ttW.style.color = col;
+  ttP.textContent = el.dataset.pos;
+  ttD.textContent = DEFS[word] || '—';
+
+  // Pip bar
+  const count = MASTERY_PIPS[m];
+  const total = 6;
+  ttB.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const p = document.createElement('div');
+    p.className = 'tt-pip' + (i < count ? ' on' : '');
+    if (i < count) p.style.color = col;
+    ttB.appendChild(p);
+  }
+  const lbl = document.createElement('span');
+  lbl.className = 'tt-mlabel';
+  lbl.textContent = MASTERY_LABELS[m];
+  ttB.appendChild(lbl);
+
+  const bx = Math.min(e.clientX + 14, innerWidth - 210);
+  const by = Math.min(e.clientY - 14, innerHeight - 140);
+  tip.style.left = bx + 'px';
+  tip.style.top  = by + 'px';
+  tip.classList.add('show');
+});
+
+svg.addEventListener('mouseleave', () => tip.classList.remove('show'));
+svg.addEventListener('mouseout', e => {
+  if (!e.target.classList.contains('station')) return;
+  tip.classList.remove('show');
+});
+</script>
+</body>
+</html>

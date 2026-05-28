@@ -1,0 +1,197 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.app { display: flex; height: 100vh; min-height: 600px; }
+.sidebar { width: 180px; flex-shrink: 0; background: var(--color-background-primary); border-right: 0.5px solid var(--color-border-tertiary); padding: 16px 0; display: flex; flex-direction: column; gap: 4px; }
+.logo { padding: 8px 16px 20px; font-size: 15px; font-weight: 500; color: var(--color-text-primary); letter-spacing: -0.3px; }
+.logo span { color: var(--color-text-secondary); }
+.nav-section { padding: 4px 16px; font-size: 10px; font-weight: 500; color: var(--color-text-tertiary); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 8px; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 16px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; }
+.nav-item.active { background: var(--color-background-secondary); color: var(--color-text-primary); font-weight: 500; }
+.nav-item svg { width: 14px; height: 14px; opacity: 0.6; }
+.main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.topbar { background: var(--color-background-primary); border-bottom: 0.5px solid var(--color-border-tertiary); padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; }
+.topbar-title { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; }
+.legend { display: flex; align-items: center; gap: 16px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--color-text-secondary); }
+.dot { width: 7px; height: 7px; border-radius: 50%; }
+.dot-none { border: 1px solid var(--color-border-secondary); background: transparent; }
+.dot-good { background: #3d9e6a; }
+.dot-needs { background: #d97c30; }
+.dot-struggle { background: #d94040; }
+.count-badge { font-size: 11px; color: var(--color-text-tertiary); }
+.content { flex: 1; overflow-x: auto; overflow-y: auto; padding: 20px; }
+.levels { display: flex; gap: 0; min-width: max-content; }
+.level-col { width: 160px; flex-shrink: 0; }
+.level-header { padding: 0 8px 10px; }
+.level-name { font-size: 11px; font-weight: 600; color: var(--color-text-tertiary); letter-spacing: 0.06em; }
+.level-name.current { color: #5b4fcc; }
+.level-name .arrow { color: #5b4fcc; margin-right: 3px; }
+.level-count { font-size: 10px; color: var(--color-text-tertiary); margin-top: 1px; }
+.divider { width: 0.5px; background: var(--color-border-tertiary); margin: 0 8px; }
+.topics { display: flex; flex-direction: column; gap: 5px; padding: 0 8px; }
+.topic { padding: 7px 10px; border-radius: 7px; font-size: 12px; cursor: pointer; transition: opacity 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1.5px solid #c8c2f5; color: #4a40aa; background: transparent; }
+.topic.locked { background: transparent; color: var(--color-text-tertiary); border-color: var(--color-border-tertiary); opacity: 0.45; cursor: default; }
+.topic.not-practiced { background: transparent; color: #4a40aa; border-color: #c8c2f5; }
+.topic.good { background: transparent; color: #1f7a4a; border-color: #3d9e6a; }
+.topic.needs-work { background: transparent; color: #9a5218; border-color: #d97c30; }
+.topic.struggling { background: transparent; color: #a02828; border-color: #d94040; }
+.topic:hover:not(.locked) { opacity: 0.75; }
+.side-panel { width: 200px; flex-shrink: 0; background: var(--color-background-primary); border-left: 0.5px solid var(--color-border-tertiary); padding: 16px; }
+.side-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 12px; }
+.side-hint { font-size: 12px; color: var(--color-text-tertiary); line-height: 1.5; }
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">Lexitree<span>.</span></div>
+    <div class="nav-section">Learn</div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M8 5v6"/></svg>
+      Today's session
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h8M2 12h5"/></svg>
+      Grammar map
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10v10H3zM6 3v10"/></svg>
+      Archive
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">Grammar map</span>
+      <div class="legend">
+        <div class="legend-item"><div class="dot dot-none"></div> not practiced</div>
+        <div class="legend-item"><div class="dot dot-good"></div> good (≥70%)</div>
+        <div class="legend-item"><div class="dot dot-needs"></div> needs work</div>
+        <div class="legend-item"><div class="dot dot-struggle"></div> struggling</div>
+        <span class="count-badge">B1 · 15 concepts</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="levels" id="levels"></div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="side-label">Selected concept</div>
+    <div class="side-hint">Click any B1 concept to see its rule, formula, and examples.</div>
+  </div>
+</div>
+
+<script>
+const data = [
+  {
+    id: "A1", current: false, locked: false,
+    topics: [
+      { name: "Pronoms sujets", status: "good" },
+      { name: "Être et avoir", status: "good" },
+      { name: "Verbes en -er", status: "good" },
+      { name: "Articles déf./indéf.", status: "good" },
+      { name: "Adjectifs qualif.", status: "needs-work" },
+      { name: "Négation de base", status: "good" },
+      { name: "Questions simples", status: "good" },
+      { name: "Nombres", status: "good" },
+      { name: "Prépositions lieu", status: "needs-work" },
+      { name: "Adj. possessifs", status: "good" },
+      { name: "Impératif présent", status: "struggling" },
+      { name: "Genre et accord", status: "good" },
+      { name: "C'est / Il est", status: "needs-work" },
+      { name: "Il y a", status: "good" },
+    ]
+  },
+  {
+    id: "A2", current: false, locked: false,
+    topics: [
+      { name: "Passé composé (av...)", status: "good" },
+      { name: "Passé composé (êt...)", status: "good" },
+      { name: "L'imparfait", status: "needs-work" },
+      { name: "Futur proche", status: "good" },
+      { name: "Verbes en -ir/-re", status: "good" },
+      { name: "Verbes irréguliers", status: "struggling" },
+      { name: "Articles contractés", status: "good" },
+      { name: "Articles partitifs", status: "needs-work" },
+      { name: "Place de l'adjectif", status: "good" },
+      { name: "Les adverbes", status: "good" },
+      { name: "Pronoms COD", status: "needs-work" },
+      { name: "Pronoms COI", status: "struggling" },
+      { name: "Adj. démonstratifs", status: "good" },
+      { name: "Verbes pronominaux", status: "good" },
+      { name: "Le comparatif", status: "needs-work" },
+    ]
+  },
+  {
+    id: "B1", current: true, locked: false,
+    topics: [
+      { name: "Imparfait vs passé c.", status: "not-practiced" },
+      { name: "Futur simple", status: "not-practiced" },
+      { name: "Conditionnel présent", status: "not-practiced" },
+      { name: "Subjonctif présent", status: "not-practiced" },
+      { name: "Pronoms relatifs", status: "not-practiced" },
+      { name: "Pronoms toniques", status: "not-practiced" },
+      { name: "Y et en", status: "not-practiced" },
+      { name: "Doubles pronoms", status: "not-practiced" },
+      { name: "Le superlatif", status: "not-practiced" },
+      { name: "Négation étendue", status: "not-practiced" },
+      { name: "Pronoms interrogatifs", status: "not-practiced" },
+      { name: "Depuis/pendant/il y a", status: "not-practiced" },
+      { name: "Faire causatif", status: "not-practiced" },
+      { name: "Le gérondif", status: "not-practiced" },
+      { name: "Si clauses (type 1)", status: "not-practiced" },
+    ]
+  },
+  {
+    id: "B2", current: false, locked: true,
+    topics: ["Subjonctif étendu","Plus-que-parfait","Futur antérieur","Conditionnel passé","La voix passive","Si clauses 2 et 3","Discours indirect","La nominalisation","Pronoms rel. cx.","Concessifs/opposit...","Cause/conséquence","Constructions inf.","Struct. emphatiques","Registre de langue"].map(n => ({ name: n, status: "locked" }))
+  },
+  {
+    id: "C1", current: false, locked: true,
+    topics: ["Subjonctif passé","Subjonctif imparfait","Le passé simple","Le passé antérieur","Conditionnel journ.","Négation nuancée","Nominalisation abstr.","Connecteurs discurs.","Participes implicites","Passif complexe","Inversion stylistique","Constructions idiom."].map(n => ({ name: n, status: "locked" }))
+  },
+  {
+    id: "C2", current: false, locked: true,
+    topics: ["Temps littéraires","Struct. rhétoriques","Précision lexicale","Variations régionales","Vocab. archaïque","Registre stylistique","Ellipse syntaxique","Ironie et implicature"].map(n => ({ name: n, status: "locked" }))
+  }
+];
+
+const container = document.getElementById("levels");
+
+data.forEach((level, i) => {
+  if (i > 0) {
+    const div = document.createElement("div");
+    div.className = "divider";
+    container.appendChild(div);
+  }
+  const col = document.createElement("div");
+  col.className = "level-col";
+
+  const hdr = document.createElement("div");
+  hdr.className = "level-header";
+  const nm = document.createElement("div");
+  nm.className = "level-name" + (level.current ? " current" : "");
+  nm.innerHTML = level.current ? `<span class="arrow">→</span>${level.id} · now` : level.id;
+  const cnt = document.createElement("div");
+  cnt.className = "level-count";
+  cnt.textContent = level.topics.length + " concepts";
+  hdr.appendChild(nm);
+  hdr.appendChild(cnt);
+  col.appendChild(hdr);
+
+  const topicsDiv = document.createElement("div");
+  topicsDiv.className = "topics";
+
+  level.topics.forEach(t => {
+    const btn = document.createElement("div");
+    btn.className = "topic " + t.status;
+    btn.textContent = t.name;
+    btn.title = t.name;
+    topicsDiv.appendChild(btn);
+  });
+
+  col.appendChild(topicsDiv);
+  container.appendChild(col);
+});
+</script>

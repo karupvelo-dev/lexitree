@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vocab 7/7 — Black Background Options</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #1a1a1a;
+    padding: 48px 24px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #555;
+    text-align: center; margin-bottom: 6px;
+  }
+  .subtitle { font-size: 12px; color: #444; text-align: center; margin-bottom: 48px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .option-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; text-align: center;
+  }
+  .desc {
+    font-size: 11px; color: #555; text-align: center; line-height: 1.5;
+  }
+
+  /* Base card — same shell as grammar */
+  .card {
+    background: #0d0d0d;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #1e1e1e;
+  }
+  .hairline { height: 1px; }
+  .inner { padding: 26px 20px 22px; text-align: center; }
+  .score {
+    font-size: 64px; font-weight: 900; color: #fff;
+    letter-spacing: -0.04em; line-height: 1; margin-bottom: 8px;
+  }
+  .hallmark {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  .concept { font-size: 11px; color: rgba(255,255,255,0.15); margin-bottom: 22px; }
+  .divider { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 18px; }
+  .words {
+    display: flex; flex-wrap: wrap; gap: 5px;
+    justify-content: center; margin-bottom: 20px;
+  }
+  .chip {
+    font-family: 'Lora', serif;
+    font-size: 11px; padding: 3px 8px;
+    border-radius: 4px; border: 1px solid;
+  }
+  .cta {
+    display: inline-block; padding: 10px 24px;
+    border-radius: 500px; font-size: 12px; font-weight: 700; cursor: pointer;
+    border: none;
+  }
+
+  /* ── A: Mint ── */
+  .a .hairline { background: linear-gradient(90deg, transparent, #14b8a6 30%, #5eead4 50%, #14b8a6 70%, transparent); }
+  .a .hallmark { color: #2dd4bf; }
+  .a .chip { color: #2dd4bf; border-color: rgba(45,212,191,0.2); background: rgba(45,212,191,0.05); }
+  .a .cta { background: #0d9488; color: #fff; }
+
+  /* ── B: Silver ── */
+  .b .hairline { background: linear-gradient(90deg, transparent, #64748b 30%, #cbd5e1 50%, #64748b 70%, transparent); }
+  .b .hallmark { color: #cbd5e1; }
+  .b .chip { color: #94a3b8; border-color: rgba(148,163,184,0.2); background: rgba(148,163,184,0.05); }
+  .b .cta { background: rgba(255,255,255,0.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); }
+
+  /* ── C: Electric Blue ── */
+  .c .hairline { background: linear-gradient(90deg, transparent, #0284c7 30%, #7dd3fc 50%, #0284c7 70%, transparent); }
+  .c .hallmark { color: #38bdf8; }
+  .c .chip { color: #38bdf8; border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.05); }
+  .c .cta { background: #0284c7; color: #fff; }
+
+  /* ── D: Rose ── */
+  .d .hairline { background: linear-gradient(90deg, transparent, #e11d48 30%, #fda4af 50%, #e11d48 70%, transparent); }
+  .d .hallmark { color: #fb7185; }
+  .d .chip { color: #fb7185; border-color: rgba(251,113,133,0.2); background: rgba(251,113,133,0.05); }
+  .d .cta { background: #e11d48; color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>Vocab 7/7 · Black Background · Accent Colour Options</h1>
+<p class="subtitle">Same card shell as grammar — only the accent colour changes</p>
+
+<div class="grid">
+
+  <!-- A: Mint -->
+  <div class="col">
+    <div class="option-label" style="color:#2dd4bf;">A · Mint</div>
+    <div class="card a">
+      <div class="hairline"></div>
+      <div class="inner">
+        <div class="score">7/7</div>
+        <div class="hallmark" style="color:#2dd4bf;">Acquis</div>
+        <div class="concept">Vocabulary · B1</div>
+        <div class="divider"></div>
+        <div class="words">
+          <span class="chip a">jamais</span>
+          <span class="chip a">parfois</span>
+          <span class="chip a">presque</span>
+          <span class="chip a">peut-être</span>
+          <span class="chip a">pourtant</span>
+          <span class="chip a">soudain</span>
+          <span class="chip a">désormais</span>
+        </div>
+        <button class="cta a">Practice again →</button>
+      </div>
+    </div>
+    <div class="desc">Fresh · vocabulary-as-growth<br/>Distinct from grammar gold</div>
+  </div>
+
+  <!-- B: Silver -->
+  <div class="col">
+    <div class="option-label" style="color:#94a3b8;">B · Silver</div>
+    <div class="card b">
+      <div class="hairline"></div>
+      <div class="inner">
+        <div class="score">7/7</div>
+        <div class="hallmark" style="color:#cbd5e1;">Acquis</div>
+        <div class="concept">Vocabulary · B1</div>
+        <div class="divider"></div>
+        <div class="words">
+          <span class="chip b">jamais</span>
+          <span class="chip b">parfois</span>
+          <span class="chip b">presque</span>
+          <span class="chip b">peut-être</span>
+          <span class="chip b">pourtant</span>
+          <span class="chip b">soudain</span>
+          <span class="chip b">désormais</span>
+        </div>
+        <button class="cta b">Practice again →</button>
+      </div>
+    </div>
+    <div class="desc">Platinum · deliberately below gold<br/>Signals tier difference clearly</div>
+  </div>
+
+  <!-- C: Electric Blue -->
+  <div class="col">
+    <div class="option-label" style="color:#38bdf8;">C · Electric Blue</div>
+    <div class="card c">
+      <div class="hairline"></div>
+      <div class="inner">
+        <div class="score">7/7</div>
+        <div class="hallmark" style="color:#38bdf8;">Acquis</div>
+        <div class="concept">Vocabulary · B1</div>
+        <div class="divider"></div>
+        <div class="words">
+          <span class="chip c">jamais</span>
+          <span class="chip c">parfois</span>
+          <span class="chip c">presque</span>
+          <span class="chip c">peut-être</span>
+          <span class="chip c">pourtant</span>
+          <span class="chip c">soudain</span>
+          <span class="chip c">désormais</span>
+        </div>
+        <button class="cta c">Practice again →</button>
+      </div>
+    </div>
+    <div class="desc">Sharp · modern · high energy<br/>Most visually arresting</div>
+  </div>
+
+  <!-- D: Rose -->
+  <div class="col">
+    <div class="option-label" style="color:#fb7185;">D · Rose</div>
+    <div class="card d">
+      <div class="hairline"></div>
+      <div class="inner">
+        <div class="score">7/7</div>
+        <div class="hallmark" style="color:#fb7185;">Acquis</div>
+        <div class="concept">Vocabulary · B1</div>
+        <div class="divider"></div>
+        <div class="words">
+          <span class="chip d">jamais</span>
+          <span class="chip d">parfois</span>
+          <span class="chip d">presque</span>
+          <span class="chip d">peut-être</span>
+          <span class="chip d">pourtant</span>
+          <span class="chip d">soudain</span>
+          <span class="chip d">désormais</span>
+        </div>
+        <button class="cta d">Practice again →</button>
+      </div>
+    </div>
+    <div class="desc">Warm · celebratory · friendly<br/>Softest feeling of the four</div>
+  </div>
+
+</div>
+
+</body>
+</html>

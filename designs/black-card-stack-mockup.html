@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maître Vault — Stack Edit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --white: #fff;
+      --dark: #1a1a1a;
+      --mid: #555;
+      --light: #888;
+      --border: #e8e5df;
+      --gold: #C9A84C;
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --cr: 10px;
+      --cw: 148px;      /* card width */
+      --ch: 158px;      /* card height */
+      --peek: 46px;     /* visible name strip per card */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #dedad5; font-family: var(--font-sans); color: var(--dark); padding: 40px 20px 80px; }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #999; text-align: center;
+      margin: 40px 0 16px;
+    }
+
+    .phone, .share-phone {
+      max-width: 430px; margin: 0 auto; background: var(--bg);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+    .nav-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff; font-weight: 700;
+    }
+    .nav-cta {
+      font-size: 11px; font-weight: 600; color: var(--mid);
+      padding: 5px 12px; border: 1px solid var(--border);
+      border-radius: 100px; text-decoration: none;
+    }
+
+    /* ── Profile header ── */
+    .profile-header { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 18px 14px; }
+    .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .big-avatar {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 14px; font-weight: 700; }
+    .profile-sub { font-size: 11px; color: var(--light); margin-top: 1px; }
+    .stats-row { display: flex; }
+    .stat { flex: 1; text-align: center; padding: 8px 0; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 16px; font-weight: 800; line-height: 1.1; }
+    .stat-val.gold { color: var(--gold); }
+    .stat-lbl { font-size: 9px; color: var(--light); margin-top: 2px; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; background: var(--white); border-bottom: 1px solid var(--border); }
+    .tab { flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--light); }
+    .tab.active { color: var(--dark); border-bottom: 2px solid var(--dark); }
+
+    /* ── Vault ── */
+    .vault { padding: 24px 20px 40px; }
+    .vault-section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--light); margin-bottom: 18px;
+    }
+    .vault-divider { height: 1px; background: var(--border); margin: 28px 0 24px; }
+
+    /* ══════════════════════════════════════════
+       COMPLETED LEVEL BADGES
+       Small square cards — pseudo-element depth
+       on bottom-right to suggest a pile beneath.
+    ══════════════════════════════════════════ */
+    .completed-row { display: flex; gap: 22px; flex-wrap: wrap; }
+    .badge-wrap {
+      position: relative;
+      padding-right: 8px;
+      padding-bottom: 8px;
+    }
+    .badge-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translate(4px, 5px);
+      background: #141414;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 9px;
+      z-index: 0;
+    }
+    .badge-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translate(8px, 10px);
+      background: #1a1a1a;
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: 9px;
+      z-index: -1;
+    }
+    .badge-card {
+      position: relative; z-index: 1;
+      width: 72px; height: 72px;
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .badge-level {
+      font-family: var(--font-serif);
+      font-size: 20px; font-weight: 700;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* ══════════════════════════════════════════
+       CARD STACK — earned cards with visible names
+       Wraps in a container that shows physical
+       depth edges on the right side. Cards cascade
+       downward with --peek strip showing each name.
+    ══════════════════════════════════════════ */
+    .stack-wrap {
+      position: relative;
+      /* Side depth: edges of cards behind, peeking right */
+      padding-right: 10px;
+      display: inline-block;
+    }
+    .stack-wrap::before {
+      content: '';
+      position: absolute;
+      top: 6px; right: 4px;
+      width: var(--cw); bottom: 6px;
+      background: #131313;
+      border: 1px solid rgba(201,168,76,0.28);
+      border-radius: var(--cr);
+      z-index: 0;
+    }
+    .stack-wrap::after {
+      content: '';
+      position: absolute;
+      top: 12px; right: 0;
+      width: var(--cw); bottom: 12px;
+      background: #181818;
+      border: 1px solid rgba(201,168,76,0.14);
+      border-radius: var(--cr);
+      z-index: -1;
+    }
+
+    .card-cascade {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      width: var(--cw);
+    }
+
+    .mc {
+      width: var(--cw);
+      height: var(--ch);
+      flex-shrink: 0;
+      border-radius: var(--cr);
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+    .mc:not(:first-child) {
+      margin-top: calc(-1 * (var(--ch) - var(--peek)));
+    }
+
+    /* Subtle top-edge light — card feels physical */
+    .mc::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .mc-face {
+      position: absolute; inset: 0;
+      padding: 10px 12px;
+      display: flex; flex-direction: column;
+      justify-content: flex-start;
+    }
+    .mc-name {
+      font-family: var(--font-serif);
+      font-size: 11px; font-weight: 600;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.3;
+    }
+
+    /* ── Share ── */
+    .share-header {
+      padding: 20px 20px 18px;
+      background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .share-name { font-size: 14px; font-weight: 700; }
+    .share-meta { font-size: 10px; color: var(--light); margin-top: 2px; }
+    .share-count-row { display: flex; align-items: baseline; gap: 6px; margin-top: 12px; }
+    .share-count { font-family: var(--font-serif); font-size: 32px; font-weight: 700; color: var(--gold); letter-spacing: -0.03em; line-height: 1; }
+    .share-count-label { font-size: 11px; color: var(--light); font-weight: 500; }
+    .share-body { padding: 24px 20px 32px; }
+    .share-btn {
+      display: block; width: 100%; padding: 15px;
+      background: var(--white); color: var(--dark);
+      text-align: center; font-family: var(--font-serif);
+      font-size: 15px; font-weight: 600;
+      border-radius: 10px; text-decoration: none;
+      border: 1.5px solid var(--dark); margin-top: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════ PROFILE ══════════════════════════ -->
+<p class="section-label">Profile — Maîtres (Stack Edit)</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <div class="nav-avatar">N</div>
+  </div>
+
+  <div class="profile-header">
+    <div class="profile-row">
+      <div class="big-avatar">N</div>
+      <div>
+        <div class="profile-name">Nithin Sebastian</div>
+        <div class="profile-sub">C1 · 14 day streak</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val gold">50</div><div class="stat-lbl">Maîtres</div></div>
+      <div class="stat"><div class="stat-val">142</div><div class="stat-lbl">Sessions</div></div>
+      <div class="stat"><div class="stat-val">83%</div><div class="stat-lbl">Accuracy</div></div>
+      <div class="stat"><div class="stat-val">91</div><div class="stat-lbl">Vocab</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">Stats</div>
+    <div class="tab">Concepts</div>
+    <div class="tab active">Maîtres</div>
+  </div>
+
+  <div class="vault">
+
+    <!-- Completed level piles -->
+    <div class="vault-section-label">Completed</div>
+    <div class="completed-row">
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">A1</span></div></div>
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">A2</span></div></div>
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">B1</span></div></div>
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">B2</span></div></div>
+    </div>
+
+    <div class="vault-divider"></div>
+
+    <!-- C1 — each earned card with its name visible -->
+    <div class="vault-section-label">C1</div>
+    <div class="stack-wrap">
+      <div class="card-cascade">
+        <div class="mc"><div class="mc-face"><span class="mc-name">Subjonctif présent</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Conditionnel passé</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Pronoms relatifs</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Voix passive</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Discours indirect</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Gérondif</span></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════ SHARE PAGE ══════════════════════════ -->
+<p class="section-label">Collection Share Page (Stack Edit)</p>
+
+<div class="share-phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <a href="#" class="nav-cta">Try LexiTree</a>
+  </div>
+
+  <div class="share-header">
+    <div class="share-name">Nithin Sebastian</div>
+    <div class="share-meta">C1 · French grammar</div>
+    <div class="share-count-row">
+      <span class="share-count">50</span>
+      <span class="share-count-label">Maîtres earned</span>
+    </div>
+  </div>
+
+  <div class="share-body">
+
+    <div class="vault-section-label" style="margin-bottom:18px">Completed</div>
+    <div class="completed-row" style="margin-bottom:0">
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">A1</span></div></div>
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">A2</span></div></div>
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">B1</span></div></div>
+      <div class="badge-wrap"><div class="badge-card"><span class="badge-level">B2</span></div></div>
+    </div>
+
+    <div class="vault-divider"></div>
+
+    <div class="vault-section-label" style="margin-bottom:18px">C1</div>
+    <div class="stack-wrap">
+      <div class="card-cascade">
+        <div class="mc"><div class="mc-face"><span class="mc-name">Subjonctif présent</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Conditionnel passé</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Pronoms relatifs</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Voix passive</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Discours indirect</span></div></div>
+        <div class="mc"><div class="mc-face"><span class="mc-name">Gérondif</span></div></div>
+      </div>
+    </div>
+
+    <a href="#" class="share-btn">Start learning French</a>
+
+  </div>
+</div>
+
+</body>
+</html>

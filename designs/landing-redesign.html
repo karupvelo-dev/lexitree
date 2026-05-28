@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LexiTree — Landing Redesign</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #f2ede6;
+    --bg-white:  #faf8f5;
+    --white:     #ffffff;
+    --dark:      #1a1a1a;
+    --mid:       #6b6560;
+    --light:     #a09a94;
+    --border:    #e2ddd8;
+    --terra:     #b84e34;
+    --terra-bg:  #fdf0ec;
+    --serif:     'Lora', Georgia, serif;
+    --sans:      'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--dark);
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+  }
+  .logo span { color: var(--terra); }
+  .nav-right { display: flex; align-items: center; gap: 24px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--mid); background: none; border: none; cursor: pointer; text-decoration: none; }
+  .nav-link:hover { color: var(--dark); }
+  .nav-cta {
+    font-size: 13px; font-weight: 600; padding: 9px 20px;
+    border-radius: 500px; background: var(--dark); color: #fff;
+    border: none; cursor: pointer;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 80px 48px 72px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .level-pip {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--light);
+    background: var(--bg);
+  }
+  .level-pip.active { background: var(--terra); color: #fff; border-color: var(--terra); }
+  .pip-sep { width: 12px; height: 1px; background: var(--border); }
+
+  .hero-headline {
+    font-family: var(--serif);
+    font-size: 58px;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    color: var(--dark);
+    margin-bottom: 28px;
+    max-width: 680px;
+  }
+  .hero-headline em {
+    font-style: italic;
+    color: var(--terra);
+  }
+
+  .hero-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 56px;
+    align-items: start;
+    margin-top: 40px;
+  }
+  .hero-sub {
+    font-size: 16px;
+    color: var(--mid);
+    line-height: 1.75;
+    margin-bottom: 36px;
+  }
+  .cta-stack { display: flex; flex-direction: column; gap: 10px; max-width: 320px; }
+  .btn-primary {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 50px; padding: 0 28px;
+    background: var(--dark); color: #fff;
+    border: none; border-radius: 500px;
+    font-family: var(--sans); font-size: 14px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.01em;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 50px; padding: 0 28px;
+    background: transparent; color: var(--dark);
+    border: 1.5px solid var(--border); border-radius: 500px;
+    font-family: var(--sans); font-size: 14px; font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-ghost:hover { border-color: var(--dark); }
+
+  .cred-row {
+    display: flex; gap: 20px; margin-top: 28px;
+    padding-top: 28px; border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .cred-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--light); }
+  .cred-mark {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--dark); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-size: 9px; font-weight: 700;
+  }
+
+  /* ── CONCEPT MAP VISUALIZATION ── */
+  .map-viz {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .map-viz-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+  }
+  .map-viz-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--light); }
+  .map-viz-level { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 4px; background: var(--terra-bg); color: var(--terra); }
+  .map-grid {
+    display: flex; gap: 0;
+    padding: 20px 20px 16px;
+    overflow-x: auto;
+  }
+  .map-col { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+  .map-col-label { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--light); margin-bottom: 10px; }
+  .map-col-label.terra { color: var(--terra); }
+  .map-dots { display: flex; flex-direction: column; gap: 4px; }
+  .map-dot {
+    width: 54px; height: 7px; border-radius: 4px;
+    background: var(--border);
+  }
+  .map-dot.good   { background: #0E8345; opacity: 0.85; }
+  .map-dot.medium { background: #D97706; opacity: 0.85; }
+  .map-dot.poor   { background: var(--terra); opacity: 0.85; }
+  .map-dot.open   { background: var(--border); }
+  .map-dot.locked { background: var(--border); opacity: 0.35; }
+  .map-dot.active { background: var(--dark); width: 54px; }
+  .map-col-sep { width: 1px; background: var(--border); margin: 0 8px; align-self: stretch; margin-top: 22px; }
+
+  .map-legend-row {
+    display: flex; gap: 16px; padding: 12px 20px;
+    border-top: 1px solid var(--border); flex-wrap: wrap;
+  }
+  .map-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--light); }
+  .map-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-white);
+  }
+  .stats-inner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 960px; margin: 0 auto;
+  }
+  .stat {
+    padding: 36px 48px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: var(--serif);
+    font-size: 44px; font-weight: 700;
+    letter-spacing: -0.04em;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-num em { color: var(--terra); font-style: normal; }
+  .stat-label { font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .stat-sub { font-size: 12px; color: var(--light); line-height: 1.5; }
+
+  /* ── HOW IT WORKS ── */
+  .how-section {
+    max-width: 960px; margin: 0 auto;
+    padding: 80px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--light);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 36px; font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--dark);
+    line-height: 1.2;
+    margin-bottom: 48px;
+    max-width: 480px;
+  }
+  .section-title em { font-style: italic; color: var(--terra); }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .step {}
+  .step-num {
+    font-family: var(--serif);
+    font-size: 32px; font-weight: 700;
+    color: var(--terra); line-height: 1;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+  .step-rule { width: 24px; height: 2px; background: var(--border); margin-bottom: 16px; }
+  .step-title { font-size: 15px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+  .step-desc { font-size: 13.5px; color: var(--mid); line-height: 1.7; }
+
+  /* ── FINAL CTA ── */
+  .final-section {
+    padding: 96px 48px;
+    text-align: center;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+  .final-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--light);
+    margin-bottom: 20px;
+  }
+  .final-headline {
+    font-family: var(--serif);
+    font-size: 40px; font-weight: 700;
+    letter-spacing: -0.025em; line-height: 1.18;
+    color: var(--dark); margin-bottom: 16px;
+  }
+  .final-headline em { font-style: italic; color: var(--terra); }
+  .final-sub { font-size: 15px; color: var(--mid); line-height: 1.7; margin-bottom: 36px; }
+  .final-btns { display: flex; flex-direction: column; gap: 10px; max-width: 300px; margin: 0 auto; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-logo { font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--light); }
+  .footer-note { font-size: 12px; color: var(--light); }
+
+  /* ── GOOGLE ICON ── */
+  .g-icon { width: 15px; height: 15px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#">Lexi<span>Tree</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="#">Sign in</a>
+    <button class="nav-cta">Check my French level</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <!-- Level pips -->
+  <div class="hero-eyebrow">
+    <span class="level-pip">A1</span>
+    <div class="pip-sep"></div>
+    <span class="level-pip">A2</span>
+    <div class="pip-sep"></div>
+    <span class="level-pip active">B1</span>
+    <div class="pip-sep"></div>
+    <span class="level-pip">B2</span>
+    <div class="pip-sep"></div>
+    <span class="level-pip">C1</span>
+    <div class="pip-sep"></div>
+    <span class="level-pip">C2</span>
+  </div>
+
+  <!-- Headline -->
+  <h1 class="hero-headline">
+    French grammar,<br>
+    mapped from <em>A1</em> to <em>C2.</em>
+  </h1>
+
+  <div class="hero-body">
+    <!-- Left: copy + CTAs -->
+    <div>
+      <p class="hero-sub">
+        Get placed at your level with a 7-question assessment.
+        Practice one grammar concept a day. Watch your personal
+        grammar map fill in — concept by concept.
+      </p>
+
+      <div class="cta-stack">
+        <button class="btn-primary">Check my French level →</button>
+        <button class="btn-ghost">
+          <svg class="g-icon" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
+          </svg>
+          Continue with Google
+        </button>
+      </div>
+
+      <div class="cred-row">
+        <div class="cred-item"><div class="cred-mark">✓</div>CEFR-aligned A1–C2</div>
+        <div class="cred-item"><div class="cred-mark">✓</div>84 grammar concepts</div>
+        <div class="cred-item"><div class="cred-mark">✓</div>Free to start</div>
+      </div>
+    </div>
+
+    <!-- Right: grammar map preview card -->
+    <div class="map-viz">
+      <div class="map-viz-header">
+        <span class="map-viz-label">Your grammar map</span>
+        <span class="map-viz-level">B1 · now</span>
+      </div>
+      <div class="map-grid">
+        <!-- A1 -->
+        <div class="map-col">
+          <div class="map-col-label">A1</div>
+          <div class="map-dots">
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot medium"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot poor"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+          </div>
+        </div>
+        <div class="map-col-sep"></div>
+        <!-- A2 -->
+        <div class="map-col">
+          <div class="map-col-label">A2</div>
+          <div class="map-dots">
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot medium"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot poor"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot open"></div>
+            <div class="map-dot good"></div>
+          </div>
+        </div>
+        <div class="map-col-sep"></div>
+        <!-- B1 (current) -->
+        <div class="map-col">
+          <div class="map-col-label terra">B1</div>
+          <div class="map-dots">
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot good"></div>
+            <div class="map-dot medium"></div>
+            <div class="map-dot active"></div>
+            <div class="map-dot open"></div>
+            <div class="map-dot open"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+          </div>
+        </div>
+        <div class="map-col-sep"></div>
+        <!-- B2 -->
+        <div class="map-col">
+          <div class="map-col-label">B2</div>
+          <div class="map-dots">
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+          </div>
+        </div>
+        <div class="map-col-sep"></div>
+        <!-- C1 -->
+        <div class="map-col">
+          <div class="map-col-label">C1</div>
+          <div class="map-dots">
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+            <div class="map-dot locked"></div>
+          </div>
+        </div>
+      </div>
+      <div class="map-legend-row">
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:#0E8345"></div> good
+        </div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:#D97706"></div> needs work
+        </div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:var(--terra)"></div> struggling
+        </div>
+        <div class="map-legend-item">
+          <div class="map-legend-dot" style="background:var(--border)"></div> not yet
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-num"><em>84</em></div>
+      <div class="stat-label">Grammar concepts</div>
+      <div class="stat-sub">A1 through C2, every rule that matters</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">7</div>
+      <div class="stat-label">Questions per session</div>
+      <div class="stat-sub">One concept, one daily session, ten minutes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num"><em>A1</em> → <em>C2</em></div>
+      <div class="stat-label">CEFR-aligned</div>
+      <div class="stat-sub">Placed at your level from day one</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="how-section">
+    <div class="section-eyebrow">How it works</div>
+    <h2 class="section-title">Three steps to a <em>complete</em> grammar map.</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-rule"></div>
+        <div class="step-title">Find your level</div>
+        <div class="step-desc">A 7-question diagnostic places you precisely on the CEFR scale — A1 through C2 — in under five minutes.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-rule"></div>
+        <div class="step-title">Practice every day</div>
+        <div class="step-desc">One grammar concept per session. An AI lesson followed by seven fill-in-the-blank questions. Ten minutes, one concept mastered.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-rule"></div>
+        <div class="step-title">Watch the map fill in</div>
+        <div class="step-desc">Every concept you practise lights up on your personal grammar map. Green for mastered, orange for work needed. Nothing hidden.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div style="border-top:1px solid var(--border); background:var(--bg-white)">
+  <div class="final-section">
+    <div class="final-eyebrow">Get started</div>
+    <h2 class="final-headline">Your French is somewhere between <em>A1</em> and <em>C2.</em> Let's find out where.</h2>
+    <p class="final-sub">Take the free 7-question placement test and unlock your personal grammar map.</p>
+    <div class="final-btns">
+      <button class="btn-primary">Check my French level →</button>
+      <button class="btn-ghost">
+        <svg class="g-icon" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+          <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+          <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+          <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
+        </svg>
+        Continue with Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">LexiTree</span>
+  <span class="footer-note">AI-powered French grammar · CEFR A1–C2</span>
+</footer>
+
+</body>
+</html>

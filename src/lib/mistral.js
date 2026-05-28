@@ -16,8 +16,12 @@ export async function callMistral({
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 1500))
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 25000)
+
       const res = await fetch(MISTRAL_URL, {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`,
@@ -29,6 +33,7 @@ export async function callMistral({
           messages,
         }),
       })
+      clearTimeout(timeoutId)
 
       if (!res.ok) {
         const body = await res.text()

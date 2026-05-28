@@ -26,17 +26,27 @@ src/
 │   ├── page.js                      Landing — routes returning users, shows CTAs for new
 │   ├── assess/page.js               CEFR placement assessment (7 AI-generated questions)
 │   ├── session/page.js              Daily practice session (lesson + 7 questions)
+│   ├── profile/page.js              User stats page — heatmap, stat cards, concept breakdown
 │   ├── map/page.js                  Full grammar map across all levels
+│   ├── vocab/page.js                Visual vocabulary map (word nodes by level + POS)
+│   ├── vocab-practice/page.js       7-word vocab MCQ session with score tracking
 │   ├── archive/page.js              Session history (signed-in users only)
+│   ├── share/[id]/page.js           Vocab session share page (server component, OG tags)
+│   ├── share/grammar/[id]/page.js   Grammar session share page (server component, OG tags)
 │   ├── auth/callback/route.js       OAuth code exchange → redirect to /session
 │   └── api/
-│       ├── generate-assessment/route.js   GET — 7 placement questions across A1–C1
-│       ├── generate-lesson/route.js       POST — visual lesson for a concept (cached)
-│       ├── generate-questions/route.js    POST — 7 practice questions (banked)
-│       └── save-session/route.js          POST — saves session, updates score, checks promotion
+│       ├── generate-assessment/route.js      GET — 7 placement questions across A1–C1
+│       ├── generate-lesson/route.js          POST — visual lesson for a concept (cached)
+│       ├── generate-questions/route.js       POST — 7 practice questions (banked)
+│       ├── save-session/route.js             POST — saves session, updates score, checks promotion
+│       └── share-grammar-session/route.js    POST — saves grammar share row, returns UUID
+├── components/
+│   └── Sidebar.js                   Shared sidebar — nav, streak widget, vocab score widget, auth
+│                                    Avatar + name in user row link to /profile
 ├── data/
 │   ├── grammar-map.js               All concept definitions for every level (A1–C2)
 │   ├── concepts.js                  Legacy per-level defaults + LEVEL_INFO display metadata
+│   ├── vocabulary-map.js            Vocabulary words per CEFR level (word, definition, pos)
 │   └── assessment.js                estimateLevel() — scoring algorithm for placement
 ├── hooks/
 │   └── useAuth.js                   Supabase auth state, Google sign-in, profile sync
@@ -88,11 +98,30 @@ assess → sets lexitree_level in localStorage (no profile yet)
 One row per authenticated user.
 
 ```sql
-id            uuid   PRIMARY KEY  references auth.users(id)
-email         text   NOT NULL
-level_score   integer NOT NULL    -- TCF numeric score (100–699)
-created_at    timestamptz
-updated_at    timestamptz
+id                  uuid        PRIMARY KEY  references auth.users(id)
+email               text        NOT NULL
+level_score         integer     NOT NULL     -- TCF numeric score (100–699)
+current_streak      integer     NOT NULL DEFAULT 0
+longest_streak      integer     NOT NULL DEFAULT 0
+last_session_date   date
+vocabulary_seen     jsonb       NOT NULL DEFAULT '{}'  -- { word: seen_count }
+vocabulary_correct  jsonb       NOT NULL DEFAULT '{}'  -- { word: correct_count }
+vocab_score         integer     NOT NULL DEFAULT 0     -- 0–100, scoped to seen words
+vocab_words_seen    integer     NOT NULL DEFAULT 0     -- count of distinct words practised
+created_at          timestamptz
+updated_at          timestamptz
+```
+
+**Migration (run in Supabase SQL editor if columns are missing):**
+```sql
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS current_streak     integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS longest_streak     integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS last_session_date  date,
+  ADD COLUMN IF NOT EXISTS vocabulary_seen    jsonb   NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS vocabulary_correct jsonb   NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS vocab_score        integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS vocab_words_seen   integer NOT NULL DEFAULT 0;
 ```
 
 RLS: users can read/insert/update their own row only.
@@ -139,7 +168,39 @@ RPC `increment_use_counts(p_ids uuid[])` — atomically bumps use_count for all 
 
 **Bank thresholds** (defined in `generate-questions/route.js`):
 - `BANK_SERVE_THRESHOLD = 7` — minimum questions before serving from bank instead of generating live
-- `BANK_TARGET = 50` — keep growing in background until this many per concept
+- `BANK_TARGET = 70` — keep growing in background until this many per concept
+
+### `grammar_shares`
+One row per shared grammar session. Created by `POST /api/share-grammar-session`. Read by the public share page.
+
+```sql
+id           uuid        PRIMARY KEY DEFAULT gen_random_uuid()
+display_name text                    -- user's full name or email (nullable for guests)
+score        integer     NOT NULL    -- first-attempt correct count
+total        integer     NOT NULL    -- number of questions in session
+level        text        NOT NULL    -- e.g. 'B1'
+concept_name text        NOT NULL    -- display name e.g. 'Le futur simple'
+results      jsonb       NOT NULL    -- [{ correct: bool, answer: string }]
+streak       integer     DEFAULT 0
+created_at   timestamptz DEFAULT now()
+```
+
+**Migration:**
+```sql
+CREATE TABLE IF NOT EXISTS grammar_shares (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  display_name text,
+  score        integer NOT NULL,
+  total        integer NOT NULL,
+  level        text NOT NULL,
+  concept_name text NOT NULL,
+  results      jsonb NOT NULL,
+  streak       integer DEFAULT 0,
+  created_at   timestamptz DEFAULT now()
+);
+```
+
+No RLS required — rows are public (share links are UUID-gated).
 
 ### `concept_lessons`
 Cache for AI-generated lessons. One row per (level, concept). Generated once, reused forever.
@@ -152,6 +213,38 @@ lesson     jsonb   NOT NULL     -- full lesson object (panels, conjugation, time
 created_at timestamptz
 UNIQUE(level, concept)
 ```
+
+---
+
+## Vocabulary system
+
+### Data source
+Words live in `src/data/vocabulary-map.js`. Each entry has `{ word, definition, pos }` where `pos` is `verb | adjective | adverb`. Words are grouped by CEFR level. `getVocabularyForLevel(level)` returns words for a single level; vocab practice accumulates all levels up to and including the user's current level.
+
+### Practice session (`/vocab-practice`)
+- Selects 7 words: least-practised first (sorted by `vocabulary_seen[word]` ascending). Random shuffle for first-time users.
+- Builds MCQ: 3 distractors from same POS pool, shuffled with correct answer.
+- Records per-word results: `vocabulary_seen[word]++` always; `vocabulary_correct[word]++` only on correct answer.
+- After session completes, saves `vocabulary_seen`, `vocabulary_correct`, `vocab_score`, `vocab_words_seen` to profiles in one update call.
+
+### Vocab Score formula
+Scoped to **seen words only** (unseen words don't penalise the score):
+
+```js
+seenWords = allWords.filter(w => seen[w.word] > 0)
+score_per_word = (min(seen, 5) / 5) * (correct / seen)   // weight × accuracy
+vocab_score = round(mean(score_per_word) * 100)
+```
+
+- **Weight** caps at `seen = 5`. Prevents a single lucky guess from scoring 100.
+- **Accuracy** = correct / seen for that word.
+- Result is 0–100. Stored as integer in `profiles.vocab_score`.
+- `profiles.vocab_words_seen` = `Object.keys(vocabulary_seen).length` — count of distinct words ever practised.
+
+### Sidebar display
+`Sidebar.js` fetches `vocab_score` and `vocab_words_seen` from profiles on mount. On the vocab-practice page, `vocabScoreOverride` and `vocabWordsSeenOverride` props are passed so the widget updates immediately after a session saves, without a page reload.
+
+Shown only when score > 0 (hidden for brand-new users who haven't done any vocab practice).
 
 ---
 
@@ -208,6 +301,12 @@ Options are shuffled before serving so the correct answer is never in a predicta
 - One unambiguous correct answer
 - Structural forcing cues (déjà, soudain, il faut que, si + PQP…) that eliminate every wrong option
 - `wrongExplanations` JSONB: one targeted sentence per wrong option naming its tense and why the forcing cue rules it out
+
+**`validateQuestion` rules (applied to both generated and banked questions before serving):**
+1. Must contain at least one `___`
+2. Filling the blank must not produce duplicate adjacent tokens
+3. No answer token may appear immediately after the blank in the template (split blank check)
+4. For multi-blank questions: every blank position must vary across the 4 options — a blank that is identical in all options is rejected (options are expected to be comma-separated, one value per blank)
 
 ### Assessment generation (`/api/generate-assessment`)
 
@@ -321,7 +420,7 @@ confirm → loading → scenario → question ↔ feedback → complete
 2. Shows `wrong_explanations[pickedOption]` inline — a sentence naming the tense and explaining why the forcing cue rules it out.
 3. Does not affect the score — only the `firstPick` matters.
 
-**Scoring:** `firstPick` is recorded on the very first selection per question. `results` accumulates `{ correct: bool }` entries. The retry loop is for learning only.
+**Scoring:** `firstPick` is recorded on the very first selection per question. `results` accumulates `{ correct: bool, answer: string }` entries — `answer` is `q.answer` (the canonical correct answer), used for the answer chips on the summary card and share page. The retry loop is for learning only.
 
 **Daily rotation:** `getDailyConcept(level)` uses `Math.floor(Date.now() / 86_400_000) % order.length` to pick a concept slug, ensuring the same concept for all users on a given calendar day, rotating through the full order.
 
@@ -357,3 +456,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 **`useRef(false)` guard in session page.** React 18 StrictMode double-fires effects in development. The `didFetch` ref prevents two simultaneous lesson+question fetches on mount.
 
 **Promotion requires all three gates.** Score alone is gameable (high score on one repeated concept). Requiring all concepts attempted + overall accuracy ≥ 70% + no weak concepts (<50%) ensures genuine level mastery before advancement.
+
+**Shared Sidebar component.** All pages use `src/components/Sidebar.js`. It owns streak fetch, session-date fetch (7-day bar), and vocab score fetch — no page needs to pass these down. The `children` slot is used only by the session page (level card). Props: `active` (nav key), `user`, `signInWithGoogle`, `signOut`, `vocabScoreOverride`, `vocabWordsSeenOverride` (used by vocab-practice page to update the widget live after a session saves without waiting for the next page load).
+
+**Vocab Score scoped to seen words.** Dividing by all words in the level would produce near-zero scores for new users (most words unseen, weight = 0). Scoping the denominator to seen words means the score reflects actual mastery of practised vocabulary, producing motivating numbers from session 1.

@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Card Vault — Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --white: #fff;
+      --dark: #1a1a1a;
+      --mid: #555;
+      --light: #888;
+      --border: #e8e5df;
+      --gold: #C9A84C;
+      --gold-bright: #F0DC8A;
+      --radius: 12px;
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #e8e5df; font-family: var(--font-sans); color: var(--dark); padding: 40px 20px 80px; }
+
+    h2.section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #999;
+      text-align: center;
+      margin: 48px 0 20px;
+    }
+    h2.section-label:first-child { margin-top: 0; }
+
+    /* ── Shared phone shell ── */
+    .phone {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--bg);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+    }
+
+    /* ── Nav ── */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+    .nav-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #1a1a1a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #fff; font-weight: 700;
+    }
+
+    /* ── Profile header ── */
+    .profile-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 18px 16px;
+    }
+    .profile-header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .big-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: #1a1a1a;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .profile-meta { font-size: 12px; color: var(--light); }
+    .profile-stats-row {
+      display: flex;
+      gap: 0;
+    }
+    .profile-stat {
+      flex: 1;
+      text-align: center;
+      padding: 8px 0;
+      border-right: 1px solid var(--border);
+    }
+    .profile-stat:last-child { border-right: none; }
+    .profile-stat-val { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+    .profile-stat-val.gold { color: var(--gold); }
+    .profile-stat-label { font-size: 10px; color: var(--light); margin-top: 1px; font-weight: 500; }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1;
+      padding: 11px 0;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--light);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      color: var(--dark);
+      border-bottom-color: var(--dark);
+    }
+    .tab.active.gold-tab {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ── Vault body ── */
+    .vault-body { padding: 20px 16px 32px; }
+
+    /* ── Level section ── */
+    .level-section { margin-bottom: 24px; }
+
+    .level-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .level-header-left { display: flex; align-items: center; gap: 8px; }
+    .level-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mid);
+    }
+    .level-count {
+      font-size: 11px;
+      color: var(--light);
+    }
+    .level-count.complete { color: var(--gold); font-weight: 600; }
+
+    /* ── MAÎTRISÉ badge ── */
+    .maitrise-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px 3px 8px;
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 100px;
+      background: rgba(201,168,76,0.08);
+    }
+    .maitrise-badge-crown { font-size: 10px; }
+    .maitrise-badge-text {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ── Mini card grid ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    /* ── Mini black card — earned ── */
+    .mini-card {
+      border-radius: 8px;
+      padding: 10px 8px 9px;
+      position: relative;
+      min-height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .mini-card.earned {
+      background: #0d0d0d;
+      border: 1px solid var(--gold);
+    }
+    .mini-card.unearned {
+      background: #1c1c1c;
+      border: 1px solid #2e2e2e;
+    }
+
+    .mini-card-level {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      align-self: flex-end;
+    }
+    .mini-card.earned .mini-card-level { color: rgba(201,168,76,0.6); }
+    .mini-card.unearned .mini-card-level { color: #3a3a3a; }
+
+    .mini-card-name {
+      font-family: var(--font-serif);
+      font-size: 11px;
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+    .mini-card.earned .mini-card-name { color: rgba(255,255,255,0.85); }
+    .mini-card.unearned .mini-card-name { color: #3a3a3a; }
+
+    .mini-card-crown {
+      font-size: 12px;
+      align-self: flex-end;
+      line-height: 1;
+    }
+    .mini-card.unearned .mini-card-crown { display: none; }
+
+    /* ── Collapsed level ── */
+    .level-collapsed {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .level-collapsed-label { font-size: 12px; font-weight: 600; color: var(--mid); }
+    .level-collapsed-sub { font-size: 11px; color: var(--light); margin-top: 1px; }
+    .level-collapsed-arrow { font-size: 12px; color: #ccc; }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 48px 0 20px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #ccc;
+    }
+    .divider span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #999;
+      white-space: nowrap;
+    }
+
+    /* ── Share page (dark) ── */
+    .share-phone {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #0d0d0d;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    }
+    .share-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: #111;
+      border-bottom: 1px solid #1e1e1e;
+    }
+    .share-nav-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; color: #fff; letter-spacing: -0.02em; }
+    .share-nav-cta {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 6px 14px;
+      border: 1px solid #2a2a2a;
+      border-radius: 100px;
+    }
+
+    .share-body { padding: 28px 20px 32px; }
+
+    .share-gold-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-bright) 50%, var(--gold) 70%, transparent);
+      margin-bottom: 28px;
+    }
+
+    .share-header { text-align: center; margin-bottom: 28px; }
+    .share-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .share-count {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: -0.02em;
+      margin-bottom: 2px;
+    }
+    .share-count span { color: rgba(255,255,255,0.15); font-size: 22px; }
+    .share-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.05em;
+    }
+
+    .share-divider { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 20px; }
+
+    /* ── Share mini cards ── */
+    .share-card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .share-mini-card {
+      background: #0d0d0d;
+      border: 1px solid var(--gold);
+      border-radius: 7px;
+      padding: 8px 6px 7px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 68px;
+    }
+    .share-mini-level {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.5);
+      align-self: flex-end;
+    }
+    .share-mini-name {
+      font-family: var(--font-serif);
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.3;
+      margin-top: 4px;
+      flex: 1;
+    }
+    .share-mini-crown { font-size: 10px; align-self: flex-end; line-height: 1; margin-top: 4px; }
+
+    .share-breakdown {
+      text-align: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 0.04em;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+    .share-breakdown .earned-seg { color: rgba(201,168,76,0.6); font-weight: 600; }
+
+    .share-cta {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      background: var(--gold);
+      color: #000;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      border-radius: 100px;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Earning moment section ── */
+    .earning-phone {
+      max-width: 420px;
+      margin: 0 auto;
+      background: #0d0d0d;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    }
+    .earning-body {
+      padding: 48px 32px 40px;
+      text-align: center;
+    }
+
+    .earning-card-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 28px;
+    }
+    .earning-card {
+      width: 220px;
+      padding: 24px 20px 20px;
+      background: #0d0d0d;
+      border-radius: 14px;
+      border: 1px solid var(--gold);
+      text-align: center;
+      position: relative;
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.15), 0 0 24px rgba(201,168,76,0.08);
+    }
+    .earning-card-level {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.5);
+      margin-bottom: 14px;
+    }
+    .earning-card-crown { font-size: 28px; margin-bottom: 10px; }
+    .earning-card-score {
+      font-size: 52px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .earning-card-parfait {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .earning-card-name {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      color: rgba(255,255,255,0.2);
+      margin-bottom: 16px;
+    }
+    .earning-card-divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 14px; }
+    .earning-card-new {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* Gold border trace effect (static representation) */
+    .earning-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, var(--gold-bright), var(--gold), transparent 60%);
+      z-index: -1;
+      opacity: 0.6;
+    }
+
+    .earning-prompt {
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 1. PROFILE — BLACK CARDS TAB               -->
+  <!-- ═══════════════════════════════════════════ -->
+  <h2 class="section-label">Profile — Black Cards Tab</h2>
+
+  <div class="phone">
+    <!-- Nav -->
+    <div class="nav">
+      <span class="nav-logo">LexiTree</span>
+      <div class="nav-avatar">N</div>
+    </div>
+
+    <!-- Profile header -->
+    <div class="profile-header">
+      <div class="profile-header-row">
+        <div class="big-avatar">N</div>
+        <div>
+          <div class="profile-name">Nithin Sebastian</div>
+          <div class="profile-meta">B1 · 2 day streak 🔥</div>
+        </div>
+      </div>
+      <div class="profile-stats-row">
+        <div class="profile-stat">
+          <div class="profile-stat-val gold">12</div>
+          <div class="profile-stat-label">Black Cards</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-val">34</div>
+          <div class="profile-stat-label">Sessions</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-val">78%</div>
+          <div class="profile-stat-label">Accuracy</div>
+        </div>
+        <div class="profile-stat">
+          <div class="profile-stat-val">74</div>
+          <div class="profile-stat-label">Vocab</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab">Stats</div>
+      <div class="tab">Concepts</div>
+      <div class="tab active gold-tab">♛ Black Cards</div>
+    </div>
+
+    <!-- Vault -->
+    <div class="vault-body">
+
+      <!-- A1 — Complete -->
+      <div class="level-section">
+        <div class="level-header">
+          <div class="level-header-left">
+            <span class="level-label">A1</span>
+            <span class="level-count complete">8 / 8</span>
+          </div>
+          <div class="maitrise-badge">
+            <span class="maitrise-badge-crown">👑</span>
+            <span class="maitrise-badge-text">Maîtrisé</span>
+          </div>
+        </div>
+        <div class="card-grid">
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Présent indicatif</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Articles définis</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Négation simple</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Questions simples</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Pluriel des noms</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Adjectifs qual.</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Verbes en -er</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A1</span>
+            <span class="mini-card-name">Être et avoir</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- A2 — Partial -->
+      <div class="level-section">
+        <div class="level-header">
+          <div class="level-header-left">
+            <span class="level-label">A2</span>
+            <span class="level-count">4 / 10</span>
+          </div>
+        </div>
+        <div class="card-grid">
+          <div class="mini-card earned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Passé composé</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Imparfait</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Futur proche</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card earned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Accord adj.</span>
+            <span class="mini-card-crown">👑</span>
+          </div>
+          <div class="mini-card unearned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Pronoms COD</span>
+          </div>
+          <div class="mini-card unearned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Pronoms COI</span>
+          </div>
+          <div class="mini-card unearned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Comparatifs</span>
+          </div>
+          <div class="mini-card unearned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Superlatifs</span>
+          </div>
+          <div class="mini-card unearned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Verbes pron.</span>
+          </div>
+          <div class="mini-card unearned">
+            <span class="mini-card-level">A2</span>
+            <span class="mini-card-name">Questions indir.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- B1 — Collapsed -->
+      <div class="level-collapsed">
+        <div>
+          <div class="level-collapsed-label">B1</div>
+          <div class="level-collapsed-sub">12 concepts · none earned yet</div>
+        </div>
+        <span class="level-collapsed-arrow">›</span>
+      </div>
+
+      <!-- B2 — Collapsed -->
+      <div class="level-collapsed">
+        <div>
+          <div class="level-collapsed-label">B2</div>
+          <div class="level-collapsed-sub">14 concepts · locked</div>
+        </div>
+        <span class="level-collapsed-arrow">›</span>
+      </div>
+
+    </div><!-- /vault-body -->
+  </div><!-- /phone -->
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 2. EARNING MOMENT                          -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="divider"><span>Earning Moment</span></div>
+
+  <div class="earning-phone">
+    <div class="earning-body">
+      <div class="earning-card-wrap">
+        <div class="earning-card">
+          <div class="earning-card-level">B1 · Le futur simple</div>
+          <div class="earning-card-crown">👑</div>
+          <div class="earning-card-score">7/7</div>
+          <div class="earning-card-parfait">Parfait</div>
+          <div class="earning-card-name">Le futur simple</div>
+          <div class="earning-card-divider"></div>
+          <div class="earning-card-new">
+            <span>✦</span>
+            <span>Added to your Black Cards</span>
+          </div>
+        </div>
+      </div>
+      <div class="earning-prompt">← gold border traces clockwise on reveal</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- 3. COLLECTION SHARE PAGE                   -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div class="divider"><span>Collection Share Page</span></div>
+
+  <div class="share-phone">
+    <!-- Nav -->
+    <div class="share-nav">
+      <span class="share-nav-logo">LexiTree</span>
+      <a href="#" class="share-nav-cta">Try it free →</a>
+    </div>
+
+    <div class="share-body">
+      <div class="share-gold-line"></div>
+
+      <!-- Header -->
+      <div class="share-header">
+        <div class="share-name">Nithin Sebastian's Black Cards</div>
+        <div class="share-count">12 <span>earned</span></div>
+        <div class="share-sub">FRENCH GRAMMAR · LEXITREE</div>
+      </div>
+
+      <div class="share-divider"></div>
+
+      <!-- Card grid — earned only -->
+      <div class="share-card-grid">
+        <!-- A1 × 8 -->
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Présent indicatif</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Articles définis</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Négation simple</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Questions simples</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Pluriel des noms</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Adjectifs qual.</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Verbes en -er</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A1</span>
+          <span class="share-mini-name">Être et avoir</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <!-- A2 × 4 -->
+        <div class="share-mini-card">
+          <span class="share-mini-level">A2</span>
+          <span class="share-mini-name">Passé composé</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A2</span>
+          <span class="share-mini-name">Imparfait</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A2</span>
+          <span class="share-mini-name">Futur proche</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+        <div class="share-mini-card">
+          <span class="share-mini-level">A2</span>
+          <span class="share-mini-name">Accord adj.</span>
+          <span class="share-mini-crown">👑</span>
+        </div>
+      </div>
+
+      <!-- CEFR breakdown -->
+      <div class="share-breakdown">
+        <span class="earned-seg">A1 8/8</span> &nbsp;·&nbsp;
+        <span class="earned-seg">A2 4/10</span> &nbsp;·&nbsp;
+        B1 0/12 &nbsp;·&nbsp; B2 0/14
+      </div>
+
+      <!-- CTA -->
+      <a href="#" class="share-cta">Build your collection — it's free →</a>
+    </div>
+  </div>
+
+</body>
+</html>

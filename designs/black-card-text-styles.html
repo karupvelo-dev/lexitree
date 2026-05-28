@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Text Styles — Comparison</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --border: #e8e5df;
+      --gold: #C9A84C;
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --cw: 130px;
+      --ch: 180px;
+      --cr: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #dedad5;
+      font-family: var(--font-sans);
+      padding: 48px 24px 80px;
+      color: #1a1a1a;
+    }
+
+    h1 {
+      text-align: center;
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 48px;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Row of three options ── */
+    .compare {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .option-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #888;
+    }
+    .option-name {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-top: -8px;
+      text-align: center;
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Base card */
+    .mc {
+      width: var(--cw);
+      height: var(--ch);
+      border-radius: var(--cr);
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Top-edge light */
+    .mc::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* Gold glow at top centre */
+    .mc::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 12%; right: 12%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.45), transparent);
+    }
+
+    .mc-face {
+      position: absolute; inset: 0;
+      padding: 14px 14px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .mc-level {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: rgba(201,168,76,0.3);
+    }
+
+    /* ══════════════════════════════════════
+       A — ENGRAVED GOLD
+       Dim gold text, inset shadow simulating
+       a channel carved into the card surface.
+    ══════════════════════════════════════ */
+    .style-a .mc-name {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(201,168,76,0.52);
+      text-shadow:
+        0  1px 0 rgba(255,255,255,0.10),  /* light on bottom edge of groove */
+        0 -1px 0 rgba(0,0,0,1.00);         /* depth above */
+      line-height: 1.4;
+      letter-spacing: 0.005em;
+    }
+
+    /* ══════════════════════════════════════
+       B — METALLIC FOIL STAMP
+       Gradient gold fill — hot-stamp / foil
+       letterpress feel. Bright and tactile.
+    ══════════════════════════════════════ */
+    .style-b .mc-name {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-weight: 700;
+      background: linear-gradient(
+        140deg,
+        #f5e08a  0%,
+        #c9a84c 35%,
+        #f0d060 55%,
+        #a87828 80%,
+        #e8c84a 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.4;
+      letter-spacing: 0.005em;
+    }
+
+    /* ══════════════════════════════════════
+       C — LETTERPRESS / DEBOSSED
+       Text appears pressed INTO the surface.
+       Very subtle — reveals itself on close
+       inspection, like a wax seal.
+    ══════════════════════════════════════ */
+    .style-c .mc-name {
+      font-family: var(--font-serif);
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.07);   /* barely lighter than the card */
+      text-shadow:
+        0  1px 1px rgba(255,255,255,0.28), /* light catching lower pressed edge */
+        0 -1px 1px rgba(0,0,0,0.95);        /* shadow on upper wall */
+      line-height: 1.4;
+      letter-spacing: 0.005em;
+    }
+
+    /* ── Divider between sections ── */
+    .section-break {
+      height: 1px;
+      background: rgba(0,0,0,0.1);
+      margin: 56px 0;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── In-context: fan spread comparison ── */
+    .context-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #999; text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .deck-row {
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .deck-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .deck-wrap .option-label { margin-bottom: 0; }
+
+    /* Mini fan — 5 cards spread, smaller */
+    .fan {
+      position: relative;
+      width: 90px;
+      height: 120px;
+    }
+
+    .fan .fc {
+      position: absolute;
+      top: 0; left: 0;
+      width: 90px;
+      height: 120px;
+      border-radius: 9px;
+      background: #0c0c0c;
+      border: 1px solid var(--gold);
+      overflow: hidden;
+      transition: transform 0.5s cubic-bezier(0.34,1.4,0.64,1);
+    }
+
+    .fan .fc::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .fan .fc-face {
+      position: absolute; inset: 0;
+      padding: 10px 10px 8px;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .fan .fc-level {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: rgba(201,168,76,0.3);
+    }
+
+    /* Rest state */
+    .fan .fc:nth-child(1) { transform: translateX(-7px); z-index: 1; }
+    .fan .fc:nth-child(2) { transform: translateX(-4px); z-index: 2; }
+    .fan .fc:nth-child(3) { transform: translateX(-1px); z-index: 3; }
+    .fan .fc:nth-child(4) { transform: translateX( 3px); z-index: 4; }
+    .fan .fc:nth-child(5) { transform: translateX( 6px); z-index: 5; }
+
+    /* Hover spread */
+    .fan:hover .fc:nth-child(1) { transform: translateX(-100px); transition-delay: 0ms; }
+    .fan:hover .fc:nth-child(2) { transform: translateX( -50px); transition-delay: 25ms; }
+    .fan:hover .fc:nth-child(3) { transform: translateX(   0px); transition-delay: 50ms; }
+    .fan:hover .fc:nth-child(4) { transform: translateX(  50px); transition-delay: 25ms; }
+    .fan:hover .fc:nth-child(5) { transform: translateX( 100px); transition-delay: 0ms; }
+
+    .fan:hover .fc:hover { z-index: 10 !important; box-shadow: 0 -8px 24px rgba(0,0,0,0.5); }
+
+    .fan-hint {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: #aaa;
+    }
+
+    /* Style A names in fan */
+    .fan-a .fc-name {
+      font-family: var(--font-serif);
+      font-size: 9px; font-weight: 600;
+      color: rgba(201,168,76,0.52);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.10), 0 -1px 0 rgba(0,0,0,1);
+      line-height: 1.35;
+    }
+
+    /* Style B names in fan */
+    .fan-b .fc-name {
+      font-family: var(--font-serif);
+      font-size: 9px; font-weight: 700;
+      background: linear-gradient(140deg, #f5e08a 0%, #c9a84c 35%, #f0d060 55%, #a87828 80%, #e8c84a 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.35;
+    }
+
+    /* Style C names in fan */
+    .fan-c .fc-name {
+      font-family: var(--font-serif);
+      font-size: 9px; font-weight: 700;
+      color: rgba(255,255,255,0.07);
+      text-shadow: 0 1px 1px rgba(255,255,255,0.28), 0 -1px 1px rgba(0,0,0,0.95);
+      line-height: 1.35;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Card text styles</h1>
+
+<!-- ── Close-up comparison ── -->
+<div class="compare">
+
+  <!-- A: Engraved gold -->
+  <div class="option style-a">
+    <div class="option-label">A</div>
+    <div class="option-name">Engraved gold</div>
+    <div class="cards">
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Subjonctif présent</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Conditionnel passé</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Pronoms relatifs</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B: Metallic foil -->
+  <div class="option style-b">
+    <div class="option-label">B</div>
+    <div class="option-name">Metallic foil</div>
+    <div class="cards">
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Subjonctif présent</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Conditionnel passé</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Pronoms relatifs</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- C: Letterpress -->
+  <div class="option style-c">
+    <div class="option-label">C</div>
+    <div class="option-name">Letterpress</div>
+    <div class="cards">
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Subjonctif présent</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Conditionnel passé</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+      <div class="mc">
+        <div class="mc-face">
+          <span class="mc-name">Pronoms relatifs</span>
+          <span class="mc-level">C1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="section-break"></div>
+
+<!-- ── In-context: fan spread ── -->
+<p class="context-label">In context — hover each deck to spread</p>
+
+<div class="deck-row">
+
+  <div class="deck-wrap">
+    <div class="option-label">A — Engraved</div>
+    <div class="fan fan-a">
+      <div class="fc"><div class="fc-face"><span class="fc-name">Subjonctif présent</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Conditionnel passé</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Pronoms relatifs</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Voix passive</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Gérondif</span><span class="fc-level">C1</span></div></div>
+    </div>
+    <div class="fan-hint">hover</div>
+  </div>
+
+  <div class="deck-wrap">
+    <div class="option-label">B — Foil</div>
+    <div class="fan fan-b">
+      <div class="fc"><div class="fc-face"><span class="fc-name">Subjonctif présent</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Conditionnel passé</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Pronoms relatifs</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Voix passive</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Gérondif</span><span class="fc-level">C1</span></div></div>
+    </div>
+    <div class="fan-hint">hover</div>
+  </div>
+
+  <div class="deck-wrap">
+    <div class="option-label">C — Letterpress</div>
+    <div class="fan fan-c">
+      <div class="fc"><div class="fc-face"><span class="fc-name">Subjonctif présent</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Conditionnel passé</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Pronoms relatifs</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Voix passive</span><span class="fc-level">C1</span></div></div>
+      <div class="fc"><div class="fc-face"><span class="fc-name">Gérondif</span><span class="fc-level">C1</span></div></div>
+    </div>
+    <div class="fan-hint">hover</div>
+  </div>
+
+</div>
+
+</body>
+</html>

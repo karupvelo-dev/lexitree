@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Loading — Typewriter Option C</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0ede8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e8e5df;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 520px;
+    padding: 64px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+    text-align: center;
+  }
+
+  .french {
+    font-family: 'Lora', serif;
+    font-size: 19px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.5;
+    min-height: 30px;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  /* blinking cursor */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: #1a1a1a;
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 0.7s step-end infinite;
+    border-radius: 1px;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  .english {
+    font-size: 13px;
+    color: #aaa;
+    font-weight: 400;
+    min-height: 20px;
+    transition: opacity 0.4s ease;
+  }
+
+  .english.hidden { opacity: 0; }
+  .english.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="french" id="french"><span class="cursor"></span></div>
+  <div class="english hidden" id="english"></div>
+</div>
+
+<script>
+  const lines = [
+    { fr: 'Préparation de votre leçon…',          en: 'Getting your lesson ready.' },
+    { fr: 'Sort de conjugaison lancé…',            en: 'Conjugation spell successfully cast.' },
+    { fr: 'Les verbes se réveillent…',             en: 'The verbs are waking up.' },
+    { fr: 'Consultation du grand livre…',          en: 'Consulting the grand grammar tome.' },
+    { fr: 'Le professeur réfléchit…',              en: 'The professor is thinking.' },
+    { fr: 'Grammaire en cours de chargement…',     en: 'Grammar loading.' },
+    { fr: 'Vos questions arrivent bientôt…',       en: 'Your questions are almost ready.' },
+  ]
+
+  const frEl  = document.getElementById('french')
+  const enEl  = document.getElementById('english')
+
+  let lineIndex = 0
+
+  function typeLine(line) {
+    return new Promise(resolve => {
+      const text   = line.fr
+      let i        = 0
+      frEl.innerHTML = '<span class="cursor"></span>'
+      enEl.textContent = line.en
+      enEl.classList.remove('visible')
+      enEl.classList.add('hidden')
+
+      const interval = setInterval(() => {
+        i++
+        // Insert typed text before the cursor
+        const cursor = frEl.querySelector('.cursor')
+        frEl.textContent = text.slice(0, i)
+        frEl.appendChild(cursor)
+
+        if (i === text.length) {
+          clearInterval(interval)
+
+          // Remove cursor, show English
+          setTimeout(() => {
+            cursor.remove()
+            enEl.classList.remove('hidden')
+            enEl.classList.add('visible')
+          }, 120)
+
+          // Hold, then fade everything out and resolve
+          setTimeout(() => {
+            frEl.style.transition = 'opacity 0.35s ease'
+            enEl.style.transition = 'opacity 0.35s ease'
+            frEl.style.opacity = '0'
+            enEl.style.opacity = '0'
+
+            setTimeout(() => {
+              frEl.style.transition = ''
+              enEl.style.transition = ''
+              frEl.style.opacity    = ''
+              enEl.style.opacity    = ''
+              enEl.classList.remove('visible')
+              enEl.classList.add('hidden')
+              resolve()
+            }, 380)
+          }, 1800)
+        }
+      }, 48)
+    })
+  }
+
+  async function loop() {
+    while (true) {
+      await typeLine(lines[lineIndex % lines.length])
+      lineIndex++
+      await new Promise(r => setTimeout(r, 120))
+    }
+  }
+
+  loop()
+</script>
+
+</body>
+</html>

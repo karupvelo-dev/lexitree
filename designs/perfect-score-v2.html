@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7/7 Perfect — Premium Explorations</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0a0a0a;
+    min-height: 100vh;
+    padding: 60px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .row {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .option-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #555;
+  }
+
+  .phone {
+    width: 300px;
+    background: #111;
+    border-radius: 40px;
+    padding: 12px;
+    box-shadow: 0 32px 64px rgba(0,0,0,0.7);
+    border: 1px solid #1e1e1e;
+  }
+
+  .phone-inner {
+    border-radius: 30px;
+    overflow: hidden;
+    background: #f5f5f0;
+  }
+
+  /* Header — same across all */
+  .hdr {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  .hdr-logo { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.05em; }
+  .hdr-right { display: flex; align-items: center; gap: 7px; }
+  .hdr-streak { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.1); border-radius: 500px; padding: 4px 9px; font-size: 11px; font-weight: 700; color: #fff; }
+  .hdr-avatar { width: 26px; height: 26px; border-radius: 50%; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+
+  /* Page shell */
+  .page { background: #f5f5f0; padding: 16px 14px 80px; display: flex; align-items: center; justify-content: center; min-height: 560px; }
+
+  /* Bottom nav */
+  .bnav { background: #fff; border-top: 1px solid #eee; display: flex; padding: 8px 0 12px; }
+  .bnav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; color: #bbb; }
+  .bnav-item.active { color: #111; }
+
+  /* ── Shared card base ── */
+  .card {
+    width: 100%;
+    border-radius: 18px;
+    padding: 28px 20px 22px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  /* ══════════════════════════════════════════
+     OPTION A — Gold hallmark on deep matte black
+     Stripped to almost nothing. Number is king.
+  ══════════════════════════════════════════ */
+  .card-a {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+  }
+
+  .card-a .gold-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+    margin-bottom: 28px;
+    animation: fadeIn 0.6s ease 0.2s both;
+  }
+
+  .card-a .big-num {
+    font-size: 72px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 8px;
+    animation: fadeUp 0.5s ease 0.3s both;
+  }
+
+  .card-a .hallmark {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #C9A84C;
+    margin-bottom: 20px;
+    animation: fadeIn 0.5s ease 0.5s both;
+  }
+
+  .card-a .concept {
+    font-size: 11px;
+    color: rgba(255,255,255,0.2);
+    margin-bottom: 24px;
+    animation: fadeIn 0.5s ease 0.55s both;
+  }
+
+  .card-a .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin-bottom: 20px;
+  }
+
+  .card-a .saved {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 10px 12px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.4s ease 0.65s both;
+  }
+
+  .card-a .av {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #C9A84C; display: flex; align-items: center;
+    justify-content: center; font-size: 10px; font-weight: 700; color: #000; flex-shrink: 0;
+  }
+
+  .card-a .saved-txt { font-size: 11px; color: rgba(255,255,255,0.4); text-align: left; }
+  .card-a .saved-txt strong { color: rgba(255,255,255,0.8); }
+
+  .card-a .btn-p {
+    width: 100%; min-height: 44px; background: #C9A84C; color: #000;
+    border: none; border-radius: 500px; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px; animation: fadeUp 0.4s ease 0.7s both; letter-spacing: 0.01em;
+  }
+
+  .card-a .btn-g {
+    width: 100%; min-height: 44px; background: transparent;
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 500px;
+    font-size: 12px; color: rgba(255,255,255,0.25); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 0.4s ease 0.75s both;
+  }
+
+  /* ══════════════════════════════════════════
+     OPTION B — Dark card, PARFAIT as large
+     watermark behind all content (faint gold)
+  ══════════════════════════════════════════ */
+  .card-b {
+    background: #0d0d0d;
+    border: 1px solid #1a1a1a;
+  }
+
+  .card-b .watermark {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: rgba(201,168,76,0.07);
+    white-space: nowrap;
+    pointer-events: none;
+    font-style: italic;
+    user-select: none;
+  }
+
+  .card-b .num {
+    font-size: 52px; font-weight: 900; color: #fff;
+    letter-spacing: -0.04em; line-height: 1; margin-bottom: 4px;
+    animation: fadeUp 0.5s ease 0.2s both;
+  }
+
+  .card-b .perf-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #C9A84C; margin-bottom: 6px;
+    animation: fadeIn 0.5s ease 0.35s both;
+  }
+
+  .card-b .sub {
+    font-size: 12px; color: rgba(255,255,255,0.35); margin-bottom: 4px;
+    animation: fadeIn 0.4s ease 0.4s both;
+  }
+
+  .card-b .concept {
+    font-size: 11px; color: rgba(255,255,255,0.18); margin-bottom: 20px;
+    animation: fadeIn 0.4s ease 0.45s both;
+  }
+
+  .card-b .streak {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 500px; padding: 5px 12px;
+    font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.45);
+    margin-bottom: 20px; animation: fadeIn 0.4s ease 0.5s both;
+  }
+
+  .card-b .div { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 16px; }
+
+  .card-b .saved {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 16px;
+    animation: fadeIn 0.4s ease 0.55s both;
+  }
+  .card-b .av { width: 24px; height: 24px; border-radius: 50%; background: #C9A84C; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #000; flex-shrink: 0; }
+  .card-b .saved-txt { font-size: 11px; color: rgba(255,255,255,0.4); text-align: left; }
+  .card-b .saved-txt strong { color: rgba(255,255,255,0.75); }
+
+  .card-b .btn-p {
+    width: 100%; min-height: 44px;
+    background: linear-gradient(135deg, #C9A84C, #E8D08A);
+    color: #000; border: none; border-radius: 500px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px; animation: fadeUp 0.4s ease 0.6s both;
+  }
+
+  .card-b .btn-g {
+    width: 100%; min-height: 44px; background: transparent;
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 500px;
+    font-size: 12px; color: rgba(255,255,255,0.25); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 0.4s ease 0.65s both;
+  }
+
+  /* ══════════════════════════════════════════
+     OPTION C — Dark card with gold gradient
+     top border only. Cinematic, certificate feel.
+  ══════════════════════════════════════════ */
+  .card-c {
+    background: linear-gradient(160deg, #111 0%, #0a0a0a 100%);
+    border: 1px solid #1e1e1e;
+    padding-top: 0;
+  }
+
+  .card-c .gold-border-top {
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #C9A84C 40%, #F0DC8A 60%, #C9A84C 80%, transparent 100%);
+    margin-bottom: 28px;
+    border-radius: 2px;
+  }
+
+  .card-c .eyebrow {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.22em;
+    text-transform: uppercase; color: #C9A84C; margin-bottom: 12px;
+    animation: fadeIn 0.5s ease 0.2s both;
+  }
+
+  .card-c .num {
+    font-size: 64px; font-weight: 900; color: #fff;
+    letter-spacing: -0.04em; line-height: 1; margin-bottom: 10px;
+    animation: fadeUp 0.5s ease 0.3s both;
+  }
+
+  .card-c .sub {
+    font-size: 12px; color: rgba(255,255,255,0.35); line-height: 1.5;
+    margin-bottom: 4px; animation: fadeIn 0.4s ease 0.4s both;
+  }
+
+  .card-c .concept {
+    font-size: 11px; color: rgba(255,255,255,0.15); margin-bottom: 22px;
+    animation: fadeIn 0.4s ease 0.45s both;
+  }
+
+  .card-c .streak {
+    display: inline-flex; align-items: center; gap: 5px;
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 500px; padding: 5px 12px;
+    font-size: 11px; font-weight: 600; color: #C9A84C;
+    margin-bottom: 22px; animation: fadeIn 0.4s ease 0.5s both;
+  }
+
+  .card-c .div { height: 1px; background: rgba(255,255,255,0.05); margin-bottom: 16px; }
+
+  .card-c .saved {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 16px;
+    animation: fadeIn 0.4s ease 0.55s both;
+  }
+  .card-c .av { width: 24px; height: 24px; border-radius: 50%; background: rgba(201,168,76,0.9); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #000; flex-shrink: 0; }
+  .card-c .saved-txt { font-size: 11px; color: rgba(255,255,255,0.35); text-align: left; }
+  .card-c .saved-txt strong { color: rgba(255,255,255,0.7); }
+
+  .card-c .btn-p {
+    width: 100%; min-height: 44px; background: #fff; color: #000;
+    border: none; border-radius: 500px; font-size: 13px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px; animation: fadeUp 0.4s ease 0.6s both;
+  }
+
+  .card-c .btn-g {
+    width: 100%; min-height: 44px; background: transparent;
+    border: 1px solid rgba(255,255,255,0.07); border-radius: 500px;
+    font-size: 12px; color: rgba(255,255,255,0.2); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 0.4s ease 0.65s both;
+  }
+
+  /* ── Shared animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Nav icons */
+  .nav-svg { width: 15px; height: 15px; }
+</style>
+</head>
+<body>
+
+<p class="section-label">7/7 Perfect Score — Premium explorations in Uber design language</p>
+
+<div class="row">
+
+  <!-- ── OPTION A ── -->
+  <div class="phone-wrap">
+    <span class="option-label">A — Gold hallmark · stripped back</span>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="hdr">
+          <span class="hdr-logo">LexiTree</span>
+          <div class="hdr-right">
+            <div class="hdr-streak">🔥 3</div>
+            <div class="hdr-avatar">N</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="card card-a">
+            <div class="gold-line"></div>
+            <div class="big-num">7/7</div>
+            <div class="hallmark">Parfait</div>
+            <div class="concept">Le passé composé avec avoir</div>
+            <div class="divider"></div>
+            <div class="saved">
+              <div class="av">N</div>
+              <div class="saved-txt">Saved to <strong>Nithin Sebastian</strong></div>
+            </div>
+            <button class="btn-p">Back to Grammar Map →</button>
+            <button class="btn-g">Today's lesson</button>
+          </div>
+        </div>
+        <div class="bnav">
+          <div class="bnav-item active">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"/></svg>
+            Today
+          </div>
+          <div class="bnav-item">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            Map
+          </div>
+          <div class="bnav-item">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"/></svg>
+            Vocabulaire
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OPTION B ── -->
+  <div class="phone-wrap">
+    <span class="option-label">B — Gold watermark · gradient CTA</span>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="hdr">
+          <span class="hdr-logo">LexiTree</span>
+          <div class="hdr-right">
+            <div class="hdr-streak">🔥 3</div>
+            <div class="hdr-avatar">N</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="card card-b">
+            <div class="watermark">Parfait</div>
+            <div class="num">7/7</div>
+            <div class="perf-label">Parfait</div>
+            <div class="sub">Every question · first attempt</div>
+            <div class="concept">Le passé composé avec avoir</div>
+            <div class="streak">🔥 3 day streak</div>
+            <div class="div"></div>
+            <div class="saved">
+              <div class="av">N</div>
+              <div class="saved-txt">Saved to <strong>Nithin Sebastian</strong></div>
+            </div>
+            <button class="btn-p">Back to Grammar Map →</button>
+            <button class="btn-g">Today's lesson</button>
+          </div>
+        </div>
+        <div class="bnav">
+          <div class="bnav-item active">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"/></svg>
+            Today
+          </div>
+          <div class="bnav-item">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            Map
+          </div>
+          <div class="bnav-item">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"/></svg>
+            Vocabulaire
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OPTION C ── -->
+  <div class="phone-wrap">
+    <span class="option-label">C — Gold top border · cinematic</span>
+    <div class="phone">
+      <div class="phone-inner">
+        <div class="hdr">
+          <span class="hdr-logo">LexiTree</span>
+          <div class="hdr-right">
+            <div class="hdr-streak">🔥 3</div>
+            <div class="hdr-avatar">N</div>
+          </div>
+        </div>
+        <div class="page">
+          <div class="card card-c">
+            <div class="gold-border-top"></div>
+            <div class="eyebrow">Perfect score</div>
+            <div class="num">7/7</div>
+            <div class="sub">Every question, first attempt</div>
+            <div class="concept">Le passé composé avec avoir</div>
+            <div class="streak">🔥 3 day streak</div>
+            <div class="div"></div>
+            <div class="saved">
+              <div class="av">N</div>
+              <div class="saved-txt">Saved to <strong>Nithin Sebastian</strong></div>
+            </div>
+            <button class="btn-p">Back to Grammar Map →</button>
+            <button class="btn-g">Today's lesson</button>
+          </div>
+        </div>
+        <div class="bnav">
+          <div class="bnav-item active">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13"/></svg>
+            Today
+          </div>
+          <div class="bnav-item">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+            Map
+          </div>
+          <div class="bnav-item">
+            <svg class="nav-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3-3-3z"/></svg>
+            Vocabulaire
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Team notes -->
+<div style="max-width:800px;color:#333;font-size:12px;line-height:1.7;border-top:1px solid #1e1e1e;padding-top:40px;width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;">
+  <div>
+    <div style="color:#C9A84C;font-weight:700;letter-spacing:0.08em;font-size:10px;text-transform:uppercase;margin-bottom:8px">A — Stripped</div>
+    Gold used only as a hairline + hallmark text. The 7/7 number does all the work at 72px. No emoji, no dots. Silence = confidence. Uber Black energy.
+  </div>
+  <div>
+    <div style="color:#C9A84C;font-weight:700;letter-spacing:0.08em;font-size:10px;text-transform:uppercase;margin-bottom:8px">B — Watermark</div>
+    "Parfait" faintly printed behind all content like a luxury certificate. Gold gradient CTA feels like a reward. Richest texture of the three.
+  </div>
+  <div>
+    <div style="color:#C9A84C;font-weight:700;letter-spacing:0.08em;font-size:10px;text-transform:uppercase;margin-bottom:8px">C — Cinematic</div>
+    Single gold hairline across the top — like breaking the seal on something exclusive. White primary CTA creates contrast. Most restrained.
+  </div>
+</div>
+
+</body>
+</html>

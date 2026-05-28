@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexitree — Tour de French · Carte de France</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #1a1408;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px 44px;
+}
+
+.app { width: 100%; max-width: 900px; }
+
+/* Header */
+.header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 20px; padding: 0 2px;
+}
+.header-left .eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: #7a6a40; margin-bottom: 5px;
+}
+.header-left h1 {
+  font-size: 26px; font-weight: 800; color: #F5CC00;
+  letter-spacing: -0.02em;
+}
+.header-left h1 span { color: #ffffff; }
+.header-right { display: flex; gap: 24px; align-items: flex-end; }
+.stat { text-align: right; }
+.stat .val { display: block; font-size: 22px; font-weight: 700; color: #F5CC00; line-height: 1; }
+.stat .lbl { display: block; font-size: 10px; color: #6a5a30; margin-top: 3px; letter-spacing: 0.07em; text-transform: uppercase; }
+
+/* Map card */
+.map-card {
+  background: #0d0d06;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(245,204,0,0.12);
+  overflow: hidden;
+  position: relative;
+}
+
+#map { display: block; width: 100%; height: auto; }
+
+/* Legend */
+.legend {
+  display: flex; gap: 18px; justify-content: center;
+  margin-top: 18px; flex-wrap: wrap;
+}
+.leg-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; color: #7a6a40; letter-spacing: 0.03em;
+}
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); }
+
+/* Tooltip */
+#tooltip {
+  position: fixed; z-index: 999; pointer-events: none;
+  opacity: 0; transition: opacity 0.12s ease;
+  background: #1a1408; color: #f0e8c8;
+  border-radius: 8px; padding: 11px 15px; min-width: 170px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  border: 1px solid #3a2e10;
+}
+#tooltip.show { opacity: 1; }
+.tt-word { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.tt-zone { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #7a6a40; margin-bottom: 6px; }
+.tt-def  { font-size: 13px; color: #a09060; line-height: 1.5; margin-bottom: 9px; }
+.tt-bar  { display: flex; gap: 3px; align-items: center; }
+.tt-pip  { width: 6px; height: 6px; border-radius: 50%; background: #2a2010; border: 1px solid #3a3020; flex-shrink: 0; }
+.tt-pip.on { background: currentColor; border-color: currentColor; }
+.tt-lbl  { font-size: 10px; color: #6a5a30; margin-left: 5px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header">
+    <div class="header-left">
+      <div class="eyebrow">Lexitree · Vocabulaire</div>
+      <h1>Tour de <span>French</span></h1>
+    </div>
+    <div class="header-right">
+      <div class="stat">
+        <span class="val" id="s-mastered">–</span>
+        <span class="lbl">maillots jaunes</span>
+      </div>
+      <div class="stat">
+        <span class="val" id="s-pct">–</span>
+        <span class="lbl">% complété</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="map-card">
+    <svg id="map" viewBox="0 0 800 660" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#F8F8F0; border-color:#ccc;"></div>Non vu</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#4CAF68;"></div>Aperçu · maillot vert</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#E84040;"></div>Connu · maillot à pois</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#F5CC00;"></div>Maîtrisé · maillot jaune</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#555; border-color:#444;"></div>Verrouillé</div>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-word" id="tt-w"></div>
+  <div class="tt-zone" id="tt-z"></div>
+  <div class="tt-def"  id="tt-d"></div>
+  <div class="tt-bar"  id="tt-b"></div>
+</div>
+
+<script>
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const M = { UNSEEN:0, SEEN:1, KNOWN:2, MASTERED:3 };
+
+const JERSEY = {
+  [M.UNSEEN]:  { fill:'#F8F8F0', stroke:'#BBBBAA', label:'Non vu',         pips:0 },
+  [M.SEEN]:    { fill:'#4CAF68', stroke:'#3A9A55', label:'Maillot vert',    pips:2 },
+  [M.KNOWN]:   { fill:'#E84040', stroke:'#C82828', label:'Maillot à pois',  pips:4 },
+  [M.MASTERED]:{ fill:'#F5CC00', stroke:'#C8A800', label:'Maillot jaune',   pips:6 },
+};
+
+const ZONE_META = {
+  A1: { color:'#2A7A2A', routeColor:'#2A7A2A', label:'A1 · Terminé',     labelCol:'#2A7A2A', done:true  },
+  A2: { color:'#4A9A3A', routeColor:'#4A9A3A', label:'A2 · Terminé',     labelCol:'#4A9A3A', done:true  },
+  B1: { color:'#C4612A', routeColor:'#C4612A', label:'B1 · En cours →',  labelCol:'#C4612A', current:true },
+  B2: { color:'#666677', routeColor:'#555566', label:'B2 · Verrouillé',   labelCol:'#555566', locked:true },
+  C1: { color:'#555566', routeColor:'#444455', label:'C1 · Verrouillé',   labelCol:'#444455', locked:true },
+  C2: { color:'#444455', routeColor:'#333344', label:'C2 · Paris',        labelCol:'#333344', locked:true },
+};
+
+// Word stations: geographic positions on the France map SVG
+// Route: Biarritz (SW) → south coast → Alps → Burgundy → Paris
+const STATIONS = [
+  // ── A1 — Pays Basque / Pyrenees (done) ───────────────────────────────
+  { word:'avoir',      zone:'A1', m:M.MASTERED, x:122, y:491, def:'to have'             },
+  { word:'être',       zone:'A1', m:M.MASTERED, x:147, y:494, def:'to be'               },
+  { word:'faire',      zone:'A1', m:M.MASTERED, x:170, y:496, def:'to do / make'        },
+  { word:'aller',      zone:'A1', m:M.MASTERED, x:194, y:498, def:'to go'               },
+  { word:'vouloir',    zone:'A1', m:M.MASTERED, x:218, y:500, def:'to want'             },
+  { word:'pouvoir',    zone:'A1', m:M.MASTERED, x:242, y:499, def:'to be able to'       },
+  { word:'parler',     zone:'A1', m:M.KNOWN,    x:263, y:494, def:'to speak'            },
+  { word:'manger',     zone:'A1', m:M.SEEN,     x:280, y:486, def:'to eat'              },
+
+  // ── A2 — Toulouse / Occitanie (done) ─────────────────────────────────
+  { word:'penser',     zone:'A2', m:M.MASTERED, x:298, y:478, def:'to think'            },
+  { word:'croire',     zone:'A2', m:M.MASTERED, x:316, y:472, def:'to believe'          },
+  { word:'prendre',    zone:'A2', m:M.KNOWN,    x:336, y:470, def:'to take'             },
+  { word:'venir',      zone:'A2', m:M.KNOWN,    x:356, y:469, def:'to come'             },
+  { word:'voir',       zone:'A2', m:M.SEEN,     x:375, y:467, def:'to see'              },
+  { word:'partir',     zone:'A2', m:M.SEEN,     x:394, y:466, def:'to leave / go'       },
+  { word:'savoir',     zone:'A2', m:M.UNSEEN,   x:411, y:467, def:'to know (a fact)'   },
+  { word:'mettre',     zone:'A2', m:M.MASTERED, x:426, y:470, def:'to put / place'      },
+
+  // ── B1 — Languedoc / Méditerranée (CURRENT) ──────────────────────────
+  { word:'parvenir',   zone:'B1', m:M.KNOWN,    x:443, y:476, def:'to manage / succeed in'  },
+  { word:'accomplir',  zone:'B1', m:M.SEEN,     x:458, y:485, def:'to accomplish'            },
+  { word:'promettre',  zone:'B1', m:M.UNSEEN,   x:473, y:491, def:'to promise'               },
+  { word:'réussir',    zone:'B1', m:M.UNSEEN,   x:488, y:488, def:'to succeed / pass'        },
+  { word:'ambitieux',  zone:'B1', m:M.KNOWN,    x:500, y:480, def:'ambitious'                },
+  { word:'jaloux',     zone:'B1', m:M.UNSEEN,   x:512, y:471, def:'jealous / envious'        },
+  { word:'rapidement', zone:'B1', m:M.SEEN,     x:521, y:460, def:'quickly / rapidly'        },
+  { word:'absolument', zone:'B1', m:M.UNSEEN,   x:529, y:449, def:'absolutely'               },
+
+  // ── B2 — Rhône-Alpes (locked) ─────────────────────────────────────────
+  { word:"s'avérer",   zone:'B2', m:M.UNSEEN,   x:536, y:433, def:'' },
+  { word:'préconiser', zone:'B2', m:M.UNSEEN,   x:540, y:415, def:'' },
+  { word:'appréhender',zone:'B2', m:M.UNSEEN,   x:543, y:397, def:'' },
+  { word:'susciter',   zone:'B2', m:M.UNSEEN,   x:546, y:380, def:'' },
+  { word:'néanmoins',  zone:'B2', m:M.UNSEEN,   x:547, y:364, def:'' },
+  { word:'toutefois',  zone:'B2', m:M.UNSEEN,   x:545, y:349, def:'' },
+  { word:'pourtant',   zone:'B2', m:M.UNSEEN,   x:540, y:335, def:'' },
+  { word:'davantage',  zone:'B2', m:M.UNSEEN,   x:532, y:320, def:'' },
+
+  // ── C1 — Lyon / Bourgogne (locked) ───────────────────────────────────
+  { word:'prévaloir',  zone:'C1', m:M.UNSEEN,   x:520, y:308, def:'' },
+  { word:'corroborer', zone:'C1', m:M.UNSEEN,   x:506, y:296, def:'' },
+  { word:'nuancer',    zone:'C1', m:M.UNSEEN,   x:490, y:283, def:'' },
+  { word:'atténuer',   zone:'C1', m:M.UNSEEN,   x:474, y:269, def:'' },
+  { word:'prépondérant',zone:'C1',m:M.UNSEEN,   x:459, y:256, def:'' },
+  { word:'concomitant',zone:'C1', m:M.UNSEEN,   x:444, y:243, def:'' },
+  { word:'irréfutable',zone:'C1', m:M.UNSEEN,   x:429, y:230, def:'' },
+  { word:'fallacieux', zone:'C1', m:M.UNSEEN,   x:414, y:216, def:'' },
+
+  // ── C2 — Île-de-France → Paris (locked, FINISH) ──────────────────────
+  { word:'atermoyer',  zone:'C2', m:M.UNSEEN,   x:401, y:202, def:'' },
+  { word:'circonvenir',zone:'C2', m:M.UNSEEN,   x:392, y:188, def:'' },
+  { word:'délétère',   zone:'C2', m:M.UNSEEN,   x:386, y:173, def:'' },
+  { word:'incommoder', zone:'C2', m:M.UNSEEN,   x:381, y:159, def:'' },
+  { word:'sérendipité',zone:'C2', m:M.UNSEEN,   x:378, y:146, def:'' },
+  { word:'acrimonie',  zone:'C2', m:M.UNSEEN,   x:376, y:134, def:'' },
+  { word:'véhément',   zone:'C2', m:M.UNSEEN,   x:374, y:122, def:'' },
+  { word:'propédeutique',zone:'C2',m:M.UNSEEN,  x:371, y:112, def:'' },
+];
+
+// ── France outline SVG path ────────────────────────────────────────────────────
+// Simplified but geographically recognizable outline
+
+const FRANCE_PATH = `
+  M 398,70
+  C 438,73 490,83 535,104
+  C 556,116 570,140 580,168
+  C 592,192 602,215 608,240
+  C 614,265 614,288 610,310
+  C 604,335 596,358 597,383
+  C 598,408 592,432 580,455
+  C 570,474 564,492 575,502
+  L 566,512
+  C 545,523 518,528 490,532
+  C 462,536 432,537 402,537
+  C 374,539 345,540 316,538
+  C 290,537 265,530 244,523
+  C 222,517 200,516 176,516
+  C 156,516 136,508 118,498
+  C 102,487 90,466 87,443
+  C 84,418 82,393 80,368
+  C 78,344 79,320 86,300
+  C 93,280 103,265 104,248
+  C 102,231 92,218 78,208
+  C 66,200 58,192 65,178
+  C 72,163 90,151 116,142
+  C 142,133 170,124 198,116
+  C 220,109 232,97 220,87
+  C 234,80 262,87 292,93
+  C 316,97 340,87 360,76
+  C 376,69 390,67 398,70 Z
+`;
+
+// Corsica
+const CORSICA_PATH = `
+  M 638,516 C 642,509 652,510 658,516 C 664,522 664,534 658,540
+  C 652,546 640,544 636,538 C 632,532 634,523 638,516 Z
+`;
+
+// ── Mountain shading (topographic texture) ────────────────────────────────────
+const MOUNTAINS = [
+  // Alps
+  { cx:572, cy:420, rx:28, ry:72, rot:-15, opacity:0.18 },
+  // Pyrenees
+  { cx:210, cy:520, rx:95, ry:11,  rot:5,   opacity:0.18 },
+  // Massif Central
+  { cx:408, cy:418, rx:52, ry:55,  rot:0,   opacity:0.10 },
+  // Vosges
+  { cx:582, cy:240, rx:14, ry:42,  rot:10,  opacity:0.12 },
+  // Jura
+  { cx:590, cy:330, rx:12, ry:38,  rot:8,   opacity:0.10 },
+];
+
+// ── Build SVG ─────────────────────────────────────────────────────────────────
+
+function svgEl(tag, attrs = {}) {
+  const el = document.createElementNS(SVG_NS, tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function svgText(txt, attrs = {}) {
+  const el = svgEl('text', attrs);
+  el.textContent = txt;
+  return el;
+}
+
+const svg = document.getElementById('map');
+
+// ── 1. Background (sea) ───────────────────────────────────────────────────────
+svg.appendChild(svgEl('rect', { x:0, y:0, width:800, height:660, fill:'#1A2A3A' }));
+
+// subtle sea texture
+for (let i = 0; i < 8; i++) {
+  const line = svgEl('line', {
+    x1: 0, y1: 80 + i*70, x2: 800, y2: 80 + i*70,
+    stroke:'#1E2E3E', 'stroke-width':'0.5', opacity:'0.5'
+  });
+  svg.appendChild(line);
+}
+
+// Sea label
+const seaLbl = svgText('M E R', {
+  x:60, y:580, fill:'#243040', 'font-size':'11',
+  'font-weight':'600', 'letter-spacing':'6',
+  'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+  opacity:'0.6'
+});
+svg.appendChild(seaLbl);
+
+const medLbl = svgText('M É D I T E R R A N É E', {
+  x:370, y:588, fill:'#243040', 'font-size':'9',
+  'font-weight':'500', 'letter-spacing':'4',
+  'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+  opacity:'0.6', 'text-anchor':'middle'
+});
+svg.appendChild(medLbl);
+
+// ── 2. Neighboring countries (flat grey) ──────────────────────────────────────
+// Just hints of neighboring territory — clipped rectangles around France edges
+const neighbors = [
+  { d:'M 398,70 C 438,73 490,83 535,104 L 540,60 L 340,50 Z', fill:'#2A2818' },  // Belgium/Netherlands
+  { d:'M 535,104 C 556,116 570,140 580,168 C 592,192 602,215 608,240 C 614,265 614,288 610,310 C 604,335 596,358 597,383 L 680,380 L 660,80 Z', fill:'#2A2818' }, // Germany/Switzerland
+  { d:'M 597,383 C 598,408 592,432 580,455 C 570,474 564,492 575,502 L 680,540 L 680,340 Z', fill:'#2A2818' }, // Italy
+  { d:'M 118,498 C 102,487 90,466 87,443 L 80,520 L 180,530 C 176,516 C 156,516 136,508 Z', fill:'#2A2818' }, // Spain partial
+];
+neighbors.forEach(n => {
+  const p = svgEl('path', { d:n.d, fill:n.fill });
+  svg.appendChild(p);
+});
+
+// ── 3. France fill ────────────────────────────────────────────────────────────
+const franceDefs = svgEl('defs');
+
+// France gradient (lighter in plains, slightly darker at edges)
+const franceGrad = svgEl('radialGradient', {
+  id:'france-fill', cx:'45%', cy:'45%', r:'55%'
+});
+[['0%','#F5CC00'],['70%','#F0C000'],['100%','#E8B800']].forEach(([off,col]) => {
+  const s = svgEl('stop', { offset:off, 'stop-color':col });
+  franceGrad.appendChild(s);
+});
+franceDefs.appendChild(franceGrad);
+svg.appendChild(franceDefs);
+
+const franceShape = svgEl('path', {
+  d: FRANCE_PATH,
+  fill: 'url(#france-fill)',
+  stroke: '#C8A400',
+  'stroke-width': '1.5',
+  'stroke-linejoin': 'round'
+});
+svg.appendChild(franceShape);
+
+// Corsica
+const corsica = svgEl('path', {
+  d: CORSICA_PATH,
+  fill: '#F0C000', stroke:'#C8A400', 'stroke-width':'1'
+});
+svg.appendChild(corsica);
+
+// ── 4. Mountain shading ───────────────────────────────────────────────────────
+MOUNTAINS.forEach(m => {
+  const el = svgEl('ellipse', {
+    cx: m.cx, cy: m.cy, rx: m.rx, ry: m.ry,
+    fill: '#5A3A00',
+    opacity: m.opacity,
+    transform: `rotate(${m.rot} ${m.cx} ${m.cy})`
+  });
+  svg.appendChild(el);
+});
+
+// ── 5. Region labels (subtle, on the France map) ──────────────────────────────
+const REGIONS = [
+  { label:'PAYS BASQUE',    x:165, y:510, size:7  },
+  { label:'LANGUEDOC',      x:470, y:510, size:7  },
+  { label:'OCCITANIE',      x:330, y:490, size:7  },
+  { label:'RHÔNE-ALPES',    x:535, y:365, size:6.5},
+  { label:'BOURGOGNE',      x:455, y:265, size:7  },
+  { label:'ÎLE-DE-FRANCE',  x:376, y:148, size:6  },
+  { label:'BRETAGNE',       x:110, y:230, size:7  },
+  { label:'NORMANDIE',      x:245, y:115, size:7  },
+];
+REGIONS.forEach(r => {
+  const t = svgText(r.label, {
+    x: r.x, y: r.y, 'text-anchor':'middle',
+    'font-size': r.size, fill:'#9A7A00',
+    'font-weight':'600', 'letter-spacing':'1.5',
+    'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+    opacity:'0.65', 'pointer-events':'none'
+  });
+  svg.appendChild(t);
+});
+
+// ── 6. Route path ─────────────────────────────────────────────────────────────
+// Draw each zone's segment separately for color coding
+
+const ZONE_ORDER = ['A1','A2','B1','B2','C1','C2'];
+
+function stationsForZone(z) {
+  return STATIONS.filter(s => s.zone === z);
+}
+
+function smoothPath(pts) {
+  if (pts.length < 2) return '';
+  let d = `M${pts[0].x},${pts[0].y}`;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const p = pts[i], n = pts[i+1];
+    const mx = (p.x + n.x) / 2, my = (p.y + n.y) / 2;
+    d += ` Q${p.x},${p.y} ${mx},${my}`;
+  }
+  const last = pts[pts.length-1];
+  d += ` L${last.x},${last.y}`;
+  return d;
+}
+
+// Draw full route as dark background line first
+const allPts = STATIONS.map(s => ({x:s.x, y:s.y}));
+const bgRoute = svgEl('path', {
+  d: smoothPath(allPts),
+  fill:'none', stroke:'#1A1408', 'stroke-width':'7',
+  'stroke-linecap':'round', 'stroke-linejoin':'round'
+});
+svg.appendChild(bgRoute);
+
+// Draw per-zone colored segments
+ZONE_ORDER.forEach(zone => {
+  const pts = stationsForZone(zone).map(s => ({x:s.x, y:s.y}));
+  if (pts.length < 2) return;
+  const meta = ZONE_META[zone];
+
+  // For locked zones, draw dashed grey route
+  const isDashed = meta.locked;
+  const routeEl = svgEl('path', {
+    d: smoothPath(pts),
+    fill: 'none',
+    stroke: meta.routeColor,
+    'stroke-width': zone === 'B1' ? '4.5' : '3.5',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
+    'stroke-dasharray': isDashed ? '6,4' : 'none',
+    opacity: meta.locked ? '0.55' : '1'
+  });
+  svg.appendChild(routeEl);
+});
+
+// ── 7. Zone start badges ──────────────────────────────────────────────────────
+const ZONE_BADGES = [
+  { zone:'A1', x:108, y:477, label:'A1' },
+  { zone:'A2', x:284, y:464, label:'A2' },
+  { zone:'B1', x:428, y:456, label:'B1 · En cours', wide:true },
+  { zone:'B2', x:525, y:417, label:'B2' },
+  { zone:'C1', x:510, y:294, label:'C1' },
+  { zone:'C2', x:388, y:188, label:'C2' },
+];
+
+ZONE_BADGES.forEach(b => {
+  const meta = ZONE_META[b.zone];
+  const isB1 = b.zone === 'B1';
+  const bw = isB1 ? 72 : 24;
+  const bh = 14;
+
+  const bg = svgEl('rect', {
+    x: b.x - bw/2, y: b.y - bh/2,
+    width: bw, height: bh, rx: 3,
+    fill: isB1 ? meta.color : (meta.locked ? '#333344' : meta.color),
+    opacity: meta.locked ? '0.6' : '1'
+  });
+  svg.appendChild(bg);
+
+  const t = svgText(b.label, {
+    x: b.x, y: b.y + 4, 'text-anchor':'middle',
+    'font-size': isB1 ? 7 : 8, 'font-weight':'700',
+    fill: isB1 ? '#ffffff' : '#ffffff',
+    'letter-spacing': '0.5',
+    'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+    'pointer-events':'none'
+  });
+  svg.appendChild(t);
+});
+
+// ── 8. Grand Départ marker ────────────────────────────────────────────────────
+const start = STATIONS[0];
+// Flag post
+svg.appendChild(svgEl('line', { x1:start.x, y1:start.y-2, x2:start.x, y2:start.y-22, stroke:'#1a1408', 'stroke-width':'1.5' }));
+// Flag rectangle
+const dFlag = svgEl('rect', { x:start.x+0.5, y:start.y-22, width:28, height:14, fill:'#3A8A3A', rx:2 });
+svg.appendChild(dFlag);
+const dText = svgText('DÉPART', { x:start.x+14.5, y:start.y-12, 'text-anchor':'middle', 'font-size':'5.5', 'font-weight':'800', fill:'white', 'letter-spacing':'0.5', 'font-family':'-apple-system,BlinkMacSystemFont,sans-serif', 'pointer-events':'none' });
+svg.appendChild(dText);
+const dSub = svgText('Biarritz', { x:start.x, y:start.y+14, 'text-anchor':'middle', 'font-size':'7.5', 'font-weight':'700', fill:'#2A5A2A', 'font-family':'-apple-system,BlinkMacSystemFont,sans-serif', 'pointer-events':'none' });
+svg.appendChild(dSub);
+
+// ── 9. Paris finish marker ────────────────────────────────────────────────────
+const finish = STATIONS[STATIONS.length - 1];
+// Arch
+svg.appendChild(svgEl('line', { x1:finish.x-8, y1:finish.y-2, x2:finish.x-8, y2:finish.y-24, stroke:'#C8A800', 'stroke-width':'2' }));
+svg.appendChild(svgEl('line', { x1:finish.x+8, y1:finish.y-2, x2:finish.x+8, y2:finish.y-24, stroke:'#C8A800', 'stroke-width':'2' }));
+svg.appendChild(svgEl('path', { d:`M${finish.x-8},${finish.y-24} Q${finish.x},${finish.y-32} ${finish.x+8},${finish.y-24}`, fill:'none', stroke:'#C8A800', 'stroke-width':'2' }));
+// Finish flag
+const fFlag = svgEl('rect', { x:finish.x+9, y:finish.y-30, width:36, height:15, fill:'#C8A800', rx:2 });
+svg.appendChild(fFlag);
+const fText = svgText('ARRIVÉE', { x:finish.x+27, y:finish.y-20, 'text-anchor':'middle', 'font-size':'5.5', 'font-weight':'800', fill:'#1a1408', 'letter-spacing':'0.5', 'font-family':'-apple-system,BlinkMacSystemFont,sans-serif', 'pointer-events':'none' });
+svg.appendChild(fText);
+// Paris label
+const pLbl = svgText('PARIS · Champs-Élysées', { x:finish.x+2, y:finish.y-38, 'text-anchor':'start', 'font-size':'9', 'font-weight':'700', fill:'#8A7A00', 'font-style':'italic', 'font-family':'-apple-system,BlinkMacSystemFont,sans-serif', 'pointer-events':'none' });
+svg.appendChild(pLbl);
+
+// ── 10. Station markers ───────────────────────────────────────────────────────
+// Draw all stations. B1 gets labels.
+
+STATIONS.forEach((st, idx) => {
+  const meta = ZONE_META[st.zone];
+  const jer = JERSEY[st.m];
+  const isCurrent = meta.current;
+  const isDone = meta.done;
+  const isLocked = meta.locked;
+
+  const r = isLocked ? 3 : st.m === M.MASTERED ? 6.5 : st.m === M.KNOWN ? 5.5 : st.m === M.SEEN ? 5 : 4.5;
+
+  // White halo for mastered
+  if (st.m === M.MASTERED && !isLocked) {
+    svg.appendChild(svgEl('circle', { cx:st.x, cy:st.y, r:r+2.5, fill:'white', opacity:'0.35' }));
+  }
+
+  const circle = svgEl('circle', {
+    cx: st.x, cy: st.y, r: r,
+    fill: isLocked ? '#3A3A4A' : jer.fill,
+    stroke: isLocked ? '#2A2A3A' : jer.stroke,
+    'stroke-width': isLocked ? '0.5' : '1',
+    class: isCurrent ? 'station-b1' : '',
+    'data-word': st.word,
+    'data-zone': st.zone,
+    'data-def': st.def,
+    'data-mastery': st.m,
+    'data-color': jer.stroke,
+    'data-label': jer.label,
+    style: isCurrent ? 'cursor:pointer' : 'cursor:default'
+  });
+  svg.appendChild(circle);
+
+  // B1: word labels as city flags
+  if (isCurrent) {
+    const above = idx % 2 === 0;
+    const labelY = above ? st.y - 14 : st.y + 22;
+    const labelX = st.x;
+
+    // connector tick
+    svg.appendChild(svgEl('line', {
+      x1: st.x, y1: above ? st.y - r - 1 : st.y + r + 1,
+      x2: st.x, y2: above ? st.y - 10 : st.y + 18,
+      stroke: jer.stroke, 'stroke-width':'0.8', opacity:'0.7'
+    }));
+
+    // Label background pill
+    const wordLen = st.word.length * 5.5 + 8;
+    const labelBg = svgEl('rect', {
+      x: labelX - wordLen/2, y: labelY - 8,
+      width: wordLen, height: 12, rx: 2,
+      fill: '#1A1408', opacity:'0.82'
+    });
+    svg.appendChild(labelBg);
+
+    // Label text
+    const labelText = svgText(st.word, {
+      x: labelX, y: labelY + 1.5,
+      'text-anchor':'middle',
+      'font-size':'7.5',
+      'font-weight': st.m === M.MASTERED ? '700' : '400',
+      fill: isLocked ? '#555555' :
+            st.m === M.MASTERED ? '#F5CC00' :
+            st.m === M.KNOWN    ? '#E84040' :
+            st.m === M.SEEN     ? '#4CAF68' : '#888880',
+      'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+      'pointer-events':'none'
+    });
+    svg.appendChild(labelText);
+  }
+
+  // Done zones: small city dot (no label)
+  // Already rendered above with jersey colors
+
+  // Hit target for B1 hover
+  if (isCurrent) {
+    const hit = svgEl('circle', {
+      cx: st.x, cy: st.y, r: 12,
+      fill: 'transparent',
+      class: 'station-b1',
+      'data-word': st.word,
+      'data-zone': st.zone,
+      'data-def': st.def,
+      'data-mastery': st.m,
+      'data-color': jer.stroke,
+      'data-label': jer.label,
+      style: 'cursor:pointer'
+    });
+    svg.appendChild(hit);
+  }
+});
+
+// ── 11. City labels for key geographic reference ──────────────────────────────
+const CITIES = [
+  { name:'Marseille',  x:458, y:523, anchor:'middle' },
+  { name:'Lyon',       x:490, y:315, anchor:'start'  },
+  { name:'Bordeaux',   x:145, y:378, anchor:'middle' },
+  { name:'Toulouse',   x:295, y:468, anchor:'middle' },
+  { name:'Nantes',     x:122, y:298, anchor:'middle' },
+  { name:'Strasbourg', x:606, y:222, anchor:'start'  },
+  { name:'Nice',       x:570, y:498, anchor:'start'  },
+  { name:'Grenoble',   x:543, y:392, anchor:'start'  },
+];
+
+CITIES.forEach(c => {
+  // dot
+  svg.appendChild(svgEl('circle', { cx:c.x, cy:c.y, r:2, fill:'#8A7A00', opacity:'0.6' }));
+  // label
+  svg.appendChild(svgText(c.name, {
+    x: c.x + (c.anchor === 'start' ? 5 : 0), y: c.y - 4,
+    'text-anchor': c.anchor, 'font-size':'7.5', fill:'#7A6A00',
+    'font-style':'italic', 'font-weight':'500',
+    'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+    'pointer-events':'none', opacity:'0.8'
+  }));
+});
+
+// ── 12. Map title watermark ───────────────────────────────────────────────────
+svg.appendChild(svgText('TOUR DE FRENCH', {
+  x:72, y:148, 'font-size':'8', 'font-weight':'800',
+  fill:'#9A8200', opacity:'0.35', 'letter-spacing':'3',
+  'font-family':'-apple-system,BlinkMacSystemFont,sans-serif',
+  'pointer-events':'none'
+}));
+
+// Scale bar (bottom right)
+svg.appendChild(svgEl('line', { x1:680, y1:620, x2:730, y2:620, stroke:'#9A8200', 'stroke-width':'1.5', opacity:'0.5' }));
+svg.appendChild(svgEl('line', { x1:680, y1:616, x2:680, y2:624, stroke:'#9A8200', 'stroke-width':'1.5', opacity:'0.5' }));
+svg.appendChild(svgEl('line', { x1:730, y1:616, x2:730, y2:624, stroke:'#9A8200', 'stroke-width':'1.5', opacity:'0.5' }));
+svg.appendChild(svgText('50 km', { x:705, y:634, 'text-anchor':'middle', 'font-size':'7', fill:'#9A8200', opacity:'0.5', 'font-family':'-apple-system,BlinkMacSystemFont,sans-serif' }));
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+const mastered = STATIONS.filter(s => s.m === M.MASTERED).length;
+const total    = STATIONS.filter(s => !ZONE_META[s.zone].locked).length;
+const pct      = Math.round(mastered / STATIONS.length * 100);
+document.getElementById('s-mastered').textContent = mastered;
+document.getElementById('s-pct').textContent = pct + '%';
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+const tip = document.getElementById('tooltip');
+const ttW = document.getElementById('tt-w');
+const ttZ = document.getElementById('tt-z');
+const ttD = document.getElementById('tt-d');
+const ttB = document.getElementById('tt-b');
+
+document.getElementById('map').addEventListener('mousemove', e => {
+  const el = e.target;
+  if (!el.classList.contains('station-b1')) { tip.classList.remove('show'); return; }
+
+  const m    = parseInt(el.dataset.mastery);
+  const jer  = JERSEY[m];
+  ttW.textContent = el.dataset.word;
+  ttW.style.color = el.dataset.color;
+  ttZ.textContent = `B1 · Languedoc · ${jer.label}`;
+  ttD.textContent = el.dataset.def || '—';
+
+  ttB.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'tt-pip' + (i < jer.pips ? ' on' : '');
+    if (i < jer.pips) p.style.color = el.dataset.color;
+    ttB.appendChild(p);
+  }
+  const lbl = document.createElement('span');
+  lbl.className = 'tt-lbl';
+  lbl.textContent = jer.label;
+  ttB.appendChild(lbl);
+
+  const bx = Math.min(e.clientX + 14, innerWidth - 210);
+  const by = Math.min(e.clientY - 14, innerHeight - 140);
+  tip.style.left = bx + 'px'; tip.style.top = by + 'px';
+  tip.classList.add('show');
+});
+
+document.getElementById('map').addEventListener('mouseleave', () => tip.classList.remove('show'));
+</script>
+</body>
+</html>

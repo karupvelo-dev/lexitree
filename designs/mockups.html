@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LexiTree — Design Mockups</title>
+<style>
+  :root {
+    --dark: #1A1814; --mid: #6B6860; --light: #9CA3AF;
+    --border: #E5E3DF; --bg: #F7F5F2; --white: #FFFFFF;
+    --terracotta: #C4603A; --terracotta-bg: #FDF2EE; --terracotta-light: #E8C5B5;
+    --green: #16A34A; --green-light: #F0FDF4;
+    --amber: #D97706; --amber-bg: #FEF3C7;
+    --red: #DC2626; --red-light: #FEF2F2;
+    --purple: #7C3AED; --purple-bg: #F5F3FF;
+    --blue: #2563EB; --blue-bg: #EFF6FF;
+    --r: 8px; --rl: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.06);
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --serif: Georgia, 'Times New Roman', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); background: #E2DFDc; color: var(--dark); padding: 48px 32px; }
+
+  /* ── Doc layout ── */
+  .doc-header { max-width: 1240px; margin: 0 auto 52px; }
+  .doc-title { font-size: 26px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 4px; }
+  .doc-sub { font-size: 13px; color: var(--mid); }
+  .category { max-width: 1240px; margin: 0 auto 60px; }
+  .cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid #CCC9C5; }
+  .cat-num { width: 26px; height: 26px; border-radius: 50%; background: var(--dark); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .cat-title { font-size: 15px; font-weight: 600; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .mockup { background: var(--white); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-md); flex-shrink: 0; }
+  .mlabel { padding: 9px 16px 8px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .mnum { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terracotta); margin-bottom: 1px; }
+  .mname { font-size: 11px; font-weight: 500; color: var(--mid); }
+  .mb { padding: 20px; }
+
+  /* ── Reusable atoms ── */
+  .badge { display: inline-flex; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.02em; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; font-family: var(--sans); font-size: 13px; font-weight: 500; padding: 9px 16px; border-radius: var(--r); border: none; cursor: pointer; }
+  .btn-primary { background: var(--dark); color: #fff; }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--mid); }
+  .btn-terra { background: var(--terracotta); color: #fff; }
+  .eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--light); margin-bottom: 8px; }
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+  .pill { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 20px; }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <div class="doc-title">LexiTree — Design Mockups</div>
+  <div class="doc-sub">Product &amp; growth roadmap · 18 mockups · email excluded</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- 1. LEARNING LOOP -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="category">
+  <div class="cat-header"><div class="cat-num">1</div><div class="cat-title">Learning Loop</div></div>
+  <div class="row">
+
+    <!-- 1.1 Review Queue -->
+    <div class="mockup" style="width:320px">
+      <div class="mlabel"><div class="mnum">1.1</div><div class="mname">Spaced repetition — review queue</div></div>
+      <div class="mb" style="background:var(--bg);">
+        <div style="background:var(--white);border-radius:var(--rl);padding:20px;border:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <span style="font-size:18px;">🗓️</span>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--dark);">3 concepts due for review</div>
+              <div style="font-size:11px;color:var(--mid);">Based on your session history</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
+              <div>
+                <div style="font-size:12px;font-weight:500;color:var(--dark);">Le subjonctif présent</div>
+                <div style="font-size:10px;color:var(--light);">Last seen 10 days ago</div>
+              </div>
+              <span class="badge" style="background:var(--red-light);color:var(--red);">overdue</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
+              <div>
+                <div style="font-size:12px;font-weight:500;color:var(--dark);">Le passé composé</div>
+                <div style="font-size:10px;color:var(--light);">Last seen 3 days ago</div>
+              </div>
+              <span class="badge" style="background:var(--amber-bg);color:var(--amber);">due today</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
+              <div>
+                <div style="font-size:12px;font-weight:500;color:var(--dark);">L'imparfait</div>
+                <div style="font-size:10px;color:var(--light);">Last seen 3 days ago</div>
+              </div>
+              <span class="badge" style="background:var(--amber-bg);color:var(--amber);">due today</span>
+            </div>
+          </div>
+          <button class="btn btn-terra" style="width:100%;font-size:13px;">Start review session →</button>
+          <div style="text-align:center;margin-top:8px;">
+            <a style="font-size:11px;color:var(--light);text-decoration:none;">or continue with today's new concept</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.2 Mastery View -->
+    <div class="mockup" style="width:480px">
+      <div class="mlabel"><div class="mnum">1.2</div><div class="mname">Mastery view (replaces Archive)</div></div>
+      <div class="mb" style="background:var(--bg);padding:0;">
+        <!-- Topbar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--white);border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:600;color:var(--dark);">My mastery</div>
+          <div style="display:flex;gap:6px;">
+            <span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--mid);cursor:pointer;">All</span>
+            <span class="badge" style="background:var(--dark);color:#fff;cursor:pointer;">B1</span>
+            <span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--mid);cursor:pointer;">B2</span>
+          </div>
+        </div>
+        <!-- Stats row -->
+        <div style="display:flex;border-bottom:1px solid var(--border);background:var(--white);">
+          <div style="flex:1;padding:12px 16px;border-right:1px solid var(--border);text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:var(--dark);">12</div>
+            <div style="font-size:10px;color:var(--light);">concepts done</div>
+          </div>
+          <div style="flex:1;padding:12px 16px;border-right:1px solid var(--border);text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:var(--green);">74%</div>
+            <div style="font-size:10px;color:var(--light);">avg accuracy</div>
+          </div>
+          <div style="flex:1;padding:12px 16px;text-align:center;">
+            <div style="font-size:20px;font-weight:700;color:var(--amber);">3</div>
+            <div style="font-size:10px;color:var(--light);">need work</div>
+          </div>
+        </div>
+        <!-- Grid -->
+        <div style="padding:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+          <div style="padding:10px;background:var(--green-light);border:1px solid var(--green);border-radius:var(--r);">
+            <div style="font-size:11px;font-weight:500;color:var(--green);margin-bottom:3px;">Le présent</div>
+            <div style="height:3px;background:#D1FAE5;border-radius:2px;overflow:hidden;margin-bottom:4px;"><div style="height:100%;width:86%;background:var(--green);border-radius:2px;"></div></div>
+            <div style="font-size:10px;color:var(--green);">86%</div>
+          </div>
+          <div style="padding:10px;background:var(--green-light);border:1px solid var(--green);border-radius:var(--r);">
+            <div style="font-size:11px;font-weight:500;color:var(--green);margin-bottom:3px;">Passé composé</div>
+            <div style="height:3px;background:#D1FAE5;border-radius:2px;overflow:hidden;margin-bottom:4px;"><div style="height:100%;width:71%;background:var(--green);border-radius:2px;"></div></div>
+            <div style="font-size:10px;color:var(--green);">71%</div>
+          </div>
+          <div style="padding:10px;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--r);">
+            <div style="font-size:11px;font-weight:500;color:var(--amber);margin-bottom:3px;">L'imparfait</div>
+            <div style="height:3px;background:#FDE68A;border-radius:2px;overflow:hidden;margin-bottom:4px;"><div style="height:100%;width:57%;background:var(--amber);border-radius:2px;"></div></div>
+            <div style="font-size:10px;color:var(--amber);">57%</div>
+          </div>
+          <div style="padding:10px;background:var(--red-light);border:1px solid var(--red);border-radius:var(--r);">
+            <div style="font-size:11px;font-weight:500;color:var(--red);margin-bottom:3px;">Le subjonctif</div>
+            <div style="height:3px;background:#FECACA;border-radius:2px;overflow:hidden;margin-bottom:4px;"><div style="height:100%;width:43%;background:var(--red);border-radius:2px;"></div></div>
+            <div style="font-size:10px;color:var(--red);">43%</div>
+          </div>
+          <div style="padding:10px;background:var(--green-light);border:1px solid var(--green);border-radius:var(--r);">
+            <div style="font-size:11px;font-weight:500;color:var(--green);margin-bottom:3px;">Le futur simple</div>
+            <div style="height:3px;background:#D1FAE5;border-radius:2px;overflow:hidden;margin-bottom:4px;"><div style="height:100%;width:100%;background:var(--green);border-radius:2px;"></div></div>
+            <div style="font-size:10px;color:var(--green);">100%</div>
+          </div>
+          <div style="padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);opacity:0.5;">
+            <div style="font-size:11px;font-weight:500;color:var(--mid);margin-bottom:3px;">Le conditionnel</div>
+            <div style="height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px;"></div>
+            <div style="font-size:10px;color:var(--light);">not started</div>
+          </div>
+        </div>
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-ghost" style="width:100%;font-size:12px;">View all 15 concepts</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.3 Map as Roadmap -->
+    <div class="mockup" style="width:310px">
+      <div class="mlabel"><div class="mnum">1.3</div><div class="mname">Grammar map as roadmap</div></div>
+      <div class="mb" style="background:var(--bg);">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <!-- Column -->
+          <div style="width:130px;">
+            <div style="margin-bottom:10px;">
+              <div style="display:inline-flex;font-size:11px;font-weight:500;padding:3px 9px;border-radius:4px;background:var(--terracotta-bg);color:var(--terracotta);margin-bottom:2px;">B1 · now</div>
+              <div style="font-size:10px;color:var(--terracotta);">15 concepts</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="padding:5px 9px;border-radius:5px;font-size:11px;background:var(--green-light);border:1px solid var(--green);color:var(--green);">✓ Le présent</div>
+              <div style="padding:5px 9px;border-radius:5px;font-size:11px;background:var(--green-light);border:1px solid var(--green);color:var(--green);">✓ Passé composé</div>
+              <div style="position:relative;padding:5px 9px;border-radius:5px;font-size:11px;background:var(--terracotta-bg);border:1.5px solid var(--terracotta);color:var(--terracotta);font-weight:600;">
+                ▶ L'imparfait
+                <span style="position:absolute;right:-36px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;background:var(--terracotta);color:#fff;padding:2px 5px;border-radius:3px;white-space:nowrap;">TODAY</span>
+              </div>
+              <div style="position:relative;padding:5px 9px;border-radius:5px;font-size:11px;background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);">
+                🕐 Le subjonctif
+                <span style="position:absolute;right:-40px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;background:var(--amber);color:#fff;padding:2px 5px;border-radius:3px;white-space:nowrap;">REVIEW</span>
+              </div>
+              <div style="padding:5px 9px;border-radius:5px;font-size:11px;background:var(--blue-bg);border:1px solid var(--blue);color:var(--blue);">
+                ★ Le conditionnel
+                <div style="font-size:9px;margin-top:1px;color:var(--blue);opacity:0.7;">recommended next</div>
+              </div>
+              <div style="padding:5px 9px;border-radius:5px;font-size:11px;background:var(--white);border:1px solid var(--border);color:var(--mid);">Le futur antérieur</div>
+              <div style="padding:5px 9px;border-radius:5px;font-size:11px;background:var(--white);border:1px solid var(--border);color:var(--mid);">Plus-que-parfait</div>
+            </div>
+          </div>
+          <!-- Legend -->
+          <div style="padding-top:44px;display:flex;flex-direction:column;gap:8px;min-width:110px;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mid);"><div style="width:8px;height:8px;border-radius:2px;background:var(--green);flex-shrink:0;"></div>done</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mid);"><div style="width:8px;height:8px;border-radius:2px;background:var(--terracotta);flex-shrink:0;"></div>today</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mid);"><div style="width:8px;height:8px;border-radius:2px;background:var(--amber);flex-shrink:0;"></div>review due</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mid);"><div style="width:8px;height:8px;border-radius:2px;background:var(--blue);flex-shrink:0;"></div>recommended</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--mid);"><div style="width:8px;height:8px;border-radius:2px;background:var(--border);flex-shrink:0;"></div>not started</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.4 Monthly Re-assessment -->
+    <div class="mockup" style="width:340px">
+      <div class="mlabel"><div class="mnum">1.4</div><div class="mname">Monthly re-assessment result</div></div>
+      <div class="mb">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="font-size:12px;color:var(--light);margin-bottom:4px;">May progress report</div>
+          <div style="font-family:var(--serif);font-size:22px;font-weight:600;color:var(--dark);margin-bottom:4px;">You're improving 🎯</div>
+          <div style="font-size:13px;color:var(--mid);">Your French has measurably grown this month.</div>
+        </div>
+        <!-- CEFR bar -->
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:10px;color:var(--light);">A1</span><span style="font-size:10px;color:var(--light);">A2</span>
+            <span style="font-size:10px;color:var(--light);">B1</span><span style="font-size:10px;color:var(--light);">B2</span>
+            <span style="font-size:10px;color:var(--light);">C1</span><span style="font-size:10px;color:var(--light);">C2</span>
+          </div>
+          <div style="position:relative;height:10px;background:var(--border);border-radius:5px;overflow:visible;">
+            <div style="position:absolute;left:0;width:58%;height:100%;background:linear-gradient(90deg,var(--green-light),var(--green));border-radius:5px;"></div>
+            <!-- Previous marker -->
+            <div style="position:absolute;left:50%;transform:translateX(-50%);top:-5px;width:3px;height:20px;background:var(--mid);border-radius:2px;">
+              <div style="position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--mid);white-space:nowrap;">Apr</div>
+            </div>
+            <!-- Current marker -->
+            <div style="position:absolute;left:58%;transform:translateX(-50%);top:-7px;width:4px;height:24px;background:var(--terracotta);border-radius:2px;box-shadow:0 0 0 3px var(--terracotta-bg);">
+              <div style="position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;color:var(--terracotta);white-space:nowrap;">Now</div>
+            </div>
+          </div>
+          <div style="margin-top:24px;text-align:center;">
+            <span style="font-size:13px;color:var(--mid);">B1.4</span>
+            <span style="font-size:13px;color:var(--light);margin:0 8px;">→</span>
+            <span style="font-size:15px;font-weight:700;color:var(--terracotta);">B1.7</span>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="text-align:center;">
+            <div style="font-size:18px;font-weight:700;color:var(--dark);">18</div>
+            <div style="font-size:10px;color:var(--light);">sessions</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:18px;font-weight:700;color:var(--dark);">76%</div>
+            <div style="font-size:10px;color:var(--light);">accuracy</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:18px;font-weight:700;color:var(--dark);">12</div>
+            <div style="font-size:10px;color:var(--light);">concepts</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;font-size:13px;">See full breakdown</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- 2. RETENTION & RE-ENGAGEMENT -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="category">
+  <div class="cat-header"><div class="cat-num">2</div><div class="cat-title">Retention &amp; Re-engagement</div></div>
+  <div class="row">
+
+    <!-- 2.1 Streak -->
+    <div class="mockup" style="width:300px">
+      <div class="mlabel"><div class="mnum">2.1</div><div class="mname">Daily streak system</div></div>
+      <div class="mb">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--terracotta-bg);border-radius:var(--rl);border:1px solid var(--terracotta-light);margin-bottom:16px;">
+          <div style="font-size:36px;line-height:1;">🔥</div>
+          <div>
+            <div style="font-family:var(--serif);font-size:28px;font-weight:700;color:var(--terracotta);line-height:1;">14</div>
+            <div style="font-size:12px;color:var(--mid);margin-top:2px;">day streak · keep it up!</div>
+          </div>
+        </div>
+        <!-- Week calendar -->
+        <div style="margin-bottom:16px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--light);margin-bottom:8px;">This week</div>
+          <div style="display:flex;gap:6px;">
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">M</div><div style="height:28px;border-radius:5px;background:var(--terracotta);"></div></div>
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">T</div><div style="height:28px;border-radius:5px;background:var(--terracotta);"></div></div>
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">W</div><div style="height:28px;border-radius:5px;background:var(--terracotta);"></div></div>
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">T</div><div style="height:28px;border-radius:5px;background:var(--terracotta);"></div></div>
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">F</div><div style="height:28px;border-radius:5px;background:var(--terracotta);display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;border-radius:50%;background:#fff;opacity:0.7;"></div></div></div>
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">S</div><div style="height:28px;border-radius:5px;background:var(--border);"></div></div>
+            <div style="flex:1;text-align:center;"><div style="font-size:9px;color:var(--light);margin-bottom:4px;">S</div><div style="height:28px;border-radius:5px;background:var(--border);"></div></div>
+          </div>
+        </div>
+        <div style="padding:10px 12px;background:var(--bg);border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:11px;color:var(--mid);">🛡️ Streak freeze available</div>
+          <span class="badge" style="background:var(--white);border:1px solid var(--border);color:var(--mid);">×1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.4 Study with a friend -->
+    <div class="mockup" style="width:320px">
+      <div class="mlabel"><div class="mnum">2.4</div><div class="mname">Study with a friend</div></div>
+      <div class="mb">
+        <!-- Invite state -->
+        <div style="margin-bottom:16px;">
+          <div class="eyebrow">Invite a study partner</div>
+          <div style="font-size:13px;color:var(--mid);line-height:1.5;margin-bottom:12px;">Share your progress and keep each other accountable.</div>
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <div style="flex:1;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--light);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">lexitree.app/join/nx7k2m</div>
+            <button class="btn btn-primary" style="font-size:12px;padding:9px 14px;flex-shrink:0;">Copy</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <!-- Partner connected -->
+        <div class="eyebrow" style="margin-bottom:10px;">Your study partner</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:#7C3AED;color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">S</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12px;font-weight:500;color:var(--dark);">Sophie M.</div>
+            <div style="font-size:10px;color:var(--mid);">A2 · sessioned yesterday</div>
+          </div>
+          <span class="badge" style="background:var(--green-light);color:var(--green);">active</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="padding:10px;background:var(--bg);border-radius:var(--r);text-align:center;border:1px solid var(--border);">
+            <div style="font-size:16px;font-weight:700;color:var(--dark);">14</div>
+            <div style="font-size:10px;color:var(--light);">your streak</div>
+          </div>
+          <div style="padding:10px;background:var(--bg);border-radius:var(--r);text-align:center;border:1px solid var(--border);">
+            <div style="font-size:16px;font-weight:700;color:var(--dark);">6</div>
+            <div style="font-size:10px;color:var(--light);">Sophie's streak</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.5 Progress always visible -->
+    <div class="mockup" style="width:220px">
+      <div class="mlabel"><div class="mnum">2.5</div><div class="mname">Progress widget (sidebar)</div></div>
+      <div class="mb" style="padding:14px;">
+        <div style="padding:12px;background:var(--terracotta-bg);border-radius:var(--r);border:1px solid var(--terracotta-light);margin-bottom:10px;">
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--terracotta);margin-bottom:4px;">Your level</div>
+          <div style="font-family:var(--serif);font-size:20px;font-weight:600;color:var(--dark);">B1</div>
+          <div style="font-size:11px;color:var(--mid);margin-bottom:10px;">Intermediate</div>
+          <!-- Promotion progress -->
+          <div style="font-size:10px;color:var(--mid);margin-bottom:5px;">Progress to B2</div>
+          <div style="height:5px;background:var(--terracotta-light);border-radius:3px;overflow:hidden;margin-bottom:4px;">
+            <div style="height:100%;width:65%;background:var(--terracotta);border-radius:3px;"></div>
+          </div>
+          <div style="font-size:10px;color:var(--terracotta);">8 / 15 concepts · 74% accuracy</div>
+        </div>
+        <div style="padding:10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:8px;">
+          <div style="font-size:10px;color:var(--light);margin-bottom:4px;">This week</div>
+          <div style="display:flex;gap:4px;">
+            <div style="flex:1;height:22px;background:var(--terracotta);border-radius:3px;"></div>
+            <div style="flex:1;height:22px;background:var(--terracotta);border-radius:3px;"></div>
+            <div style="flex:1;height:22px;background:var(--terracotta);border-radius:3px;"></div>
+            <div style="flex:1;height:22px;background:var(--terracotta-light);border-radius:3px;opacity:0.4;"></div>
+            <div style="flex:1;height:22px;background:var(--border);border-radius:3px;"></div>
+            <div style="flex:1;height:22px;background:var(--border);border-radius:3px;"></div>
+            <div style="flex:1;height:22px;background:var(--border);border-radius:3px;"></div>
+          </div>
+          <div style="font-size:10px;color:var(--mid);margin-top:4px;">🔥 14 day streak</div>
+        </div>
+        <div style="padding:8px 10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:10px;color:var(--mid);">Vocab encountered</div>
+          <div style="font-size:12px;font-weight:600;color:var(--dark);">142</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- 3. PRODUCT POLISH -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="category">
+  <div class="cat-header"><div class="cat-num">3</div><div class="cat-title">Product Polish</div></div>
+  <div class="row">
+
+    <!-- 3.1 Simplified Summary Card -->
+    <div class="mockup" style="width:320px">
+      <div class="mlabel"><div class="mnum">3.1</div><div class="mname">Simplified summary card</div></div>
+      <div class="mb">
+        <div style="text-align:center;padding:8px 0 20px;">
+          <div style="font-size:44px;margin-bottom:8px;">🎉</div>
+          <div style="font-family:var(--serif);font-size:22px;font-weight:600;color:var(--dark);margin-bottom:4px;">Great session!</div>
+          <div style="font-size:28px;font-weight:700;color:var(--terracotta);margin:10px 0 4px;">6 / 7</div>
+          <div style="font-size:12px;color:var(--light);">Le subjonctif présent · B1</div>
+        </div>
+        <!-- Score bar -->
+        <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:24px;">
+          <div style="height:100%;width:86%;background:var(--green);border-radius:3px;"></div>
+        </div>
+        <!-- Single CTA -->
+        <button class="btn btn-terra" style="width:100%;font-size:14px;font-weight:600;padding:13px;margin-bottom:16px;">Continue →</button>
+        <!-- Quiet secondary actions -->
+        <div style="display:flex;justify-content:center;gap:20px;">
+          <a style="font-size:12px;color:var(--light);text-decoration:none;cursor:pointer;">Grammar map</a>
+          <a style="font-size:12px;color:var(--light);text-decoration:none;cursor:pointer;">Change level</a>
+          <a style="font-size:12px;color:var(--light);text-decoration:none;cursor:pointer;">Share</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 Promotion Moment -->
+    <div class="mockup" style="width:340px">
+      <div class="mlabel"><div class="mnum">3.2</div><div class="mname">Level promotion — full-screen moment</div></div>
+      <div class="mb" style="background:var(--dark);padding:32px 24px;text-align:center;position:relative;overflow:hidden;">
+        <!-- Confetti dots -->
+        <div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;">
+          <div style="position:absolute;width:6px;height:6px;border-radius:50%;background:var(--terracotta);top:15%;left:20%;opacity:0.8;"></div>
+          <div style="position:absolute;width:4px;height:4px;border-radius:50%;background:#FCD34D;top:25%;left:75%;opacity:0.9;"></div>
+          <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:var(--green);top:10%;left:55%;opacity:0.7;"></div>
+          <div style="position:absolute;width:4px;height:4px;border-radius:50%;background:#60A5FA;top:60%;left:15%;opacity:0.6;"></div>
+          <div style="position:absolute;width:6px;height:6px;border-radius:50%;background:var(--terracotta);top:70%;left:80%;opacity:0.8;"></div>
+          <div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#FCD34D;top:80%;left:40%;opacity:0.7;"></div>
+          <div style="position:absolute;width:5px;height:5px;border-radius:50%;background:var(--green);top:40%;left:88%;opacity:0.6;"></div>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:16px;letter-spacing:0.04em;">LEVEL UP</div>
+        <!-- Level change -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px;">
+          <div style="padding:10px 20px;border-radius:var(--r);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);">
+            <div style="font-family:var(--serif);font-size:24px;font-weight:700;color:rgba(255,255,255,0.4);">B1</div>
+          </div>
+          <div style="font-size:20px;color:rgba(255,255,255,0.4);">→</div>
+          <div style="padding:10px 20px;border-radius:var(--r);background:var(--terracotta);box-shadow:0 0 24px rgba(196,96,58,0.5);">
+            <div style="font-family:var(--serif);font-size:28px;font-weight:700;color:#fff;">B2</div>
+          </div>
+        </div>
+        <div style="font-family:var(--serif);font-size:20px;font-weight:600;color:#fff;margin-bottom:6px;">You've reached B2</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.55);margin-bottom:24px;line-height:1.5;">All B1 concepts mastered with<br>74% average accuracy.</div>
+        <!-- Share card preview -->
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:var(--r);padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <div style="width:40px;height:40px;border-radius:var(--r);background:var(--terracotta);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--serif);font-size:16px;font-weight:700;color:#fff;">B2</div>
+          <div style="text-align:left;">
+            <div style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:500;">I just reached B2 in French</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.4);">lexitree.app</div>
+          </div>
+          <div style="margin-left:auto;font-size:11px;color:rgba(255,255,255,0.5);flex-shrink:0;">Share ↗</div>
+        </div>
+        <button class="btn" style="background:var(--terracotta);color:#fff;width:100%;font-size:13px;margin-bottom:8px;">Start B2 →</button>
+        <button class="btn" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1);width:100%;font-size:13px;">Share achievement</button>
+      </div>
+    </div>
+
+    <!-- 3.3 Deep Dive Mode -->
+    <div class="mockup" style="width:320px">
+      <div class="mlabel"><div class="mnum">3.3</div><div class="mname">Session variety — deep dive mode</div></div>
+      <div class="mb">
+        <div class="eyebrow" style="margin-bottom:12px;">Choose session type</div>
+        <!-- Daily card -->
+        <div style="padding:16px;border-radius:var(--rl);border:1.5px solid var(--terracotta);background:var(--terracotta-bg);margin-bottom:10px;cursor:pointer;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:14px;font-weight:600;color:var(--dark);">Daily session</div>
+            <span class="badge" style="background:var(--terracotta);color:#fff;">recommended</span>
+          </div>
+          <div style="font-size:12px;color:var(--mid);margin-bottom:10px;">1 concept · 7 questions · ~10 min</div>
+          <div style="font-size:11px;color:var(--terracotta);font-weight:500;">Today: Le conditionnel présent →</div>
+        </div>
+        <!-- Deep dive card -->
+        <div style="padding:16px;border-radius:var(--rl);border:1px solid var(--border);background:var(--white);cursor:pointer;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div style="font-size:14px;font-weight:600;color:var(--dark);">Deep dive</div>
+            <span class="badge" style="background:var(--purple-bg);color:var(--purple);">intensive</span>
+          </div>
+          <div style="font-size:12px;color:var(--mid);margin-bottom:12px;">3 concepts · 21 questions · ~30 min</div>
+          <div class="eyebrow" style="margin-bottom:8px;">Pick your concepts</div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--r);font-size:12px;color:var(--dark);">
+              <input type="checkbox" checked style="accent-color:var(--dark);"> Le conditionnel présent
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--r);font-size:12px;color:var(--dark);">
+              <input type="checkbox" checked style="accent-color:var(--dark);"> Le subjonctif présent
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--r);font-size:12px;color:var(--dark);">
+              <input type="checkbox" style="accent-color:var(--dark);"> Le plus-que-parfait
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.4 Vocabulary Practice -->
+    <div class="mockup" style="width:320px">
+      <div class="mlabel"><div class="mnum">3.4</div><div class="mname">Vocabulary practice loop</div></div>
+      <div class="mb">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="display:flex;gap:4px;">
+            <div style="width:24px;height:4px;border-radius:2px;background:var(--terracotta);"></div>
+            <div style="width:24px;height:4px;border-radius:2px;background:var(--terracotta);"></div>
+            <div style="width:24px;height:4px;border-radius:2px;background:var(--terracotta);"></div>
+            <div style="width:24px;height:4px;border-radius:2px;background:var(--border);"></div>
+            <div style="width:24px;height:4px;border-radius:2px;background:var(--border);"></div>
+          </div>
+          <span style="font-size:12px;color:var(--mid);">3 / 5</span>
+        </div>
+        <div style="text-align:center;padding:24px 16px 20px;background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);margin-bottom:14px;">
+          <div class="eyebrow" style="margin-bottom:8px;">B2 · verb</div>
+          <div style="font-family:var(--serif);font-size:36px;font-weight:400;color:var(--dark);margin-bottom:4px;">évoquer</div>
+          <div style="font-size:13px;color:var(--light);">What does this mean?</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <button class="btn btn-ghost" style="width:100%;text-align:left;padding:11px 14px;font-size:13px;justify-content:flex-start;">to evoke / to mention</button>
+          <button class="btn" style="width:100%;text-align:left;padding:11px 14px;font-size:13px;justify-content:flex-start;background:var(--red-light);border:1px solid var(--red);color:var(--red);">✗ &nbsp;to avoid / to escape</button>
+          <button class="btn btn-ghost" style="width:100%;text-align:left;padding:11px 14px;font-size:13px;justify-content:flex-start;">to confirm / to validate</button>
+          <button class="btn btn-ghost" style="width:100%;text-align:left;padding:11px 14px;font-size:13px;justify-content:flex-start;">to enhance / to strengthen</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- 4. ACQUISITION & GROWTH -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="category">
+  <div class="cat-header"><div class="cat-num">4</div><div class="cat-title">Acquisition &amp; Growth</div></div>
+  <div class="row">
+
+    <!-- 4.1 Assessment Share Card -->
+    <div class="mockup" style="width:260px">
+      <div class="mlabel"><div class="mnum">4.1</div><div class="mname">Assessment share card</div></div>
+      <div class="mb" style="padding:0;">
+        <!-- The shareable card -->
+        <div style="background:var(--dark);padding:32px 28px;text-align:center;">
+          <div style="font-size:14px;color:rgba(255,255,255,0.4);letter-spacing:0.04em;margin-bottom:20px;">LexiTree🌳</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">My French level</div>
+          <div style="font-family:var(--serif);font-size:64px;font-weight:700;color:var(--terracotta);line-height:1;margin-bottom:4px;">B2</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:24px;">Upper Intermediate</div>
+          <div style="height:1px;background:rgba(255,255,255,0.1);margin-bottom:20px;"></div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:4px;">What's your level?</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);font-weight:500;">lexitree.app/assess</div>
+        </div>
+        <div style="padding:12px 16px;display:flex;gap:8px;">
+          <button class="btn btn-primary" style="flex:1;font-size:12px;">Share →</button>
+          <button class="btn btn-ghost" style="flex:1;font-size:12px;">Copy link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.2 Public Concept Page -->
+    <div class="mockup" style="width:480px">
+      <div class="mlabel"><div class="mnum">4.2</div><div class="mname">Public grammar concept page (SEO)</div></div>
+      <div class="mb" style="padding:0;">
+        <!-- Nav -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--white);">
+          <div style="font-size:15px;font-weight:600;color:var(--dark);">LexiTree🌳</div>
+          <button class="btn btn-terra" style="font-size:12px;padding:7px 14px;">Practice free →</button>
+        </div>
+        <!-- Breadcrumb -->
+        <div style="padding:10px 20px;background:var(--bg);border-bottom:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--light);">Grammar · B1 · Le subjonctif présent</div>
+        </div>
+        <!-- Content -->
+        <div style="padding:20px;">
+          <div style="display:flex;gap:6px;margin-bottom:10px;">
+            <span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">B1</span>
+            <span class="badge" style="background:var(--bg);border:1px solid var(--border);color:var(--mid);">Mood</span>
+          </div>
+          <div style="font-family:var(--serif);font-size:24px;font-weight:600;color:var(--dark);margin-bottom:6px;">Le subjonctif présent</div>
+          <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:16px;">The present subjunctive is used after expressions of necessity, emotion, or doubt — whenever the speaker adds a subjective layer to a fact.</div>
+          <!-- Labelled sentence -->
+          <div style="padding:16px;background:var(--bg);border-radius:var(--rl);border:1px solid var(--border);margin-bottom:14px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--light);margin-bottom:10px;">In a sentence</div>
+            <div style="font-size:18px;font-family:var(--sans);">Il faut que tu <span style="color:var(--terracotta);font-weight:600;border-bottom:2px solid var(--terracotta);">viennes</span>.</div>
+            <div style="font-size:10px;font-weight:600;color:var(--terracotta);letter-spacing:0.05em;text-transform:uppercase;margin-top:6px;padding-left:96px;">verb changes here</div>
+          </div>
+          <!-- Mini panel -->
+          <div style="padding:12px 14px;background:#2563EB12;border:1.5px solid #2563EB30;border-radius:var(--r);margin-bottom:16px;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#2563EB;margin-bottom:5px;">IL FAUT QUE · NEEDS IT</div>
+            <div style="font-size:13px;color:var(--dark);margin-bottom:3px;">Il faut que tu <mark style="background:#2563EB30;color:#2563EB;border-radius:2px;padding:0 2px;">viennes</mark> à la réunion.</div>
+            <div style="font-size:11px;color:var(--mid);">You must come to the meeting.</div>
+          </div>
+          <!-- CTA -->
+          <div style="padding:14px;background:var(--terracotta-bg);border-radius:var(--r);border:1px solid var(--terracotta-light);display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--dark);">Practice this concept</div>
+              <div style="font-size:11px;color:var(--mid);">7 exercises · free · no account needed</div>
+            </div>
+            <button class="btn btn-terra" style="font-size:12px;padding:8px 14px;flex-shrink:0;">Start →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.3 DELF Positioning -->
+    <div class="mockup" style="width:340px">
+      <div class="mlabel"><div class="mnum">4.3</div><div class="mname">DELF/DALF exam positioning</div></div>
+      <div class="mb" style="padding:0;">
+        <div style="background:var(--dark);padding:24px 20px;text-align:center;">
+          <div style="font-size:14px;color:rgba(255,255,255,0.4);margin-bottom:12px;">LexiTree🌳</div>
+          <div style="display:flex;justify-content:center;gap:6px;margin-bottom:14px;">
+            <span class="badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">DELF A2</span>
+            <span class="badge" style="background:rgba(196,96,58,0.3);color:var(--terracotta);border:1px solid var(--terracotta);">DELF B1</span>
+            <span class="badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">DELF B2</span>
+            <span class="badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">DALF C1</span>
+          </div>
+          <div style="font-family:var(--serif);font-size:22px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:8px;">Prepare for DELF B1<br>with targeted grammar</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:20px;line-height:1.5;">Every concept aligned to CEFR descriptors.<br>Know exactly what the exam tests.</div>
+          <button class="btn" style="background:var(--terracotta);color:#fff;width:100%;font-size:13px;margin-bottom:8px;">Check my exam readiness →</button>
+          <div style="font-size:11px;color:rgba(255,255,255,0.3);">Free placement test · 7 questions</div>
+        </div>
+        <div style="padding:16px 20px;">
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--green-light);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--green);font-weight:700;">✓</div>
+              <div style="font-size:12px;color:var(--mid);">Grammar matched to CEFR exam criteria</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--green-light);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--green);font-weight:700;">✓</div>
+              <div style="font-size:12px;color:var(--mid);">Track progress toward your target level</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:20px;height:20px;border-radius:50%;background:var(--green-light);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;color:var(--green);font-weight:700;">✓</div>
+              <div style="font-size:12px;color:var(--mid);">Monthly progress reports vs exam benchmarks</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.5 Landing with Lesson Preview -->
+    <div class="mockup" style="width:380px">
+      <div class="mlabel"><div class="mnum">4.5</div><div class="mname">Landing page — lesson preview</div></div>
+      <div class="mb" style="padding:0;background:var(--bg);">
+        <!-- Nav -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--white);border-bottom:1px solid var(--border);">
+          <div style="font-size:15px;font-weight:600;color:var(--dark);">LexiTree🌳</div>
+          <button style="background:none;border:none;font-size:13px;color:var(--mid);cursor:pointer;">Sign in →</button>
+        </div>
+        <!-- Hero -->
+        <div style="padding:32px 24px 20px;text-align:center;">
+          <div style="display:flex;justify-content:center;gap:5px;margin-bottom:16px;">
+            <span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">A1</span>
+            <span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">A2</span>
+            <span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">B1</span>
+            <span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">B2</span>
+          </div>
+          <div style="font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.2;color:var(--dark);margin-bottom:10px;">Master French grammar,<br>one concept at a time.</div>
+          <div style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:20px;">AI-powered visual lessons matched to your CEFR level.</div>
+          <button class="btn btn-terra" style="width:100%;font-size:14px;font-weight:600;padding:12px;margin-bottom:8px;">Check my French level →</button>
+          <button class="btn btn-ghost" style="width:100%;font-size:13px;padding:11px;">Continue with Google</button>
+        </div>
+        <!-- Lesson preview teaser -->
+        <div style="margin:0 16px 20px;padding:14px;background:var(--white);border-radius:var(--rl);border:1px solid var(--border);box-shadow:var(--shadow);">
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--light);margin-bottom:10px;">Sample lesson — B1</div>
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);margin-bottom:6px;">In a sentence</div>
+          <div style="font-size:17px;font-family:var(--sans);color:var(--dark);margin-bottom:14px;">Il faut que tu <span style="color:var(--terracotta);font-weight:600;border-bottom:2px solid var(--terracotta);">viennes</span>.</div>
+          <div style="background:var(--terracotta-bg);border:1px solid var(--terracotta-light);border-radius:var(--r);padding:10px 12px;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;">
+            <span style="font-size:14px;flex-shrink:0;margin-top:1px;">💡</span>
+            <div style="font-size:12px;color:var(--dark);line-height:1.5;">The subjunctive turns facts into feelings, needs, or doubts.</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;">
+            <div style="padding:10px;background:#2563EB12;border:1.5px solid #2563EB30;border-radius:var(--r);">
+              <div style="font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#2563EB;margin-bottom:4px;">IL FAUT QUE</div>
+              <div style="font-size:11px;color:var(--dark);">Il faut que tu <mark style="background:#2563EB30;color:#2563EB;border-radius:2px;padding:0 1px;">viennes</mark>.</div>
+            </div>
+            <div style="padding:10px;background:#D9770612;border:1.5px solid #D9770630;border-radius:var(--r);">
+              <div style="font-size:8px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--amber);margin-bottom:4px;">JE VEUX QUE</div>
+              <div style="font-size:11px;color:var(--dark);">Je veux que tu <mark style="background:#D9770630;color:var(--amber);border-radius:2px;padding:0 1px;">viennes</mark>.</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--light);">+ 7 practice exercises after the lesson</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- 5. PLATFORM -->
+<!-- ════════════════════════════════════════════════════ -->
+<div class="category">
+  <div class="cat-header"><div class="cat-num">5</div><div class="cat-title">Platform (Longer Horizon)</div></div>
+  <div class="row">
+
+    <!-- 5.1 Teacher Dashboard -->
+    <div class="mockup" style="width:620px">
+      <div class="mlabel"><div class="mnum">5.1</div><div class="mname">Teacher / institution dashboard</div></div>
+      <div class="mb" style="padding:0;">
+        <!-- Topbar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--white);border-bottom:1px solid var(--border);">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:15px;font-weight:600;color:var(--dark);">LexiTree🌳</div>
+            <span style="font-size:11px;color:var(--mid);background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:4px;">Teacher</span>
+          </div>
+          <button class="btn btn-terra" style="font-size:12px;padding:7px 14px;">+ Assign concept</button>
+        </div>
+        <!-- Stats -->
+        <div style="display:flex;border-bottom:1px solid var(--border);background:var(--white);">
+          <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);">
+            <div style="font-size:22px;font-weight:700;color:var(--dark);">24</div>
+            <div style="font-size:11px;color:var(--light);">students</div>
+          </div>
+          <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);">
+            <div style="font-size:22px;font-weight:700;color:var(--green);">18</div>
+            <div style="font-size:11px;color:var(--light);">active this week</div>
+          </div>
+          <div style="flex:1;padding:14px 20px;border-right:1px solid var(--border);">
+            <div style="font-size:22px;font-weight:700;color:var(--dark);">71%</div>
+            <div style="font-size:11px;color:var(--light);">class avg accuracy</div>
+          </div>
+          <div style="flex:1;padding:14px 20px;">
+            <div style="font-size:22px;font-weight:700;color:var(--amber);">4</div>
+            <div style="font-size:11px;color:var(--light);">need attention</div>
+          </div>
+        </div>
+        <!-- Table -->
+        <div style="padding:0;">
+          <div style="display:grid;grid-template-columns:1fr 60px 80px 90px 90px 70px;gap:0;padding:8px 20px;background:var(--bg);border-bottom:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);">Student</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);">Level</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);">Last session</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);">Concepts done</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);">Accuracy</div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--light);">Status</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 60px 80px 90px 90px 70px;gap:0;padding:10px 20px;border-bottom:1px solid var(--border);align-items:center;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:50%;background:var(--terracotta);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;">S</div><div style="font-size:12px;color:var(--dark);font-weight:500;">Sophie M.</div></div>
+            <div><span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">A2</span></div>
+            <div style="font-size:11px;color:var(--mid);">Today</div>
+            <div style="font-size:12px;color:var(--dark);">8 / 15</div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="height:4px;flex:1;background:var(--border);border-radius:2px;overflow:hidden;"><div style="height:100%;width:82%;background:var(--green);"></div></div><span style="font-size:11px;color:var(--green);white-space:nowrap;">82%</span></div>
+            <span class="badge" style="background:var(--green-light);color:var(--green);">on track</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 60px 80px 90px 90px 70px;gap:0;padding:10px 20px;border-bottom:1px solid var(--border);align-items:center;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:50%;background:#7C3AED;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;">T</div><div style="font-size:12px;color:var(--dark);font-weight:500;">Thomas K.</div></div>
+            <div><span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">B1</span></div>
+            <div style="font-size:11px;color:var(--mid);">Yesterday</div>
+            <div style="font-size:12px;color:var(--dark);">12 / 15</div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="height:4px;flex:1;background:var(--border);border-radius:2px;overflow:hidden;"><div style="height:100%;width:74%;background:var(--green);"></div></div><span style="font-size:11px;color:var(--green);white-space:nowrap;">74%</span></div>
+            <span class="badge" style="background:var(--green-light);color:var(--green);">on track</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 60px 80px 90px 90px 70px;gap:0;padding:10px 20px;border-bottom:1px solid var(--border);align-items:center;background:#FFFBF0;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:50%;background:#9CA3AF;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;">M</div><div style="font-size:12px;color:var(--dark);font-weight:500;">Marie L.</div></div>
+            <div><span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">A2</span></div>
+            <div style="font-size:11px;color:var(--amber);">5 days ago</div>
+            <div style="font-size:12px;color:var(--dark);">3 / 15</div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="height:4px;flex:1;background:var(--border);border-radius:2px;overflow:hidden;"><div style="height:100%;width:44%;background:var(--amber);"></div></div><span style="font-size:11px;color:var(--amber);white-space:nowrap;">44%</span></div>
+            <span class="badge" style="background:var(--amber-bg);color:var(--amber);">at risk</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 60px 80px 90px 90px 70px;gap:0;padding:10px 20px;align-items:center;background:#FFF8F7;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:24px;height:24px;border-radius:50%;background:var(--red);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;">J</div><div style="font-size:12px;color:var(--dark);font-weight:500;">Jules R.</div></div>
+            <div><span class="badge" style="background:var(--terracotta-bg);color:var(--terracotta);">A1</span></div>
+            <div style="font-size:11px;color:var(--red);">12 days ago</div>
+            <div style="font-size:12px;color:var(--dark);">1 / 14</div>
+            <div style="display:flex;align-items:center;gap:6px;"><div style="height:4px;flex:1;background:var(--border);border-radius:2px;overflow:hidden;"><div style="height:100%;width:28%;background:var(--red);"></div></div><span style="font-size:11px;color:var(--red);white-space:nowrap;">28%</span></div>
+            <span class="badge" style="background:var(--red-light);color:var(--red);">inactive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5.2 Community Layer -->
+    <div class="mockup" style="width:280px">
+      <div class="mlabel"><div class="mnum">5.2</div><div class="mname">Community layer</div></div>
+      <div class="mb">
+        <div class="eyebrow" style="margin-bottom:12px;">Community</div>
+        <!-- Discord CTA -->
+        <div style="padding:14px;background:#5865F220;border:1px solid #5865F240;border-radius:var(--r);margin-bottom:14px;display:flex;align-items:center;gap:10px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.031.056a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--dark);">Join the Discord</div>
+            <div style="font-size:10px;color:var(--mid);">1,240 French learners</div>
+          </div>
+          <span style="margin-left:auto;font-size:11px;color:#5865F2;font-weight:500;">Join →</span>
+        </div>
+        <!-- Activity feed -->
+        <div class="eyebrow" style="margin-bottom:8px;">This week in the community</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--terracotta);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">A</div>
+            <div style="background:var(--bg);border-radius:var(--r);padding:8px 10px;flex:1;">
+              <div style="font-size:11px;color:var(--dark);">Alex just reached <strong>B2</strong> 🎉</div>
+              <div style="font-size:10px;color:var(--light);margin-top:2px;">2 hours ago</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:#7C3AED;color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">L</div>
+            <div style="background:var(--bg);border-radius:var(--r);padding:8px 10px;flex:1;">
+              <div style="font-size:11px;color:var(--dark);">Léa hit a <strong>30-day streak</strong> 🔥</div>
+              <div style="font-size:10px;color:var(--light);margin-top:2px;">Yesterday</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--green);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">M</div>
+            <div style="background:var(--bg);border-radius:var(--r);padding:8px 10px;flex:1;">
+              <div style="font-size:11px;color:var(--dark);">Marco mastered <strong>subjonctif</strong> ✓</div>
+              <div style="font-size:10px;color:var(--light);margin-top:2px;">2 days ago</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--light);margin-bottom:4px;">Most practiced this week</div>
+          <div style="font-size:12px;font-weight:500;color:var(--dark);">🏆 Le subjonctif présent</div>
+          <div style="font-size:11px;color:var(--mid);">342 sessions by the community</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5.3 Language Partner Integration -->
+    <div class="mockup" style="width:300px">
+      <div class="mlabel"><div class="mnum">5.3</div><div class="mname">Language partner integration</div></div>
+      <div class="mb">
+        <div class="eyebrow" style="margin-bottom:12px;">Practice speaking</div>
+        <div style="text-align:center;padding:16px 0 12px;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;">
+            <div style="padding:10px 14px;background:var(--dark);border-radius:var(--r);font-size:13px;font-weight:600;color:#fff;">LexiTree🌳</div>
+            <div style="font-size:16px;color:var(--light);">+</div>
+            <div style="padding:10px 14px;background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--blue);">HelloTalk</div>
+          </div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.5;">Grammar from LexiTree · Speaking from HelloTalk.<br>The full learning loop.</div>
+        </div>
+        <div class="divider"></div>
+        <!-- Flow -->
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg);border-radius:var(--r);">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--dark);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">1</div>
+            <div style="font-size:12px;color:var(--dark);line-height:1.4;">Learn <strong>le conditionnel</strong> in today's LexiTree session</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--bg);border-radius:var(--r);">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--dark);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">2</div>
+            <div style="font-size:12px;color:var(--dark);line-height:1.4;">Get matched with a native French speaker on HelloTalk</div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:var(--terracotta-bg);border:1px solid var(--terracotta-light);border-radius:var(--r);">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--terracotta);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">3</div>
+            <div style="font-size:12px;color:var(--dark);line-height:1.4;">Use it in a real conversation today — grammar meets speaking</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;font-size:13px;">Connect HelloTalk account →</button>
+        <div style="text-align:center;margin-top:8px;font-size:11px;color:var(--light);">Also works with Tandem, iTalki</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

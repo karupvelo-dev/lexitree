@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lexitree — Share Card Harmony</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #EBEBEB; color: #000;
+           -webkit-font-smoothing: antialiased; padding: 40px 24px 80px; }
+
+    @keyframes lx-fadein { from { opacity:0 } to { opacity:1 } }
+    @keyframes lx-fadeup { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+
+    /* Layout */
+    .cols { display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; }
+    .col  { flex: 1; min-width: 300px; max-width: 420px; }
+
+    .eyebrow {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #ADADAD; margin-bottom: 12px;
+    }
+    .section-gap { margin-top: 48px; }
+
+    /* ── Shared tokens ── */
+    /* Gold — perfect score accent */
+    /* These are what BOTH cards should agree on */
+
+    /* ── CARD BASE ── */
+    .card {
+      border-radius: 14px; overflow: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .card-white {
+      background: #fff; border: 1px solid #E2E2E2;
+    }
+    .card-dark {
+      background: #0d0d0d; border: 1px solid #1e1e1e;
+    }
+
+    /* ── Share page outer ── */
+    .share-page {
+      background: #F6F6F6; /* now matches app --bg instead of parchment */
+      border-radius: 16px; overflow: hidden;
+    }
+    .share-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 18px; background: #fff; border-bottom: 1px solid #E2E2E2;
+    }
+    .share-nav-logo {
+      font-size: 15px; font-weight: 800; color: #000; letter-spacing: -0.05em;
+    }
+    .share-nav-cta {
+      font-size: 12px; font-weight: 600; color: #000; text-decoration: none;
+      padding: 6px 14px; border: 1px solid #E2E2E2; border-radius: 500px; background: #fff;
+    }
+    .share-body { padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* ── Perfect card (dark) ── */
+    .perfect-card {
+      background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 14px; overflow: hidden;
+    }
+    .gold-hairline {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #C9A84C 30%, #F0DC8A 50%, #C9A84C 70%, transparent);
+    }
+    .perfect-body { padding: 24px 20px 20px; text-align: center; }
+    .perfect-eyebrow { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.25); margin-bottom: 16px; }
+    .perfect-score {
+      font-size: 60px; font-weight: 900; color: #fff; letter-spacing: -0.04em;
+      line-height: 1; margin-bottom: 6px;
+    }
+    .perfect-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+      color: #C9A84C; margin-bottom: 10px;
+    }
+    .perfect-concept { font-size: 12px; color: rgba(255,255,255,0.2); margin-bottom: 20px; }
+    .perfect-divider { height: 1px; background: rgba(255,255,255,0.06); margin-bottom: 16px; }
+
+    /* word chips — grammar version */
+    .result-chips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
+    .chip-correct {
+      font-family: 'Lora', serif; font-size: 11px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5); border-radius: 4px; padding: 3px 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .chip-correct::before { content: '✓'; font-family: inherit; color: #C9A84C; font-size: 10px; }
+    .chip-wrong {
+      font-family: 'Lora', serif; font-size: 11px;
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.2); border-radius: 4px; padding: 3px 8px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .chip-wrong::before { content: '✗'; font-family: inherit; color: rgba(255,255,255,0.2); font-size: 10px; }
+
+    /* score widget */
+    .score-widget {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 12px; background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+    }
+    .score-widget-label { font-size: 11px; color: rgba(255,255,255,0.25); }
+    .score-widget-val { font-size: 14px; font-weight: 700; color: #C9A84C; }
+    .score-widget-delta { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); }
+
+    /* ── Normal card (white) ── */
+    .normal-card {
+      background: #fff; border: 1px solid #E2E2E2; border-radius: 14px; padding: 22px 20px;
+    }
+    .normal-header { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; }
+    .normal-name { font-size: 13px; font-weight: 600; color: #545454; }
+    .level-tag {
+      font-size: 11px; font-weight: 600; padding: 2px 7px; border: 1px solid #E2E2E2;
+      border-radius: 4px; color: #545454; background: #F6F6F6;
+    }
+    .normal-score {
+      font-size: 30px; font-weight: 800; color: #000; letter-spacing: -0.03em;
+      margin-bottom: 3px;
+    }
+    .normal-pct { font-size: 13px; color: #ADADAD; margin-bottom: 14px; }
+    .progress-bar {
+      height: 5px; background: #E2E2E2; border-radius: 3px; overflow: hidden; margin-bottom: 18px;
+    }
+    .progress-fill-good { height: 100%; background: #0E8345; border-radius: 3px; }
+    .progress-fill-ok   { height: 100%; background: #000; border-radius: 3px; }
+
+    /* word rows */
+    .word-rows { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+    .word-row {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 7px; border: 1px solid;
+    }
+    .word-row.correct { background: #D4EDDA; border-color: #86efac; }
+    .word-row.wrong   { background: #FDECEA; border-color: #fca5a5; }
+    .word-mark { font-size: 11px; flex-shrink: 0; }
+    .word-mark.correct { color: #0E8345; }
+    .word-mark.wrong   { color: #D1293D; }
+    .word-text { font-family: 'Lora', serif; font-size: 13px; color: #000; font-weight: 500; }
+    .word-def  { font-size: 11px; color: #ADADAD; margin-left: 2px; }
+
+    /* vocab score widget (white version) */
+    .score-widget-white {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px; background: #F6F6F6; border: 1px solid #E2E2E2; border-radius: 8px;
+    }
+    .score-widget-white-label { font-size: 11px; color: #ADADAD; }
+    .score-widget-white-val   { font-size: 14px; font-weight: 700; color: #000; }
+    .score-widget-white-delta-pos { font-size: 11px; font-weight: 600; color: #0E8345; }
+
+    /* ── CTA card ── */
+    .cta-card {
+      background: #fff; border: 1px solid #E2E2E2; border-radius: 14px;
+      padding: 22px 20px; text-align: center;
+    }
+    .cta-title { font-size: 15px; font-weight: 700; color: #000; margin-bottom: 5px; letter-spacing: -0.01em; }
+    .cta-sub   { font-size: 12px; color: #ADADAD; margin-bottom: 18px; line-height: 1.5; }
+    .cta-btn   {
+      display: inline-flex; align-items: center; gap: 6px; padding: 12px 24px;
+      background: #000; color: #fff; border-radius: 500px;
+      font-size: 13px; font-weight: 700; text-decoration: none; letter-spacing: 0.01em;
+    }
+
+    /* ── Grammar-specific chips (concept result) ── */
+    .concept-chip {
+      font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 4px;
+      background: #F6F6F6; border: 1px solid #E2E2E2; color: #545454;
+    }
+
+    /* Grammar normal card additions */
+    .grammar-result-row {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 7px; border: 1px solid #E2E2E2; background: #F6F6F6;
+      margin-bottom: 4px;
+    }
+    .q-num { font-size: 10px; font-weight: 700; color: #ADADAD; width: 14px; flex-shrink: 0; }
+    .q-correct-dot { width: 7px; height: 7px; border-radius: 50%; background: #0E8345; flex-shrink: 0; }
+    .q-wrong-dot   { width: 7px; height: 7px; border-radius: 50%; background: #E2E2E2; flex-shrink: 0; }
+    .q-text { font-family: 'Lora', serif; font-size: 12px; color: #545454; flex: 1;
+               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Streak pill */
+    .streak-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 500px;
+      background: #F6F6F6; border: 1px solid #E2E2E2;
+      font-size: 12px; font-weight: 600; color: #000; margin-bottom: 16px;
+    }
+
+    /* divider label */
+    .divider-label {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #ADADAD; margin: 28px 0 20px;
+    }
+    .divider-label::before, .divider-label::after {
+      content: ''; flex: 1; height: 1px; background: #EBEBEB;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div style="font-size:13px;color:#545454;max-width:860px;margin:0 auto 40px;line-height:1.6;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ADADAD;margin-bottom:10px;">Share card harmony study</div>
+    Both cards harmonized: same color tokens, same font, same outer shell. Gold = perfect throughout.
+    Vocab share gains concept-style chips. Grammar share gains word-level detail. Same CTA card at bottom.
+  </div>
+
+  <!-- ══ PERFECT SCORE — side by side ══ -->
+  <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ADADAD;margin-bottom:16px;max-width:900px;margin-left:auto;margin-right:auto;">Perfect score · both surfaces</div>
+  <div class="cols" style="max-width:900px;margin:0 auto;">
+
+    <!-- Grammar session share — perfect -->
+    <div class="col">
+      <div class="eyebrow">Grammar session · 7/7</div>
+      <div class="share-page">
+        <div class="share-nav">
+          <span class="share-nav-logo">LexiTree</span>
+          <a class="share-nav-cta">Try it free →</a>
+        </div>
+        <div class="share-body">
+          <div class="perfect-card">
+            <div class="gold-hairline"></div>
+            <div class="perfect-body">
+              <div class="perfect-eyebrow">Nithin's session · B1</div>
+              <div style="font-size:24px;line-height:1;margin-bottom:8px;">👑</div>
+              <div class="perfect-score">7/7</div>
+              <div class="perfect-label">Parfait</div>
+              <div class="perfect-concept">Le subjonctif présent</div>
+              <div class="perfect-divider"></div>
+              <!-- Q chips instead of word chips -->
+              <div class="result-chips">
+                <span class="chip-correct">il soit</span>
+                <span class="chip-correct">que tu aies</span>
+                <span class="chip-correct">il faut que</span>
+                <span class="chip-correct">nous allions</span>
+                <span class="chip-correct">tu viennes</span>
+                <span class="chip-correct">elle sache</span>
+                <span class="chip-correct">ils puissent</span>
+              </div>
+              <div class="score-widget">
+                <span class="score-widget-label">Streak</span>
+                <span class="score-widget-val">🔥 6</span>
+              </div>
+            </div>
+          </div>
+          <div class="cta-card">
+            <div class="cta-title">What's your French level?</div>
+            <div class="cta-sub">LexiTree places you on the CEFR scale and builds personalised practice from there. Free.</div>
+            <a class="cta-btn">Check my level — it's free →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vocab share — perfect (harmonized) -->
+    <div class="col">
+      <div class="eyebrow">Vocab session · 7/7 — harmonized</div>
+      <div class="share-page">
+        <div class="share-nav">
+          <span class="share-nav-logo">LexiTree</span>
+          <a class="share-nav-cta">Try it free →</a>
+        </div>
+        <div class="share-body">
+          <div class="perfect-card">
+            <div class="gold-hairline"></div><!-- was silver — now gold to match -->
+            <div class="perfect-body">
+              <div class="perfect-eyebrow">Nithin's vocab session · B1</div>
+              <div style="font-size:24px;line-height:1;margin-bottom:8px;">👑</div>
+              <div class="perfect-score">7/7</div>
+              <div class="perfect-label">Acquis</div><!-- keep "Acquis" — vocab-specific meaning -->
+              <div class="perfect-concept" style="margin-bottom:16px;">Vocabulaire · B1</div>
+              <div class="perfect-divider"></div>
+              <div class="result-chips">
+                <span class="chip-correct">néanmoins</span>
+                <span class="chip-correct">s'épanouir</span>
+                <span class="chip-correct">davantage</span>
+                <span class="chip-correct">se méfier</span>
+                <span class="chip-correct">souligner</span>
+                <span class="chip-correct">pourtant</span>
+                <span class="chip-correct">démarche</span>
+              </div>
+              <div class="score-widget">
+                <span class="score-widget-label">Vocab Score</span>
+                <span class="score-widget-val">74</span>
+                <span class="score-widget-delta">+3</span>
+              </div>
+            </div>
+          </div>
+          <div class="cta-card">
+            <div class="cta-title">What's your French level?</div>
+            <div class="cta-sub">LexiTree places you on the CEFR scale and builds personalised practice from there. Free.</div>
+            <a class="cta-btn">Check my level — it's free →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ NORMAL SCORE — side by side ══ -->
+  <div class="section-gap"></div>
+  <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ADADAD;margin-bottom:16px;max-width:900px;margin-left:auto;margin-right:auto;">Normal score · both surfaces</div>
+  <div class="cols" style="max-width:900px;margin:0 auto;">
+
+    <!-- Grammar session share — normal -->
+    <div class="col">
+      <div class="eyebrow">Grammar session · 5/7</div>
+      <div class="share-page">
+        <div class="share-nav">
+          <span class="share-nav-logo">LexiTree</span>
+          <a class="share-nav-cta">Try it free →</a>
+        </div>
+        <div class="share-body">
+          <div class="normal-card">
+            <div class="normal-header">
+              <span class="normal-name">Nithin's session</span>
+              <span style="color:#E2E2E2">·</span>
+              <span class="level-tag">B1</span>
+              <span style="color:#E2E2E2">·</span>
+              <span class="concept-chip">Le subjonctif présent</span>
+            </div>
+            <div class="normal-score">5 / 7</div>
+            <div class="normal-pct">71% on first attempt</div>
+            <div class="streak-pill">🔥 6 day streak</div>
+            <div class="progress-bar">
+              <div class="progress-fill-good" style="width:71%"></div>
+            </div>
+            <!-- Show answer dots, not full sentences (grammar is complex) -->
+            <div style="display:flex;gap:5px;margin-bottom:14px;align-items:center;">
+              <div style="width:9px;height:9px;border-radius:50%;background:#0E8345;"></div>
+              <div style="width:9px;height:9px;border-radius:50%;background:#0E8345;"></div>
+              <div style="width:9px;height:9px;border-radius:50%;background:#E2E2E2;"></div>
+              <div style="width:9px;height:9px;border-radius:50%;background:#0E8345;"></div>
+              <div style="width:9px;height:9px;border-radius:50%;background:#0E8345;"></div>
+              <div style="width:9px;height:9px;border-radius:50%;background:#0E8345;"></div>
+              <div style="width:9px;height:9px;border-radius:50%;background:#E2E2E2;"></div>
+              <span style="font-size:11px;color:#ADADAD;margin-left:6px;">5 correct, 2 missed</span>
+            </div>
+            <div class="score-widget-white">
+              <span class="score-widget-white-label">Streak</span>
+              <span class="score-widget-white-val">🔥 6</span>
+            </div>
+          </div>
+          <div class="cta-card">
+            <div class="cta-title">What's your French level?</div>
+            <div class="cta-sub">LexiTree places you on the CEFR scale and builds personalised practice from there. Free.</div>
+            <a class="cta-btn">Check my level — it's free →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vocab share — normal (harmonized) -->
+    <div class="col">
+      <div class="eyebrow">Vocab session · 5/7 — harmonized</div>
+      <div class="share-page">
+        <div class="share-nav">
+          <span class="share-nav-logo">LexiTree</span>
+          <a class="share-nav-cta">Try it free →</a>
+        </div>
+        <div class="share-body">
+          <div class="normal-card">
+            <div class="normal-header">
+              <span class="normal-name">Nithin's vocab session</span>
+              <span style="color:#E2E2E2">·</span>
+              <span class="level-tag">B1</span>
+            </div>
+            <div class="normal-score">5 / 7</div>
+            <div class="normal-pct">71% correct</div>
+            <div class="progress-bar" style="margin-bottom:16px;">
+              <div class="progress-fill-good" style="width:71%"></div><!-- was #16a34a — now #0E8345 -->
+            </div>
+            <div class="word-rows">
+              <div class="word-row correct">
+                <span class="word-mark correct">✓</span>
+                <span class="word-text">néanmoins</span>
+              </div>
+              <div class="word-row correct">
+                <span class="word-mark correct">✓</span>
+                <span class="word-text">s'épanouir</span>
+              </div>
+              <div class="word-row wrong">
+                <span class="word-mark wrong">✗</span>
+                <span class="word-text">davantage</span>
+                <span class="word-def">— rather more</span>
+              </div>
+              <div class="word-row correct">
+                <span class="word-mark correct">✓</span>
+                <span class="word-text">se méfier</span>
+              </div>
+              <div class="word-row correct">
+                <span class="word-mark correct">✓</span>
+                <span class="word-text">souligner</span>
+              </div>
+              <div class="word-row wrong">
+                <span class="word-mark wrong">✗</span>
+                <span class="word-text">pourtant</span>
+                <span class="word-def">— however</span>
+              </div>
+              <div class="word-row correct">
+                <span class="word-mark correct">✓</span>
+                <span class="word-text">démarche</span>
+              </div>
+            </div>
+            <div class="score-widget-white">
+              <span class="score-widget-white-label">Vocab Score</span>
+              <span class="score-widget-white-val">71</span>
+              <span class="score-widget-white-delta-pos">+2</span>
+            </div>
+          </div>
+          <div class="cta-card">
+            <div class="cta-title">What's your French level?</div>
+            <div class="cta-sub">LexiTree places you on the CEFR scale and builds personalised practice from there. Free.</div>
+            <a class="cta-btn">Check my level — it's free →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── What changed ── -->
+  <div style="max-width:900px;margin:48px auto 0;padding:20px;background:#fff;border:1px solid #E2E2E2;border-radius:12px;font-size:13px;color:#545454;line-height:1.7;">
+    <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ADADAD;margin-bottom:12px;">Changes to harmonize</div>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+      <li>✦ <strong style="color:#000">Perfect hairline</strong> — vocab share changes from silver (#cbd5e1) to gold (#C9A84C → matches grammar card)</li>
+      <li>✦ <strong style="color:#000">Green</strong> — vocab share changes from #16a34a to #0E8345 (app CSS var)</li>
+      <li>✦ <strong style="color:#000">Logo font</strong> — both share pages use same Inter 800 wordmark (not serif)</li>
+      <li>✦ <strong style="color:#000">Outer background</strong> — both use #F6F6F6 (app --bg, not parchment)</li>
+      <li>✦ <strong style="color:#000">Score widget</strong> — same component, different label ("Streak" vs "Vocab Score")</li>
+      <li>✦ <strong style="color:#000">Word chips</strong> — same serif font + check/cross, same padding. Grammar shows answer fragments; vocab shows words.</li>
+      <li>✦ <strong style="color:#000">CTA card</strong> — identical between both</li>
+      <li>✦ <strong style="color:#000">Labels kept distinct</strong> — "Parfait" for grammar, "Acquis" for vocab. Same hierarchy, different word.</li>
+    </ul>
+  </div>
+
+</body>
+</html>

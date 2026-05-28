@@ -74,8 +74,10 @@ export default function SessionPage() {
   const [vocabularySeen, setVocabularySeen] = useState(null)
   const [isMapSession, setIsMapSession] = useState(false)
   const [streak, setStreak] = useState(0)
+  const [guestSessions, setGuestSessions] = useState(0)
   const didFetch    = useRef(false)
   const loadingRef  = useRef(null)   // ref to LoadingCard's accelerate() handle
+  const skipScenario = useRef(false)
 
   useEffect(() => {
     if (didFetch.current) return
@@ -91,6 +93,7 @@ export default function SessionPage() {
     setLevel(storedLevel)
     setConcept(c)
     setIsMapSession(mapSession)
+    setGuestSessions(parseInt(localStorage.getItem('lexitree_guest_sessions') ?? '0', 10))
 
     // If today's daily concept was already completed, skip to todayDone
     if (!mapSession) {
@@ -122,7 +125,12 @@ export default function SessionPage() {
 
   function handleLoadComplete() {
     setLoadState('ready')
-    setPhase('scenario')
+    if (skipScenario.current) {
+      skipScenario.current = false
+      setPhase('question')
+    } else {
+      setPhase('scenario')
+    }
   }
 
   async function fetchSession(lvl, c) {
@@ -168,14 +176,51 @@ export default function SessionPage() {
     }
   }
 
+  async function fetchQuestionsOnly(lvl, c) {
+    setLoadState('loading')
+    setPhase('loading')
+    try {
+      const conceptLevel = c.level ?? lvl
+      const vocabularyWords = selectVocabularyWords(lvl, vocabularySeen)
+      const questionsRes = await fetch('/api/generate-questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ level: conceptLevel, concept: c, lesson, vocabularyWords }),
+      })
+      if (!questionsRes.ok) throw new Error()
+      const questionsData = await questionsRes.json()
+      setQuestions(questionsData.questions)
+      loadingRef.current?.accelerate()
+    } catch {
+      setLoadState('error')
+      setPhase('loading')
+    }
+  }
+
+  function handleTryMore() {
+    skipScenario.current = true
+    setIndex(0)
+    setSelected(null)
+    setTriedWrong(new Set())
+    setFirstPick(null)
+    setLastWrongPick(null)
+    setResults([])
+    setPromotion(null)
+    setRecalibration(null)
+    setQuestions([])
+    fetchQuestionsOnly(level, concept)
+  }
+
   function handleSelect(option) {
     if (phase === 'feedback') return
-    const correct = option === questions[index].answer
+    const q = questions[index]
+    const validAnswers = q.all_correct ?? [q.answer]
+    const correct = validAnswers.includes(option)
 
     // Record score on first pick only
     if (firstPick === null) {
       setFirstPick(option)
-      setResults(prev => [...prev, { correct }])
+      setResults(prev => [...prev, { correct, answer: q.answer }])
     }
 
     if (correct) {
@@ -201,6 +246,13 @@ export default function SessionPage() {
         const today = new Date().toISOString().slice(0, 10)
         localStorage.setItem('lexitree_session_date', today)
         localStorage.setItem('lexitree_session_concept', concept.slug)
+      }
+      // Track guest session count for gating
+      if (!user) {
+        const prev = parseInt(localStorage.getItem('lexitree_guest_sessions') ?? '0', 10)
+        const updated = prev + 1
+        localStorage.setItem('lexitree_guest_sessions', String(updated))
+        setGuestSessions(updated)
       }
       setPhase('complete')
       saveSession(results)
@@ -368,7 +420,11 @@ export default function SessionPage() {
 
         {phase === 'confirm' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 140px)' }}>
-            <ConfirmCard concept={concept} level={level} onStart={handleStart} />
+            {user === null && guestSessions >= 2 ? (
+              <GuestGateCard signInWithGoogle={signInWithGoogle} />
+            ) : (
+              <ConfirmCard concept={concept} level={level} onStart={handleStart} showLastSessionWarning={user === null && guestSessions === 1} />
+            )}
           </div>
         )}
 
@@ -389,6 +445,7 @@ export default function SessionPage() {
 
         {loadState === 'ready' && (phase === 'question' || phase === 'feedback') && (
           <ExerciseCard
+            key={index}
             q={questions[index]}
             index={index}
             total={questions.length}
@@ -414,11 +471,13 @@ export default function SessionPage() {
             signInWithGoogle={signInWithGoogle}
             isMapSession={isMapSession}
             streak={streak}
+            guestSessions={guestSessions}
             onNewSession={handleNewSession}
             onGoToMap={handleGoToMap}
             onChangeLevel={handleChangeLevel}
             onAcceptRecalibration={handleAcceptRecalibration}
             onDismissRecalibration={handleDismissRecalibration}
+            onTryMore={handleTryMore}
           />
         )}
       </div>
@@ -428,14 +487,24 @@ export default function SessionPage() {
 
 // ─── Confirm card ────────────────────────────────────────────────────────────
 
-function ConfirmCard({ concept, level, onStart }) {
+function ConfirmCard({ concept, level, onStart, showLastSessionWarning }) {
   return (
     <div className="exercise-card" style={{ padding: '20px', width: '100%' }}>
+      {/* Last free session warning banner */}
+      {showLastSessionWarning && (
+        <div style={{ marginBottom: '16px', padding: '11px 14px', background: 'var(--terracotta-bg)', border: '1px solid var(--terracotta-light)', borderRadius: 'var(--radius)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+          <span style={{ fontSize: '13px' }}>⚠️</span>
+          <p style={{ fontSize: '12px', color: 'var(--terracotta)', lineHeight: 1.5, margin: 0 }}>
+            <strong>Last free session.</strong> Sign in after this to keep your level and continue.
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ marginBottom: '16px' }}>
         <span className="level-badge" style={{ marginBottom: '12px', display: 'inline-block' }}>{level}</span>
         <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--dark)', letterSpacing: '-0.03em', marginBottom: '4px' }}>
-          {concept.nameFr}
+          {concept.mapLabel ?? concept.nameFr}
         </h2>
         <p style={{ fontSize: '14px', color: 'var(--mid)', marginBottom: '0' }}>{concept.name}</p>
       </div>
@@ -519,7 +588,7 @@ function VisualLesson({ concept, lesson: mistralLesson, onStart }) {
 
       <div style={{ marginBottom: '20px' }}>
         <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--light)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Today's concept</div>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 700, color: 'var(--dark)' }}>{concept.nameFr}</div>
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 700, color: 'var(--dark)' }}>{concept.mapLabel ?? concept.nameFr}</div>
       </div>
 
       {/* Anchor sentence first — learner sees the language before the explanation */}
@@ -798,7 +867,7 @@ function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWr
       </div>
 
       <div className="exercise-card">
-        <p className="question-text">{q.question}</p>
+        <p className="question-text">{renderQuestion(q.question)}</p>
 
         {/* Wrong option explanation — shown after each wrong attempt */}
         {wrongExplanation && phase !== 'feedback' && (
@@ -810,7 +879,7 @@ function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWr
         <div className="options-grid">
           {q.options.map(opt => {
             const isTried = triedWrong.has(opt)
-            const isCorrect = phase === 'feedback' && opt === q.answer
+            const isCorrect = phase === 'feedback' && opt === selected
 
             let cls = 'option-btn'
             if (isCorrect) cls += ' correct'
@@ -831,7 +900,21 @@ function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWr
         </div>
 
         {/* Correct answer explanation shown once right answer is found */}
-        {phase === 'feedback' && <div className="explanation">{q.explanation}</div>}
+        {phase === 'feedback' && (
+          <>
+            <div className="explanation">{q.explanation}</div>
+            {(() => {
+              const validAnswers = q.all_correct ?? [q.answer]
+              const others = validAnswers.filter(a => a !== selected)
+              if (others.length === 0) return null
+              return (
+                <div style={{ marginTop: '8px', padding: '9px 14px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: '13px', color: 'var(--mid)', lineHeight: 1.5 }}>
+                  Also correct: <span style={{ color: 'var(--dark)', fontWeight: 500 }}>{others.join(', ')}</span>
+                </div>
+              )
+            })()}
+          </>
+        )}
       </div>
 
       {phase === 'feedback' && (
@@ -846,6 +929,20 @@ function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWr
       )}
     </div>
   )
+}
+
+function renderQuestion(text) {
+  const parts = text.split('___')
+  if (parts.length === 1) return text
+  return parts.reduce((acc, part, i) => {
+    acc.push(part)
+    if (i < parts.length - 1) {
+      acc.push(
+        <span key={i} style={{ display: 'inline-block', width: '72px', borderBottom: '2px solid #000', verticalAlign: 'baseline', margin: '0 4px' }} />
+      )
+    }
+    return acc
+  }, [])
 }
 
 // ─── Loading / error ──────────────────────────────────────────────────────────
@@ -1499,11 +1596,38 @@ function TodayDoneCard({ onGoToMap, onGoToArchive }) {
 
 // ─── Summary card ─────────────────────────────────────────────────────────────
 
-function SummaryCard({ results, total, concept, level, promotion, recalibration, user, signInWithGoogle, isMapSession, streak, onNewSession, onGoToMap, onChangeLevel, onAcceptRecalibration, onDismissRecalibration }) {
+function SummaryCard({ results, total, concept, level, promotion, recalibration, user, signInWithGoogle, isMapSession, streak, guestSessions, onNewSession, onGoToMap, onChangeLevel, onAcceptRecalibration, onDismissRecalibration, onTryMore }) {
   const correct = results.filter(r => r.correct).length
   const pct = Math.round((correct / total) * 100)
   const great = pct >= 70
   const next = nextLevel(level)
+  const [shareState, setShareState] = useState('idle') // idle | loading | copied
+
+  async function handleShare() {
+    setShareState('loading')
+    try {
+      const res = await fetch('/api/share-grammar-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          display_name: user?.user_metadata?.full_name ?? user?.email ?? null,
+          score: correct,
+          total,
+          level,
+          concept_name: concept.nameFr,
+          results: results.map(r => ({ correct: r.correct, answer: r.answer })),
+          streak: streak ?? 0,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok || !json.id) throw new Error(json.error ?? 'No id returned')
+      await navigator.clipboard.writeText(`${window.location.origin}/share/grammar/${json.id}`)
+      setShareState('copied')
+      setTimeout(() => setShareState('idle'), 2500)
+    } catch {
+      setShareState('idle')
+    }
+  }
 
   useEffect(() => {
     if (correct < 5) return
@@ -1556,9 +1680,12 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
           <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, #C9A84C 30%, #F0DC8A 50%, #C9A84C 70%, transparent)', animation: 'lx-fadein 0.6s ease 0.1s both' }} />
 
           <div style={{ padding: '28px 24px 24px', textAlign: 'center' }}>
-            {/* 7/7 number */}
+            {/* Crown */}
+            <div style={{ fontSize: '28px', lineHeight: 1, marginBottom: '10px', animation: 'lx-fadein 0.4s ease 0.1s both' }}>👑</div>
+
+            {/* Score */}
             <div style={{ fontSize: '68px', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '10px', animation: 'lx-fadeup 0.5s ease 0.2s both' }}>
-              7/7
+              {correct}/{total}
             </div>
 
             {/* PARFAIT hallmark */}
@@ -1568,11 +1695,20 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
 
             {/* Concept name */}
             <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', marginBottom: '28px', animation: 'lx-fadein 0.4s ease 0.5s both' }}>
-              {concept.nameFr}
+              {concept.mapLabel ?? concept.nameFr}
             </div>
 
             {/* Divider */}
             <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', marginBottom: '20px', animation: 'lx-fadein 0.4s ease 0.55s both' }} />
+
+            {/* Answer chips */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center', marginBottom: '20px', animation: 'lx-fadein 0.4s ease 0.58s both' }}>
+              {results.map((r, i) => (
+                <span key={i} style={{ fontFamily: 'var(--font-serif)', fontSize: '12px', color: '#94a3b8', border: '1px solid rgba(148,163,184,0.2)', background: 'rgba(148,163,184,0.05)', borderRadius: '4px', padding: '3px 8px' }}>
+                  {r.answer}
+                </span>
+              ))}
+            </div>
 
             {/* Saved row */}
             {user && (
@@ -1585,15 +1721,29 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
             )}
 
             {/* Buttons */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', animation: 'lx-fadeup 0.4s ease 0.65s both' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', animation: 'lx-fadeup 0.4s ease 0.65s both' }}>
               {isMapSession ? (
                 <>
                   <button className="btn-primary" onClick={onGoToMap} style={{ background: '#C9A84C', color: '#000', border: 'none' }}>Back to Grammar Map →</button>
-                  <button className="btn-ghost" onClick={onNewSession} style={{ color: 'rgba(255,255,255,0.25)', borderColor: 'rgba(255,255,255,0.08)' }}>Today's lesson</button>
+                  <div style={{ display: 'flex', borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: '6px', paddingTop: '2px' }}>
+                    <button onClick={onTryMore} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}>Try again</button>
+                    <div style={{ width: '1px', background: 'rgba(255,255,255,0.07)', margin: '6px 0' }} />
+                    <button onClick={onNewSession} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}>Today's lesson</button>
+                  </div>
                 </>
               ) : (
-                <button className="btn-primary" onClick={onNewSession} style={{ background: '#C9A84C', color: '#000', border: 'none' }}>New session →</button>
+                <>
+                  <button className="btn-primary" onClick={onNewSession} style={{ background: '#C9A84C', color: '#000', border: 'none' }}>New session →</button>
+                  <button onClick={onTryMore} style={{ padding: '10px 0', background: 'none', border: 'none', fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.3)', cursor: 'pointer', width: '100%' }}>Try more questions</button>
+                </>
               )}
+              <button
+                onClick={handleShare}
+                disabled={shareState === 'loading'}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%', padding: '8px', background: 'none', border: 'none', fontSize: '12px', fontWeight: 500, color: 'rgba(255,255,255,0.2)', cursor: shareState === 'loading' ? 'default' : 'pointer', marginTop: '2px' }}
+              >
+                {shareState === 'copied' ? '✓ Copied' : shareState === 'loading' ? 'Saving…' : 'Share result'}
+              </button>
             </div>
           </div>
         </>
@@ -1605,7 +1755,7 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
             {great ? 'Great session!' : 'Keep practising!'}
           </h2>
           <p style={{ fontSize: '15px', color: 'var(--mid)', marginBottom: '4px' }}>{correct} of {total} correct on first attempt</p>
-          <p style={{ fontSize: '13px', color: 'var(--light)', marginBottom: streak > 0 ? '10px' : '20px' }}>{concept.nameFr}</p>
+          <p style={{ fontSize: '13px', color: 'var(--light)', marginBottom: streak > 0 ? '10px' : '20px' }}>{concept.mapLabel ?? concept.nameFr}</p>
           {streak > 0 && (
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '4px 12px', background: 'var(--terracotta-bg)', border: '1px solid var(--terracotta-light)', borderRadius: '20px', marginBottom: '20px' }}>
               <span style={{ fontSize: '13px' }}>🔥</span>
@@ -1651,8 +1801,16 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
 
           {user === null && (
             <div style={{ marginBottom: '24px', padding: '20px', background: 'var(--terracotta-bg)', border: '1px solid var(--terracotta-light)', borderRadius: 'var(--radius)', textAlign: 'center' }}>
-              <p style={{ fontSize: '17px', fontWeight: 700, color: 'var(--dark)', marginBottom: '6px', letterSpacing: '-0.02em' }}>Save your progress</p>
-              <p style={{ fontSize: '13px', color: 'var(--mid)', marginBottom: '16px', lineHeight: 1.5 }}>Sign in to track your streak and pick up where you left off.</p>
+              <p style={{ fontSize: '17px', fontWeight: 700, color: 'var(--dark)', marginBottom: '6px', letterSpacing: '-0.02em' }}>
+                {guestSessions >= 2 ? 'You\'ve used your free sessions' : 'Save your progress'}
+              </p>
+              <p style={{ fontSize: '13px', color: 'var(--mid)', marginBottom: '16px', lineHeight: 1.5 }}>
+                {guestSessions >= 2
+                  ? 'Sign in to keep going — your level is saved, no placement test needed.'
+                  : guestSessions === 1
+                  ? '1 free session remaining. Sign in now to keep your level and continue after next time.'
+                  : 'Sign in to track your streak and pick up where you left off.'}
+              </p>
               <button onClick={signInWithGoogle} style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '10px 22px', background: 'var(--white)', border: '1px solid var(--border)', borderRadius: '500px', fontSize: '14px', fontWeight: 500, color: 'var(--dark)', cursor: 'pointer' }}>
                 <GoogleIcon size={18} />
                 Continue with Google
@@ -1667,15 +1825,29 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {isMapSession ? (
               <>
                 <button className="btn-primary" onClick={onGoToMap}>Back to Grammar Map →</button>
-                <button className="btn-ghost" onClick={onNewSession}>Today's lesson</button>
+                <div style={{ display: 'flex', borderTop: '1px solid var(--border)', marginTop: '6px', paddingTop: '2px' }}>
+                  <button onClick={onTryMore} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', fontSize: '13px', fontWeight: 500, color: 'var(--light)', cursor: 'pointer' }}>Try again</button>
+                  <div style={{ width: '1px', background: 'var(--border)', margin: '6px 0' }} />
+                  <button onClick={onNewSession} style={{ flex: 1, padding: '10px 0', background: 'none', border: 'none', fontSize: '13px', fontWeight: 500, color: 'var(--light)', cursor: 'pointer' }}>Today's lesson</button>
+                </div>
               </>
             ) : (
-              <button className="btn-primary" onClick={onNewSession}>New session →</button>
+              <>
+                <button className="btn-primary" onClick={onNewSession}>New session →</button>
+                <button onClick={onTryMore} style={{ padding: '10px 0', background: 'none', border: 'none', fontSize: '13px', fontWeight: 500, color: 'var(--light)', cursor: 'pointer', width: '100%' }}>Try more questions</button>
+              </>
             )}
+            <button
+              onClick={handleShare}
+              disabled={shareState === 'loading'}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', width: '100%', padding: '8px', background: 'none', border: 'none', fontSize: '12px', fontWeight: 500, color: 'var(--light)', cursor: shareState === 'loading' ? 'default' : 'pointer', marginTop: '2px' }}
+            >
+              {shareState === 'copied' ? '✓ Copied' : shareState === 'loading' ? 'Saving…' : 'Share result'}
+            </button>
           </div>
         </>
       )}
@@ -1721,6 +1893,31 @@ function RecalibrationNudge({ direction, currentLevel, suggestedLevel, onAccept,
   )
 }
 
+function GuestGateCard({ signInWithGoogle }) {
+  return (
+    <div className="exercise-card" style={{ padding: '32px 28px', width: '100%', textAlign: 'center' }}>
+      <div style={{ fontSize: '32px', marginBottom: '16px' }}>🔒</div>
+      <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--dark)', letterSpacing: '-0.03em', marginBottom: '10px' }}>
+        Sign in to continue
+      </h2>
+      <p style={{ fontSize: '14px', color: 'var(--mid)', lineHeight: 1.65, marginBottom: '8px' }}>
+        You've had 2 free sessions.
+      </p>
+      <p style={{ fontSize: '14px', color: 'var(--mid)', lineHeight: 1.65, marginBottom: '28px' }}>
+        Sign in with Google — it's free — and your level is saved so you never have to redo the placement test.
+      </p>
+      <button
+        onClick={signInWithGoogle}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '12px 28px', background: 'var(--dark)', color: '#fff', border: 'none', borderRadius: '500px', fontSize: '15px', fontWeight: 700, cursor: 'pointer', width: '100%', justifyContent: 'center', marginBottom: '12px' }}
+      >
+        <GoogleIcon size={18} />
+        Continue with Google
+      </button>
+      <a href="/" style={{ fontSize: '12px', color: 'var(--light)', textDecoration: 'none' }}>← Back to home</a>
+    </div>
+  )
+}
+
 function ProgressRow({ done, label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
@@ -1729,6 +1926,17 @@ function ProgressRow({ done, label }) {
       </span>
       <span style={{ fontSize: '13px', color: done ? 'var(--mid)' : 'var(--dark)', lineHeight: 1.4 }}>{label}</span>
     </div>
+  )
+}
+
+function GoogleIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" fill="none">
+      <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
+      <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z" fill="#34A853"/>
+      <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
+      <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
+    </svg>
   )
 }
 

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LexiTree — Share Card Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary:      #5746AF;
+    --primary-hover:#4538A0;
+    --primary-light:#C4B8F8;
+    --primary-bg:   #F0EDFF;
+    --green:        #16A34A;
+    --green-light:  #DCFCE7;
+    --dark:         #191919;
+    --mid:          #6B6B6B;
+    --light:        #B0B0B0;
+    --border:       #E5E5E5;
+    --bg:           #FAFAFA;
+    --white:        #FFFFFF;
+    --sans:         'Inter', system-ui, sans-serif;
+    --serif:        'Lora', Georgia, serif;
+    --r:            8px;
+    --rl:           12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); background: #EEECEA; padding: 48px 32px; -webkit-font-smoothing: antialiased; }
+
+  .header { max-width: 1100px; margin: 0 auto 40px; }
+  .title  { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--dark); margin-bottom: 4px; }
+  .sub    { font-size: 13px; color: var(--mid); }
+
+  .row { display: flex; flex-wrap: wrap; gap: 28px; max-width: 1100px; margin: 0 auto; align-items: flex-start; }
+
+  .wrap { display: flex; flex-direction: column; gap: 10px; }
+  .label { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mid); padding-left: 2px; }
+
+  .share-btn {
+    width: 100%; padding: 10px; border-radius: var(--r);
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: var(--dark); color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">Assessment share card — options</div>
+  <div class="sub">6 directions · Inter + Lora · indigo primary · level shown is B2</div>
+</div>
+
+<div class="row">
+
+  <!-- A — Dark + indigo accent -->
+  <div class="wrap">
+    <div class="label">A — Dark, indigo accent</div>
+    <div style="width:256px; background:#191919; border-radius:16px; overflow:hidden;">
+      <div style="padding:36px 28px; text-align:center;">
+        <div style="font-family:var(--sans); font-size:13px; font-weight:500; color:rgba(255,255,255,0.3); letter-spacing:-0.01em; margin-bottom:28px;">LexiTree🌳</div>
+        <div style="font-family:var(--sans); font-size:10px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:10px;">My French level</div>
+        <div style="font-family:var(--serif); font-size:76px; font-weight:600; color:#C4B8F8; line-height:1; margin-bottom:6px;">B2</div>
+        <div style="font-family:var(--sans); font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:28px;">Upper Intermediate</div>
+        <div style="height:1px; background:rgba(255,255,255,0.07); margin-bottom:20px;"></div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.2); letter-spacing:0.01em;">lexitree.app/assess</div>
+      </div>
+      <div style="padding:12px 16px; border-top:1px solid rgba(255,255,255,0.05);">
+        <button class="share-btn" style="background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.6); border:1px solid rgba(255,255,255,0.08);">Share ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- B — Light, level badge -->
+  <div class="wrap">
+    <div class="label">B — Light, level badge</div>
+    <div style="width:256px; background:var(--white); border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+      <div style="padding:32px 24px; text-align:center;">
+        <div style="font-size:13px; font-weight:500; color:var(--dark); letter-spacing:-0.01em; margin-bottom:24px;">LexiTree🌳</div>
+        <div style="width:88px; height:88px; border-radius:50%; background:var(--primary-bg); border:2px solid var(--primary-light); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+          <div style="font-family:var(--serif); font-size:34px; font-weight:600; color:var(--primary);">B2</div>
+        </div>
+        <div style="font-size:15px; font-weight:600; color:var(--dark); margin-bottom:4px;">Upper Intermediate</div>
+        <div style="font-size:12px; color:var(--light); margin-bottom:20px;">French · CEFR</div>
+        <!-- Level bar -->
+        <div style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; font-size:9px; color:var(--light); margin-bottom:5px;">
+            <span>A1</span><span>A2</span><span>B1</span><span>B2</span><span>C1</span><span>C2</span>
+          </div>
+          <div style="height:5px; background:var(--border); border-radius:3px; overflow:hidden;">
+            <div style="height:100%; width:66%; background:var(--primary); border-radius:3px;"></div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:var(--light);">What's your level? → <span style="color:var(--primary); font-weight:500;">lexitree.app</span></div>
+      </div>
+      <div style="padding:12px 16px; border-top:1px solid var(--border);">
+        <button class="share-btn">Share ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- C — Indigo gradient -->
+  <div class="wrap">
+    <div class="label">C — Indigo gradient</div>
+    <div style="width:256px; border-radius:16px; overflow:hidden;">
+      <div style="padding:36px 28px; text-align:center; background:linear-gradient(150deg, #5746AF, #3B2E8C);">
+        <div style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.5); letter-spacing:-0.01em; margin-bottom:28px;">LexiTree🌳</div>
+        <div style="font-family:var(--serif); font-size:84px; font-weight:600; color:#fff; line-height:1; margin-bottom:6px;">B2</div>
+        <div style="font-size:13px; color:rgba(255,255,255,0.65); margin-bottom:6px;">Upper Intermediate</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:24px;">French · CEFR</div>
+        <!-- 6-segment bar -->
+        <div style="display:flex; gap:4px; margin-bottom:6px;">
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.2);"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.2);"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.2);"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.75);"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.15);"></div>
+          <div style="flex:1; height:4px; border-radius:2px; background:rgba(255,255,255,0.15);"></div>
+        </div>
+        <div style="font-size:10px; color:rgba(255,255,255,0.3);">lexitree.app/assess</div>
+      </div>
+      <div style="padding:12px 16px; background:#3B2E8C; border-top:1px solid rgba(255,255,255,0.08);">
+        <button class="share-btn" style="background:rgba(255,255,255,0.12); color:rgba(255,255,255,0.8); border:1px solid rgba(255,255,255,0.12);">Share ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- D — Typographic, type-only -->
+  <div class="wrap">
+    <div class="label">D — Typographic</div>
+    <div style="width:248px; background:var(--bg); border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+      <div style="padding:32px 24px;">
+        <div style="font-size:10px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:var(--light); margin-bottom:20px;">LexiTree · French</div>
+        <div style="font-family:var(--serif); font-size:14px; color:var(--mid); margin-bottom:2px;">My level is</div>
+        <div style="font-family:var(--serif); font-size:80px; font-weight:600; color:var(--dark); line-height:0.9; margin-bottom:16px;">B2</div>
+        <div style="font-family:var(--serif); font-size:14px; font-style:italic; color:var(--mid); margin-bottom:10px;">Upper Intermediate</div>
+        <div style="width:36px; height:2px; background:var(--primary); border-radius:1px; margin-bottom:16px;"></div>
+        <div style="font-size:11px; color:var(--light);">Tested at <span style="color:var(--primary); font-weight:500;">lexitree.app</span></div>
+      </div>
+      <div style="padding:12px 16px; border-top:1px solid var(--border);">
+        <button class="share-btn">Share ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- E — Light card, Lora serif level -->
+  <div class="wrap">
+    <div class="label">E — Clean serif</div>
+    <div style="width:256px; background:var(--white); border-radius:16px; overflow:hidden; border:1px solid var(--border);">
+      <div style="background:var(--primary-bg); padding:28px 24px; text-align:center; border-bottom:1px solid var(--primary-light);">
+        <div style="font-size:11px; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; color:var(--primary); margin-bottom:8px;">My French level</div>
+        <div style="font-family:var(--serif); font-size:72px; font-weight:600; color:var(--primary); line-height:1; margin-bottom:4px;">B2</div>
+        <div style="font-size:13px; color:var(--primary); opacity:0.7;">Upper Intermediate</div>
+      </div>
+      <div style="padding:20px 24px; text-align:center;">
+        <div style="font-size:13px; font-weight:500; color:var(--dark); margin-bottom:4px;">LexiTree🌳</div>
+        <div style="font-size:11px; color:var(--light); margin-bottom:16px;">AI-powered French grammar</div>
+        <div style="font-size:11px; color:var(--mid); margin-bottom:4px;">What's your level?</div>
+        <div style="font-size:11px; font-weight:500; color:var(--primary);">lexitree.app/assess →</div>
+      </div>
+      <div style="padding:0 16px 16px;">
+        <button class="share-btn">Share ↗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- F — Stats card, dark -->
+  <div class="wrap">
+    <div class="label">F — With stats</div>
+    <div style="width:272px; background:#191919; border-radius:16px; overflow:hidden;">
+      <div style="padding:24px 24px 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+          <div style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.35); letter-spacing:-0.01em;">LexiTree🌳</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.25); letter-spacing:0.04em; font-weight:500;">MAY 2026</div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <div style="font-size:10px; font-weight:500; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3); margin-bottom:4px;">French level</div>
+          <div style="font-family:var(--serif); font-size:68px; font-weight:600; color:var(--primary-light); line-height:1; margin-bottom:2px;">B2</div>
+          <div style="font-size:13px; color:rgba(255,255,255,0.4);">Upper Intermediate · CEFR</div>
+        </div>
+        <div style="height:1px; background:rgba(255,255,255,0.07); margin-bottom:16px;"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0;">
+          <div style="text-align:center; padding-right:10px; border-right:1px solid rgba(255,255,255,0.07);">
+            <div style="font-size:20px; font-weight:600; color:#fff; font-family:var(--sans);">24</div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px;">sessions</div>
+          </div>
+          <div style="text-align:center; padding:0 8px; border-right:1px solid rgba(255,255,255,0.07);">
+            <div style="font-size:20px; font-weight:600; color:#fff; font-family:var(--sans);">74%</div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px;">accuracy</div>
+          </div>
+          <div style="text-align:center; padding-left:10px;">
+            <div style="font-size:20px; font-weight:600; color:#fff; font-family:var(--sans);">🔥14</div>
+            <div style="font-size:9px; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px;">streak</div>
+          </div>
+        </div>
+        <div style="margin-top:16px; text-align:center; font-size:10px; color:rgba(255,255,255,0.18);">lexitree.app/assess · What's your level?</div>
+      </div>
+      <div style="padding:12px 16px; border-top:1px solid rgba(255,255,255,0.05);">
+        <button class="share-btn" style="background:var(--primary); color:#fff;">Share ↗</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

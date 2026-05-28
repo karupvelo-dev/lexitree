@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Loading — Jigsaw</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0ede8;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e8e5df;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    padding: 56px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    text-align: center;
+  }
+
+  #puzzle-svg { overflow: visible; }
+
+  .piece-group {
+    transition: opacity 0.22s ease, transform 0.42s cubic-bezier(0.34, 1.4, 0.64, 1);
+  }
+  .piece-group.hidden {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.92);
+  }
+  .piece-group.placed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .txt-fr {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.5;
+    transition: opacity 0.3s ease;
+    min-height: 26px;
+  }
+  .txt-en {
+    font-size: 13px;
+    color: #bbb;
+    margin-top: 5px;
+    transition: opacity 0.3s ease;
+    min-height: 20px;
+  }
+  .txt-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  /* Prototype trigger button */
+  .trigger-wrap {
+    text-align: center;
+    margin-top: 28px;
+  }
+  .trigger-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 500px;
+    padding: 9px 22px;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .trigger-btn:hover:not(:disabled) { color: #444; border-color: #bbb; }
+  .trigger-btn:disabled { opacity: 0.35; cursor: default; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <svg id="puzzle-svg" width="174" height="174" viewBox="-14 -14 200 200">
+    <defs>
+
+      <!-- ── Sky gradients (one per illustration) ── -->
+
+      <!-- 0: Eiffel Tower — night/dusk -->
+      <linearGradient id="g0" x1="0" y1="-14" x2="0" y2="148" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#14304e"/>
+        <stop offset="52%"  stop-color="#346889"/>
+        <stop offset="100%" stop-color="#c07545"/>
+      </linearGradient>
+
+      <!-- 1: Arc de Triomphe — golden afternoon -->
+      <linearGradient id="g1" x1="0" y1="-14" x2="0" y2="150" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#2474b4"/>
+        <stop offset="58%"  stop-color="#88c0da"/>
+        <stop offset="100%" stop-color="#ddd4a8"/>
+      </linearGradient>
+
+      <!-- 2: Notre-Dame — sunset -->
+      <linearGradient id="g2" x1="0" y1="-14" x2="0" y2="142" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#c03818"/>
+        <stop offset="48%"  stop-color="#f07830"/>
+        <stop offset="100%" stop-color="#fcc040"/>
+      </linearGradient>
+
+      <!-- 3: Louvre Pyramid — bright midday -->
+      <linearGradient id="g3" x1="0" y1="-14" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#3a9ed4"/>
+        <stop offset="65%"  stop-color="#80c4e4"/>
+        <stop offset="100%" stop-color="#b4ddf0"/>
+      </linearGradient>
+
+      <!-- 4: Mont Saint-Michel — misty dawn -->
+      <linearGradient id="g4" x1="0" y1="-14" x2="0" y2="126" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#788898"/>
+        <stop offset="55%"  stop-color="#a8b8c8"/>
+        <stop offset="100%" stop-color="#d8ccb8"/>
+      </linearGradient>
+
+      <!-- ── Masks ── -->
+      <!-- Crescent moon for Eiffel scene -->
+      <mask id="moon-mask">
+        <circle cx="140" cy="30" r="19" fill="white"/>
+        <circle cx="149" cy="25" r="16" fill="black"/>
+      </mask>
+
+      <!-- ────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 0: Eiffel Tower, Paris at dusk        -->
+      <!-- ────────────────────────────────────────────────── -->
+      <g id="illus-0">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g0)"/>
+        <!-- Stars -->
+        <circle cx="20"  cy="16"  r="1.3" fill="#f0e8d8" opacity="0.75"/>
+        <circle cx="46"  cy="5"   r="0.9" fill="#f0e8d8" opacity="0.60"/>
+        <circle cx="152" cy="11"  r="1.1" fill="#f0e8d8" opacity="0.70"/>
+        <circle cx="163" cy="37"  r="0.8" fill="#f0e8d8" opacity="0.55"/>
+        <circle cx="8"   cy="52"  r="0.9" fill="#f0e8d8" opacity="0.50"/>
+        <circle cx="68"  cy="4"   r="0.7" fill="#f0e8d8" opacity="0.50"/>
+        <circle cx="108" cy="7"   r="0.8" fill="#f0e8d8" opacity="0.45"/>
+        <!-- Crescent moon -->
+        <circle cx="140" cy="30" r="19" fill="#f2e6cc" mask="url(#moon-mask)"/>
+        <!-- Ground -->
+        <rect x="-14" y="148" width="202" height="54" fill="#2b4720"/>
+        <!-- Seine -->
+        <ellipse cx="87" cy="159" rx="78" ry="9" fill="#355a72" opacity="0.75"/>
+        <line x1="54" y1="157" x2="74" y2="157" stroke="#6a9ab8" stroke-width="0.9" opacity="0.45"/>
+        <line x1="96" y1="161" x2="120" y2="161" stroke="#6a9ab8" stroke-width="0.9" opacity="0.40"/>
+        <!-- City silhouette left -->
+        <rect x="-14" y="132" width="30"  height="16" fill="#1e3d54" opacity="0.55"/>
+        <rect x="12"  y="124" width="15"  height="24" fill="#1e3d54" opacity="0.55"/>
+        <!-- City silhouette right -->
+        <rect x="136" y="128" width="18"  height="20" fill="#1e3d54" opacity="0.55"/>
+        <rect x="148" y="136" width="38"  height="12" fill="#1e3d54" opacity="0.55"/>
+        <rect x="156" y="118" width="14"  height="30" fill="#1e3d54" opacity="0.55"/>
+        <!-- Eiffel Tower -->
+        <g fill="#0c1420">
+          <polygon points="87,10 89.5,42 96,70 78,70 84.5,42"/>
+          <rect x="69" y="70" width="36" height="8"/>
+          <polygon points="69,78 58,102 116,102 105,78"/>
+          <rect x="52" y="102" width="70" height="8"/>
+          <polygon points="52,110 26,152 48,152 66,110"/>
+          <polygon points="108,110 126,152 148,152 122,110"/>
+          <rect x="26" y="136" width="122" height="8"/>
+        </g>
+        <!-- Beacon -->
+        <circle cx="87" cy="10" r="2.8" fill="#ffca4a" opacity="0.92"/>
+        <circle cx="87" cy="10" r="5.5" fill="#ffca4a" opacity="0.16"/>
+      </g>
+
+      <!-- ────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 1: Arc de Triomphe, golden afternoon  -->
+      <!-- ────────────────────────────────────────────────── -->
+      <g id="illus-1">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g1)"/>
+        <!-- Champs-Élysées trees — left canopy -->
+        <rect x="-14" y="90"  width="34"  height="60" fill="#2a4e20"/>
+        <ellipse cx="6"  cy="86"  rx="14" ry="10" fill="#336028"/>
+        <ellipse cx="-4" cy="96"  rx="10" ry="8"  fill="#3a6830"/>
+        <!-- Champs-Élysées trees — right canopy -->
+        <rect x="154" y="90"  width="34"  height="60" fill="#2a4e20"/>
+        <ellipse cx="168" cy="86" rx="14" ry="10" fill="#336028"/>
+        <ellipse cx="178" cy="96" rx="10" ry="8"  fill="#3a6830"/>
+        <!-- Road / cobblestones -->
+        <rect x="-14" y="150" width="202" height="38" fill="#3e3828"/>
+        <!-- Avenue markings -->
+        <rect x="82" y="155" width="10" height="4" fill="#58503e" opacity="0.7"/>
+        <rect x="82" y="163" width="10" height="4" fill="#58503e" opacity="0.7"/>
+        <!-- Pavement near base -->
+        <rect x="30"  y="148" width="114" height="6" fill="#6a5e48"/>
+        <!-- Arc de Triomphe body with arch cutout -->
+        <path d="M 32,40 L 142,40 L 142,150 L 109,150 L 109,108
+                 A 22,22 0 0,1 65,108 L 65,150 L 32,150 Z" fill="#c4a56c"/>
+        <!-- Attic (slightly lighter) -->
+        <rect x="32" y="40" width="110" height="22" fill="#d4b57c"/>
+        <!-- Sculptural relief panels (subtle darker insets) -->
+        <rect x="38" y="66" width="26" height="32" fill="#a88c55" opacity="0.5" rx="1"/>
+        <rect x="110" y="66" width="26" height="32" fill="#a88c55" opacity="0.5" rx="1"/>
+        <!-- Arch soffit shadow -->
+        <path d="M 65,108 A 22,22 0 0,0 109,108 L 109,115 A 22,22 0 0,1 65,115 Z" fill="#8a7040" opacity="0.4"/>
+      </g>
+
+      <!-- ────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 2: Notre-Dame de Paris, sunset        -->
+      <!-- ────────────────────────────────────────────────── -->
+      <g id="illus-2">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g2)"/>
+        <!-- Seine river at base -->
+        <rect x="-14" y="144" width="202" height="44" fill="#6a2810"/>
+        <!-- Golden shimmer on water -->
+        <ellipse cx="87" cy="154" rx="58" ry="6" fill="#e07828" opacity="0.28"/>
+        <line x1="38"  y1="150" x2="62"  y2="150" stroke="#f09040" stroke-width="1" opacity="0.3"/>
+        <line x1="108" y1="156" x2="138" y2="156" stroke="#f09040" stroke-width="1" opacity="0.25"/>
+        <!-- Île de la Cité bank -->
+        <rect x="-14" y="140" width="202" height="8" fill="#1e1808"/>
+        <!-- Notre-Dame silhouette -->
+        <g fill="#140e04">
+          <!-- Base / full-width lower nave -->
+          <rect x="16" y="120" width="142" height="22"/>
+          <!-- Left tower (tall) -->
+          <rect x="16" y="28" width="40" height="92"/>
+          <!-- Right tower (tall) -->
+          <rect x="118" y="28" width="40" height="92"/>
+          <!-- West facade (between towers, shorter) -->
+          <rect x="56" y="60" width="62" height="60"/>
+          <!-- Central spire above facade -->
+          <polygon points="82,60 87,34 92,60"/>
+        </g>
+        <!-- Rose window (light through stained glass) -->
+        <circle cx="87" cy="84"  r="12" fill="#d8501e" opacity="0.5"/>
+        <circle cx="87" cy="84"  r="7"  fill="none" stroke="#f07028" stroke-width="1" opacity="0.4"/>
+        <!-- Tracery lines on rose window -->
+        <line x1="87" y1="72" x2="87" y2="96" stroke="#f07028" stroke-width="0.7" opacity="0.35"/>
+        <line x1="75" y1="84" x2="99" y2="84" stroke="#f07028" stroke-width="0.7" opacity="0.35"/>
+        <!-- Gallery openings at top of towers (lighter) -->
+        <rect x="22" y="110" width="28" height="6" fill="#f07830" opacity="0.12"/>
+        <rect x="124" y="110" width="28" height="6" fill="#f07830" opacity="0.12"/>
+      </g>
+
+      <!-- ────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 3: Louvre Pyramid, bright midday      -->
+      <!-- ────────────────────────────────────────────────── -->
+      <g id="illus-3">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g3)"/>
+        <!-- Palace — left wing (Richelieu) -->
+        <rect x="-14" y="68" width="70"  height="62" fill="#d4c090"/>
+        <rect x="-14" y="60" width="70"  height="10" fill="#6a7880"/>
+        <!-- Palace — right wing (Denon) -->
+        <rect x="118" y="68" width="70"  height="62" fill="#d4c090"/>
+        <rect x="118" y="60" width="70"  height="10" fill="#6a7880"/>
+        <!-- Palace — Sully central block -->
+        <rect x="52"  y="62" width="70"  height="68" fill="#d4c090"/>
+        <rect x="52"  y="54" width="70"  height="10" fill="#6a7880"/>
+        <!-- Palace window rhythm (simplified) -->
+        <g fill="#9a8a6a" opacity="0.45">
+          <!-- Left wing windows -->
+          <rect x="-2"  y="74" width="5" height="7"/><rect x="8"   y="74" width="5" height="7"/>
+          <rect x="18"  y="74" width="5" height="7"/><rect x="28"  y="74" width="5" height="7"/>
+          <rect x="38"  y="74" width="5" height="7"/><rect x="48"  y="74" width="5" height="7"/>
+          <rect x="-2"  y="88" width="5" height="7"/><rect x="8"   y="88" width="5" height="7"/>
+          <rect x="18"  y="88" width="5" height="7"/><rect x="28"  y="88" width="5" height="7"/>
+          <rect x="38"  y="88" width="5" height="7"/><rect x="48"  y="88" width="5" height="7"/>
+          <!-- Right wing windows -->
+          <rect x="122" y="74" width="5" height="7"/><rect x="132" y="74" width="5" height="7"/>
+          <rect x="142" y="74" width="5" height="7"/><rect x="152" y="74" width="5" height="7"/>
+          <rect x="162" y="74" width="5" height="7"/>
+          <rect x="122" y="88" width="5" height="7"/><rect x="132" y="88" width="5" height="7"/>
+          <rect x="142" y="88" width="5" height="7"/><rect x="152" y="88" width="5" height="7"/>
+          <rect x="162" y="88" width="5" height="7"/>
+          <!-- Central block windows -->
+          <rect x="60"  y="70" width="5" height="7"/><rect x="70"  y="70" width="5" height="7"/>
+          <rect x="80"  y="70" width="5" height="7"/><rect x="90"  y="70" width="5" height="7"/>
+          <rect x="100" y="70" width="5" height="7"/><rect x="110" y="70" width="5" height="7"/>
+          <rect x="60"  y="84" width="5" height="7"/><rect x="70"  y="84" width="5" height="7"/>
+          <rect x="80"  y="84" width="5" height="7"/><rect x="90"  y="84" width="5" height="7"/>
+          <rect x="100" y="84" width="5" height="7"/><rect x="110" y="84" width="5" height="7"/>
+        </g>
+        <!-- Courtyard / limestone pavement -->
+        <rect x="-14" y="130" width="202" height="58" fill="#c8bca8"/>
+        <!-- Glass Pyramid (I.M. Pei) -->
+        <polygon points="87,48 132,130 42,130" fill="#b4d8ec" opacity="0.52"/>
+        <polygon points="87,48 132,130 42,130" fill="none" stroke="#7ab0cc" stroke-width="1.8"/>
+        <!-- Pyramid glass facets -->
+        <g stroke="#7ab0cc" stroke-width="0.9" opacity="0.55">
+          <!-- Vertical ridge -->
+          <line x1="87" y1="48" x2="87"  y2="130"/>
+          <!-- Left-face diagonal -->
+          <line x1="87" y1="48" x2="65"  y2="130"/>
+          <!-- Right-face diagonal -->
+          <line x1="87" y1="48" x2="109" y2="130"/>
+          <!-- Horizontal band at mid-height (t≈0.5, y≈89) -->
+          <line x1="65" y1="89" x2="109" y2="89"/>
+          <!-- Horizontal band at 3/4 height (t≈0.74, y≈109) -->
+          <line x1="54" y1="109" x2="120" y2="109"/>
+        </g>
+        <!-- Fountain basin in courtyard -->
+        <circle cx="87" cy="145" r="16" fill="none" stroke="#8ab0c8" stroke-width="1.5" opacity="0.5"/>
+        <circle cx="87" cy="145" r="9"  fill="#a4c4dc" opacity="0.22"/>
+      </g>
+
+      <!-- ────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 4: Mont Saint-Michel, misty dawn      -->
+      <!-- ────────────────────────────────────────────────── -->
+      <g id="illus-4">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g4)"/>
+        <!-- Tidal bay -->
+        <rect x="-14" y="124" width="202" height="64" fill="#5e7888"/>
+        <!-- Water shimmer lines -->
+        <line x1="18"  y1="133" x2="52"  y2="133" stroke="#8ab0c0" stroke-width="0.8" opacity="0.45"/>
+        <line x1="118" y1="138" x2="158" y2="138" stroke="#8ab0c0" stroke-width="0.8" opacity="0.45"/>
+        <line x1="24"  y1="150" x2="66"  y2="150" stroke="#8ab0c0" stroke-width="0.7" opacity="0.35"/>
+        <line x1="100" y1="158" x2="150" y2="158" stroke="#8ab0c0" stroke-width="0.7" opacity="0.35"/>
+        <!-- Tidal sand flat near island -->
+        <ellipse cx="87" cy="128" rx="68" ry="7" fill="#9aaa98" opacity="0.30"/>
+        <!-- Mist at horizon -->
+        <rect x="-14" y="114" width="202" height="18" fill="#c4ccc8" opacity="0.28"/>
+        <!-- Rocky island base (irregular silhouette) -->
+        <path d="
+          M 28,126
+          C 36,118 50,107 62,98
+          C 68,92 74,86 80,81
+          L 87,77 L 94,81
+          C 100,86 106,92 112,98
+          C 124,107 138,118 146,126
+          Z
+        " fill="#1e2430"/>
+        <!-- Rampart walls on slopes -->
+        <path d="M 50,112 L 66,96" stroke="#262e3a" stroke-width="6" stroke-linecap="butt"/>
+        <path d="M 124,112 L 108,96" stroke="#262e3a" stroke-width="6" stroke-linecap="butt"/>
+        <!-- Buildings on slopes (terraced) -->
+        <rect x="38"  y="100" width="20"  height="18" fill="#20262e"/>
+        <rect x="34"  y="110" width="14"  height="10" fill="#20262e"/>
+        <rect x="116" y="100" width="20"  height="18" fill="#20262e"/>
+        <rect x="126" y="110" width="14"  height="10" fill="#20262e"/>
+        <!-- Abbey nave -->
+        <rect x="62" y="70" width="50" height="12" fill="#252c38"/>
+        <!-- Abbey flanking towers -->
+        <rect x="62" y="62" width="10" height="20" fill="#252c38"/>
+        <rect x="102" y="62" width="10" height="20" fill="#252c38"/>
+        <!-- Abbey main body -->
+        <rect x="72" y="58" width="30" height="24" fill="#252c38"/>
+        <!-- Spire -->
+        <polygon points="83,58 87,24 91,58" fill="#252c38"/>
+        <!-- Saint Michael finial -->
+        <circle cx="87" cy="22" r="2.5" fill="#c4b090" opacity="0.85"/>
+        <!-- Soft island reflection -->
+        <path d="M 42,126 C 56,132 72,135 87,135 C 102,135 118,132 132,126 Z"
+              fill="#2a3240" opacity="0.28"/>
+      </g>
+
+      <!-- ── New gradients ── -->
+      <linearGradient id="g5" x1="0" y1="-14" x2="0" y2="90" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#2a0e44"/>
+        <stop offset="40%"  stop-color="#7c3468"/>
+        <stop offset="100%" stop-color="#f07880"/>
+      </linearGradient>
+      <linearGradient id="g6" x1="0" y1="-14" x2="0" y2="90" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#384e62"/>
+        <stop offset="55%"  stop-color="#6890a8"/>
+        <stop offset="100%" stop-color="#b0c8cc"/>
+      </linearGradient>
+      <linearGradient id="g7" x1="0" y1="-14" x2="0" y2="60" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#1558a8"/>
+        <stop offset="60%"  stop-color="#3a88c8"/>
+        <stop offset="100%" stop-color="#80c0e0"/>
+      </linearGradient>
+      <linearGradient id="g8" x1="0" y1="-14" x2="0" y2="96" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#c04818"/>
+        <stop offset="45%"  stop-color="#f08830"/>
+        <stop offset="100%" stop-color="#fcc060"/>
+      </linearGradient>
+      <linearGradient id="g9" x1="0" y1="-14" x2="0" y2="86" gradientUnits="userSpaceOnUse">
+        <stop offset="0%"   stop-color="#7888a0"/>
+        <stop offset="50%"  stop-color="#b0c0cc"/>
+        <stop offset="100%" stop-color="#d8e4e8"/>
+      </linearGradient>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 5: Sacré-Cœur Basilica, Paris evening  -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <g id="illus-5">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g5)"/>
+        <!-- Stars -->
+        <circle cx="18"  cy="24" r="1"   fill="#fde0f8" opacity="0.6"/>
+        <circle cx="150" cy="16" r="0.8" fill="#fde0f8" opacity="0.55"/>
+        <circle cx="34"  cy="50" r="0.7" fill="#fde0f8" opacity="0.50"/>
+        <circle cx="162" cy="38" r="0.8" fill="#fde0f8" opacity="0.50"/>
+        <!-- Montmartre hill -->
+        <path d="M -14,188 L -14,112 C 20,100 52,94 87,88 C 122,94 154,100 188,112 L 188,188 Z" fill="#242e18"/>
+        <!-- Steps -->
+        <rect x="80" y="95" width="14" height="4" fill="#2c2a1e" opacity="0.6"/>
+        <rect x="78" y="99" width="18" height="4" fill="#2c2a1e" opacity="0.5"/>
+        <!-- Church platform -->
+        <rect x="44" y="86" width="86" height="7" fill="#e2d8c0"/>
+        <!-- Nave body -->
+        <rect x="50" y="66" width="74" height="22" fill="#ded2b8"/>
+        <!-- Facade arched openings -->
+        <path d="M 56,88 L 56,79 A 4,4 0 0,0 64,79 L 64,88 Z" fill="#9a8868" opacity="0.45"/>
+        <path d="M 72,88 L 72,79 A 4,4 0 0,0 80,79 L 80,88 Z" fill="#9a8868" opacity="0.45"/>
+        <path d="M 88,88 L 88,79 A 4,4 0 0,0 96,79 L 96,88 Z" fill="#9a8868" opacity="0.45"/>
+        <path d="M 104,88 L 104,79 A 4,4 0 0,0 112,79 L 112,88 Z" fill="#9a8868" opacity="0.45"/>
+        <!-- Left small dome -->
+        <rect x="50" y="56" width="20" height="12" fill="#dcd0b8"/>
+        <path d="M 50,56 Q 60,42 70,56 Z" fill="#d0c4ac"/>
+        <!-- Right small dome -->
+        <rect x="104" y="56" width="20" height="12" fill="#dcd0b8"/>
+        <path d="M 104,56 Q 114,42 124,56 Z" fill="#d0c4ac"/>
+        <!-- Central drum -->
+        <rect x="68" y="46" width="38" height="22" fill="#e4d8c0"/>
+        <!-- Central main dome -->
+        <path d="M 68,46 Q 87,12 106,46 Z" fill="#d8ccb4"/>
+        <!-- Lantern -->
+        <rect x="83" y="12" width="8" height="12" fill="#ccc0a0"/>
+        <polygon points="82,12 87,4 92,12" fill="#c4b898"/>
+        <!-- Cross -->
+        <line x1="87" y1="4"  x2="87" y2="-2" stroke="#c4b898" stroke-width="1.5"/>
+        <line x1="84" y1="1"  x2="90" y2="1"  stroke="#c4b898" stroke-width="1.5"/>
+      </g>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 6: Château de Chambord, autumn         -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <g id="illus-6">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g6)"/>
+        <!-- Autumn trees flanking -->
+        <ellipse cx="-2"  cy="82" rx="18" ry="20" fill="#b84e18"/>
+        <ellipse cx="12"  cy="72" rx="12" ry="16" fill="#c86020"/>
+        <rect x="-5" y="84" width="6" height="36" fill="#4a3020"/>
+        <ellipse cx="176" cy="84" rx="18" ry="20" fill="#a84818"/>
+        <ellipse cx="162" cy="74" rx="12" ry="16" fill="#c05828"/>
+        <rect x="173" y="86" width="6" height="34" fill="#4a3020"/>
+        <!-- Loire lawn -->
+        <rect x="-14" y="140" width="202" height="48" fill="#7a9858"/>
+        <!-- Reflection canal -->
+        <rect x="30" y="148" width="114" height="10" fill="#6888a0" opacity="0.45"/>
+        <!-- Main château body -->
+        <rect x="16" y="96" width="142" height="46" fill="#d0c49c"/>
+        <!-- Window rhythm -->
+        <g fill="#5a4e38" opacity="0.3">
+          <rect x="22"  y="102" width="6" height="10"/><rect x="33"  y="102" width="6" height="10"/>
+          <rect x="52"  y="102" width="6" height="10"/><rect x="63"  y="102" width="6" height="10"/>
+          <rect x="74"  y="102" width="6" height="10"/><rect x="85"  y="102" width="6" height="10"/>
+          <rect x="96"  y="102" width="6" height="10"/><rect x="107" y="102" width="6" height="10"/>
+          <rect x="116" y="102" width="6" height="10"/><rect x="127" y="102" width="6" height="10"/>
+          <rect x="138" y="102" width="6" height="10"/><rect x="149" y="102" width="6" height="10"/>
+        </g>
+        <!-- Round corner towers -->
+        <rect x="8"   y="82" width="18" height="60" fill="#c8bc98"/>
+        <ellipse cx="17"  cy="82" rx="9" ry="5" fill="#c8bc98"/>
+        <rect x="148" y="82" width="18" height="60" fill="#c8bc98"/>
+        <ellipse cx="157" cy="82" rx="9" ry="5" fill="#c8bc98"/>
+        <!-- Central donjon -->
+        <rect x="66" y="70" width="42" height="72" fill="#d4c8a0"/>
+        <g fill="#5a4e38" opacity="0.28">
+          <rect x="72" y="78" width="5" height="8"/><rect x="82" y="78" width="5" height="8"/>
+          <rect x="92" y="78" width="5" height="8"/>
+          <rect x="72" y="92" width="5" height="8"/><rect x="82" y="92" width="5" height="8"/>
+          <rect x="92" y="92" width="5" height="8"/>
+        </g>
+        <!-- Roofline chimneys -->
+        <g fill="#988c70">
+          <rect x="10"  y="74" width="4" height="10"/><rect x="20"  y="70" width="3" height="14"/>
+          <rect x="36"  y="86" width="3" height="12"/><rect x="44"  y="84" width="3" height="12"/>
+          <rect x="58"  y="84" width="3" height="12"/><rect x="64"  y="82" width="3" height="12"/>
+          <rect x="70"  y="58" width="3" height="14"/><rect x="79"  y="54" width="3" height="16"/>
+          <rect x="87"  y="52" width="3" height="18"/><rect x="96"  y="54" width="3" height="16"/>
+          <rect x="104" y="58" width="3" height="14"/>
+          <rect x="110" y="82" width="3" height="12"/><rect x="118" y="84" width="3" height="12"/>
+          <rect x="130" y="84" width="3" height="12"/><rect x="138" y="86" width="3" height="12"/>
+          <rect x="151" y="70" width="3" height="14"/><rect x="160" y="74" width="4" height="10"/>
+        </g>
+        <!-- Central lantern tower -->
+        <rect x="82" y="38" width="10" height="16" fill="#b0a47c"/>
+        <polygon points="82,38 87,28 92,38" fill="#a89870"/>
+      </g>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 7: Pont du Gard, Mediterranean summer  -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <g id="illus-7">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g7)"/>
+        <!-- Gardon river -->
+        <rect x="-14" y="152" width="202" height="36" fill="#40a098"/>
+        <!-- River shimmer -->
+        <line x1="8"   y1="163" x2="52"  y2="163" stroke="#70c8c0" stroke-width="0.9" opacity="0.4"/>
+        <line x1="120" y1="168" x2="165" y2="168" stroke="#70c8c0" stroke-width="0.9" opacity="0.35"/>
+        <!-- Riverside vegetation -->
+        <ellipse cx="4"   cy="150" rx="20" ry="9" fill="#3a6828"/>
+        <ellipse cx="170" cy="150" rx="20" ry="9" fill="#3a6828"/>
+        <!-- Cypress trees -->
+        <rect x="10" y="118" width="5" height="34" fill="#2a4a18"/>
+        <ellipse cx="12" cy="114" rx="5" ry="14" fill="#3a5820"/>
+        <rect x="158" y="120" width="5" height="32" fill="#2a4a18"/>
+        <ellipse cx="160" cy="116" rx="5" ry="14" fill="#3a5820"/>
+        <!-- Tier 1 — 3 large arches (stone band + sky-colored openings) -->
+        <rect x="-14" y="108" width="202" height="44" fill="#c8a85e"/>
+        <path d="M 8,152  L 8,118  A 27,26 0 0,0 62,118  L 62,152  Z" fill="#60b8e0"/>
+        <path d="M 76,152 L 76,122 A 17,17 0 0,0 110,122 L 110,152 Z" fill="#60b8e0"/>
+        <path d="M 124,152 L 124,122 A 18,18 0 0,0 160,122 L 160,152 Z" fill="#60b8e0"/>
+        <!-- Tier 2 — 9 medium arches -->
+        <rect x="-14" y="80" width="202" height="28" fill="#c0a056"/>
+        <g fill="#4aacd8">
+          <path d="M -6,108  L -6,93  A 7,7 0 0,0 8,93   L 8,108  Z"/>
+          <path d="M 16,108  L 16,93  A 7,7 0 0,0 30,93  L 30,108 Z"/>
+          <path d="M 38,108  L 38,93  A 7,7 0 0,0 52,93  L 52,108 Z"/>
+          <path d="M 60,108  L 60,93  A 7,7 0 0,0 74,93  L 74,108 Z"/>
+          <path d="M 82,108  L 82,93  A 7,7 0 0,0 96,93  L 96,108 Z"/>
+          <path d="M 100,108 L 100,93 A 7,7 0 0,0 114,93 L 114,108 Z"/>
+          <path d="M 120,108 L 120,93 A 7,7 0 0,0 134,93 L 134,108 Z"/>
+          <path d="M 140,108 L 140,93 A 7,7 0 0,0 154,93 L 154,108 Z"/>
+          <path d="M 158,108 L 158,93 A 7,7 0 0,0 172,93 L 172,108 Z"/>
+        </g>
+        <!-- Tier 3 — narrow water channel + small arches -->
+        <rect x="-14" y="58" width="202" height="22" fill="#b89848"/>
+        <g fill="#3898cc">
+          <path d="M -8,80  L -8,70  A 5,5 0 0,0 2,70   L 2,80   Z"/>
+          <path d="M 10,80  L 10,70  A 5,5 0 0,0 20,70  L 20,80  Z"/>
+          <path d="M 28,80  L 28,70  A 5,5 0 0,0 38,70  L 38,80  Z"/>
+          <path d="M 46,80  L 46,70  A 5,5 0 0,0 56,70  L 56,80  Z"/>
+          <path d="M 64,80  L 64,70  A 5,5 0 0,0 74,70  L 74,80  Z"/>
+          <path d="M 82,80  L 82,70  A 5,5 0 0,0 92,70  L 92,80  Z"/>
+          <path d="M 100,80 L 100,70 A 5,5 0 0,0 110,70 L 110,80 Z"/>
+          <path d="M 118,80 L 118,70 A 5,5 0 0,0 128,70 L 128,80 Z"/>
+          <path d="M 136,80 L 136,70 A 5,5 0 0,0 146,70 L 146,80 Z"/>
+          <path d="M 154,80 L 154,70 A 5,5 0 0,0 164,70 L 164,80 Z"/>
+          <path d="M 172,80 L 172,70 A 5,5 0 0,0 182,70 L 182,80 Z"/>
+        </g>
+      </g>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 8: Provence lavender fields, golden hr  -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <g id="illus-8">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g8)"/>
+        <!-- Setting sun -->
+        <circle cx="87" cy="90" r="18" fill="#fce060" opacity="0.65"/>
+        <circle cx="87" cy="90" r="11" fill="#fef088" opacity="0.55"/>
+        <!-- Distant hills -->
+        <path d="M -14,96 C 30,82 60,80 87,82 C 114,80 144,82 188,96 L 188,-14 L -14,-14 Z" fill="#d05a28" opacity="0.22"/>
+        <!-- Provençal farmhouse silhouette -->
+        <rect x="116" y="78" width="30" height="18" fill="#382010"/>
+        <polygon points="116,78 131,68 146,78" fill="#2e1a0c"/>
+        <rect x="134" y="58" width="5" height="12" fill="#2c180a"/>
+        <!-- Cypress silhouettes -->
+        <rect x="148" y="68" width="4" height="28" fill="#1c2c10"/>
+        <ellipse cx="150" cy="62" rx="4" ry="14" fill="#243818"/>
+        <rect x="154" y="72" width="3" height="24" fill="#1c2c10"/>
+        <ellipse cx="155" cy="67" rx="3" ry="12" fill="#243818"/>
+        <!-- Lavender rows (bottom-up, widest first, each separated by earth path) -->
+        <rect x="-14" y="96"  width="202" height="10" fill="#8858b8"/>
+        <rect x="-14" y="106" width="202" height="2"  fill="#c0884a"/>
+        <rect x="-14" y="108" width="202" height="12" fill="#8050b0"/>
+        <rect x="-14" y="120" width="202" height="2"  fill="#c0884a"/>
+        <rect x="-14" y="122" width="202" height="15" fill="#7848a8"/>
+        <rect x="-14" y="137" width="202" height="2"  fill="#c0884a"/>
+        <rect x="-14" y="139" width="202" height="18" fill="#7040a0"/>
+        <rect x="-14" y="157" width="202" height="2"  fill="#c0884a"/>
+        <rect x="-14" y="159" width="202" height="29" fill="#6438a0"/>
+        <!-- Flower-stalk texture lines -->
+        <line x1="-14" y1="102" x2="188" y2="102" stroke="#9460c0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="-14" y1="115" x2="188" y2="115" stroke="#9460c0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="-14" y1="130" x2="188" y2="130" stroke="#9460c0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="-14" y1="148" x2="188" y2="148" stroke="#9460c0" stroke-width="0.6" opacity="0.4"/>
+        <line x1="-14" y1="168" x2="188" y2="168" stroke="#9460c0" stroke-width="0.6" opacity="0.4"/>
+        <!-- Diagonal path through lavender -->
+        <path d="M 20,188 L 100,96" stroke="#c0884a" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+        <path d="M 44,188 L 116,96" stroke="#c0884a" stroke-width="3" stroke-linecap="round" opacity="0.3"/>
+      </g>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- ILLUSTRATION 9: Château de Chenonceau, misty morn   -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <g id="illus-9">
+        <rect x="-14" y="-14" width="202" height="202" fill="url(#g9)"/>
+        <!-- Mist at river horizon -->
+        <rect x="-14" y="80" width="202" height="14" fill="#c8d4d8" opacity="0.45"/>
+        <!-- Far bank (greenery) -->
+        <rect x="-14" y="86" width="202" height="8"  fill="#8a9c80"/>
+        <!-- River -->
+        <rect x="-14" y="94" width="202" height="58" fill="#8cacb4"/>
+        <!-- Water shimmer -->
+        <line x1="14"  y1="110" x2="58"  y2="110" stroke="#b0c4cc" stroke-width="0.7" opacity="0.4"/>
+        <line x1="108" y1="124" x2="158" y2="124" stroke="#b0c4cc" stroke-width="0.7" opacity="0.35"/>
+        <line x1="24"  y1="138" x2="80"  y2="138" stroke="#b0c4cc" stroke-width="0.7" opacity="0.3"/>
+        <!-- Near bank -->
+        <rect x="-14" y="152" width="202" height="36" fill="#7a9870"/>
+        <!-- Bridge arches (piers + river-colored openings) -->
+        <rect x="-14" y="88" width="202" height="10" fill="#ccc0a2"/>
+        <g fill="#8cacb4">
+          <path d="M 12,152  L 12,112  A 12,12 0 0,0 36,112  L 36,152  Z"/>
+          <path d="M 48,152  L 48,112  A 12,12 0 0,0 72,112  L 72,152  Z"/>
+          <path d="M 86,152  L 86,112  A 12,12 0 0,0 110,112 L 110,152 Z"/>
+          <path d="M 124,152 L 124,112 A 12,12 0 0,0 148,112 L 148,152 Z"/>
+        </g>
+        <!-- Château gallery building -->
+        <rect x="8" y="46" width="158" height="44" fill="#c8c0a2"/>
+        <!-- Gallery windows -->
+        <g fill="#8a7c64" opacity="0.32">
+          <rect x="14"  y="54" width="7" height="11"/><rect x="25"  y="54" width="7" height="11"/>
+          <rect x="38"  y="54" width="7" height="11"/><rect x="49"  y="54" width="7" height="11"/>
+          <rect x="62"  y="54" width="7" height="11"/><rect x="73"  y="54" width="7" height="11"/>
+          <rect x="86"  y="54" width="7" height="11"/><rect x="97"  y="54" width="7" height="11"/>
+          <rect x="110" y="54" width="7" height="11"/><rect x="121" y="54" width="7" height="11"/>
+          <rect x="134" y="54" width="7" height="11"/><rect x="145" y="54" width="7" height="11"/>
+        </g>
+        <!-- Roof with dormers -->
+        <rect x="8" y="36" width="158" height="12" fill="#b0a886"/>
+        <g fill="#a09870">
+          <polygon points="16,36 23,26 30,36"/>
+          <polygon points="44,36 51,26 58,36"/>
+          <polygon points="72,36 79,26 86,36"/>
+          <polygon points="100,36 107,26 114,36"/>
+          <polygon points="128,36 135,26 142,36"/>
+          <polygon points="154,36 161,26 168,36"/>
+        </g>
+        <!-- Round corner towers -->
+        <rect x="4"   y="22" width="16" height="68" fill="#c4bc9e"/>
+        <ellipse cx="12"  cy="22" rx="8" ry="5" fill="#c4bc9e"/>
+        <polygon points="4,22 12,8 20,22" fill="#aca880"/>
+        <rect x="154" y="22" width="16" height="68" fill="#c4bc9e"/>
+        <ellipse cx="162" cy="22" rx="8" ry="5" fill="#c4bc9e"/>
+        <polygon points="154,22 162,8 170,22" fill="#aca880"/>
+        <!-- Faint reflection in water -->
+        <rect x="8" y="94" width="158" height="22" fill="#b8b09a" opacity="0.16"/>
+        <!-- Weeping willow (near bank) -->
+        <rect x="170" y="140" width="5" height="14" fill="#4e6038"/>
+        <path d="M 172,140 Q 166,154 162,170" stroke="#7a9060" stroke-width="2" fill="none" opacity="0.5"/>
+        <path d="M 172,140 Q 178,156 178,174" stroke="#7a9060" stroke-width="2" fill="none" opacity="0.45"/>
+      </g>
+
+    </defs>
+  </svg>
+
+  <div class="txt-wrap">
+    <div class="txt-fr" id="txt-fr">Préparation de votre leçon…</div>
+    <div class="txt-en" id="txt-en">Getting your lesson ready.</div>
+  </div>
+</div>
+
+<div class="trigger-wrap">
+  <button class="trigger-btn" id="trigger-btn" onclick="accelerateToCompletion()">
+    Simulate load complete →
+  </button>
+</div>
+
+<script>
+/* ── Piece geometry ── */
+const S = 58, R = 11, D = 11
+
+function hEdge(x0, x1, y, type, ltr) {
+  if (type === 'flat') return `L ${x1},${y} `
+  const mid = (x0 + x1) / 2
+  const dy = type === 'out' ? (ltr ? -D : D) : (ltr ? D : -D)
+  return `L ${mid-R},${y} C ${mid-R},${y+dy} ${mid+R},${y+dy} ${mid+R},${y} L ${x1},${y} `
+}
+
+function vEdge(x, y0, y1, type, ttb) {
+  if (type === 'flat') return `L ${x},${y1} `
+  const mid = (y0 + y1) / 2
+  const dx = type === 'out' ? (ttb ? D : -D) : (ttb ? -D : D)
+  return `L ${x},${mid-R} C ${x+dx},${mid-R} ${x+dx},${mid+R} ${x},${mid+R} L ${x},${y1} `
+}
+
+function makePath(col, row, t) {
+  const x = col * S, y = row * S
+  return [
+    `M ${x},${y} `,
+    hEdge(x,   x+S, y,   t.top,    true),
+    vEdge(x+S, y,   y+S, t.right,  true),
+    hEdge(x+S, x,   y+S, t.bottom, false),
+    vEdge(x,   y+S, y,   t.left,   false),
+    'Z'
+  ].join('')
+}
+
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+const PIECES = [
+  {row:0, col:0, top:'flat', right:'out',  bottom:'out',  left:'flat'},
+  {row:0, col:1, top:'flat', right:'out',  bottom:'in',   left:'in'},
+  {row:0, col:2, top:'flat', right:'flat', bottom:'out',  left:'in'},
+  {row:1, col:0, top:'in',   right:'in',   bottom:'in',   left:'flat'},
+  {row:1, col:1, top:'out',  right:'out',  bottom:'out',  left:'out'},
+  {row:1, col:2, top:'in',   right:'flat', bottom:'in',   left:'in'},
+  {row:2, col:0, top:'out',  right:'out',  bottom:'flat', left:'flat'},
+  {row:2, col:1, top:'in',   right:'in',   bottom:'flat', left:'in'},
+  {row:2, col:2, top:'out',  right:'flat', bottom:'flat', left:'out'},
+]
+
+// const MSGS = [
+//   {fr:'Préparation de votre leçon…',       en:'Getting your lesson ready.'},
+//   {fr:'Sort de conjugaison lancé…',         en:'Conjugation spell successfully cast.'},
+//   {fr:'Les verbes se réveillent…',          en:'The verbs are waking up.'},
+//   {fr:'Consultation du grand livre…',       en:'Consulting the grand grammar tome.'},
+//   {fr:'Le professeur réfléchit…',           en:'The professor is thinking.'},
+//   {fr:'Grammaire en cours de chargement…',  en:'Grammar loading.'},
+//   {fr:'Vos questions arrivent bientôt…',    en:'Your questions are almost ready.'},
+//   {fr:'Dernières vérifications…',           en:'Final checks.'},
+//   {fr:'Presque prêt…',                      en:'Almost ready.'},
+// ]
+
+const MSGS = [
+  {fr:'Votre leçon se prépare…',            en:'Preparing your lesson.'},
+  {fr:'Analyse de votre niveau…',           en:'Reading your level.'},
+  {fr:'Concept du jour sélectionné…',       en:'Today\'s concept selected.'},
+  {fr:'Construction des exercices…',        en:'Building your exercises.'},
+  {fr:'Les questions s\'assemblent…',       en:'Questions coming together.'},
+  {fr:'Vérification des contenus…',         en:'Checking everything.'},
+  {fr:'Tout prend forme…',                  en:'Taking shape.'},
+  {fr:'Dernière mise au point…',            en:'Final touches.'},
+  {fr:'Presque prêt…',                      en:'Almost ready.'},
+]
+
+const ILLUS_COUNT = 10
+
+/* ── Build SVG layers ── */
+const svg  = document.getElementById('puzzle-svg')
+const defs = svg.querySelector('defs')
+const NS   = 'http://www.w3.org/2000/svg'
+
+// 1. Clip paths (one per piece shape) added to existing defs
+PIECES.forEach((p, i) => {
+  const cp = document.createElementNS(NS, 'clipPath')
+  cp.setAttribute('id', `clip-${i}`)
+  const path = document.createElementNS(NS, 'path')
+  path.setAttribute('d', makePath(p.col, p.row, p))
+  cp.appendChild(path)
+  defs.appendChild(cp)
+})
+
+// 2. Empty outlines — visible before a piece is placed
+const emptyG = document.createElementNS(NS, 'g')
+PIECES.forEach(p => {
+  const path = document.createElementNS(NS, 'path')
+  path.setAttribute('d',             makePath(p.col, p.row, p))
+  path.setAttribute('fill',          '#e8e3dc')
+  path.setAttribute('stroke',        '#cdc8c0')
+  path.setAttribute('stroke-width',  '1')
+  path.setAttribute('stroke-linejoin', 'round')
+  emptyG.appendChild(path)
+})
+svg.appendChild(emptyG)
+
+// 3. Filled piece groups — each clips the active illustration
+const pieceGroups = []
+const pieceUses   = []   // track <use> elements for illustration switching
+
+PIECES.forEach((p, i) => {
+  const g = document.createElementNS(NS, 'g')
+  g.classList.add('piece-group', 'hidden')
+
+  // Clipped illustration slice
+  const clipG = document.createElementNS(NS, 'g')
+  clipG.setAttribute('clip-path', `url(#clip-${i})`)
+  const use = document.createElementNS(NS, 'use')
+  use.setAttribute('href', '#illus-0')  // default; updated per cycle
+  clipG.appendChild(use)
+
+  // White hairline seam (shows jigsaw cut lines)
+  const seam = document.createElementNS(NS, 'path')
+  seam.setAttribute('d',               makePath(p.col, p.row, p))
+  seam.setAttribute('fill',            'none')
+  seam.setAttribute('stroke',          'rgba(255,255,255,0.32)')
+  seam.setAttribute('stroke-width',    '1.2')
+  seam.setAttribute('stroke-linejoin', 'round')
+
+  g.appendChild(clipG)
+  g.appendChild(seam)
+  svg.appendChild(g)
+  pieceGroups.push(g)
+  pieceUses.push(use)
+})
+
+/* ── Illustration selection — random per page load, no repeat from last ── */
+let lastIllus = -1
+
+function pickIllus() {
+  let i
+  do { i = Math.floor(Math.random() * ILLUS_COUNT) } while (i === lastIllus)
+  lastIllus = i
+  return i
+}
+
+/* ── Animation ── */
+const frEl = document.getElementById('txt-fr')
+const enEl = document.getElementById('txt-en')
+
+function setMsg(i) {
+  frEl.style.opacity = '0'
+  enEl.style.opacity = '0'
+  setTimeout(() => {
+    const m = MSGS[i % MSGS.length]
+    frEl.textContent = m.fr
+    enEl.textContent = m.en
+    frEl.style.opacity = '1'
+    enEl.style.opacity = '1'
+  }, 300)
+}
+
+function placePiece(idx) {
+  pieceGroups[idx].classList.remove('hidden')
+  pieceGroups[idx].classList.add('placed')
+}
+
+function resetAll() {
+  pieceGroups.forEach(g => {
+    g.classList.remove('placed')
+    void g.offsetWidth   // force reflow so transition fires on next placement
+    g.classList.add('hidden')
+  })
+}
+
+const INTERVAL = 4200
+const FAST     = 180   // ms per piece when accelerating
+
+let order = [], step = 0, msgIdx = 0, timer
+
+/* ── Accelerate to completion (Option C) ──────────────────────────
+   Called when loading data is ready mid-animation.
+   Cancels the slow tick, places remaining pieces rapidly,
+   then shows the ready state before transitioning.
+   In the app: replace the showReady() call with setPhase('scenario').
+─────────────────────────────────────────────────────────────────── */
+function accelerateToCompletion() {
+  const btn = document.getElementById('trigger-btn')
+  if (btn) btn.disabled = true
+
+  clearTimeout(timer)
+
+  // Fade out current message
+  frEl.style.opacity = '0'
+  enEl.style.opacity = '0'
+
+  function fastTick() {
+    if (step >= order.length) {
+      // All pieces placed — brief hold then show ready state
+      setTimeout(showReady, 500)
+      return
+    }
+    placePiece(order[step++])
+    timer = setTimeout(fastTick, FAST)
+  }
+
+  fastTick()
+}
+
+function showReady() {
+  // In the real app this is replaced by setPhase('scenario')
+  frEl.textContent = 'Votre leçon est prête.'
+  enEl.textContent = 'Your lesson is ready.'
+  frEl.style.opacity = '1'
+  enEl.style.opacity = '1'
+}
+
+function runCycle() {
+  // One illustration per session, picked randomly at start
+  const illus = pickIllus()
+  pieceUses.forEach(u => u.setAttribute('href', `#illus-${illus}`))
+
+  order = shuffle(PIECES.map((_, i) => i))
+  step  = 0
+
+  function tick() {
+    setMsg(msgIdx++)
+    placePiece(order[step++])
+
+    if (step < order.length) {
+      timer = setTimeout(tick, INTERVAL)
+    }
+    // Puzzle complete — hold on the finished image. No reset, no new puzzle.
+    // In the app, loading will have completed and transitioned before this point.
+  }
+
+  tick()
+}
+
+runCycle()
+</script>
+</body>
+</html>

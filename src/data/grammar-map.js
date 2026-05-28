@@ -1,10 +1,10 @@
 // ─── A1 ───────────────────────────────────────────────────────────────────────
 
 export const A1_ORDER = [
-  'pronoms_sujets', 'etre_avoir', 'verbes_er', 'articles_def_indef',
-  'adjectifs_qualif', 'negation_base', 'questions_simples', 'nombres',
-  'prepositions_lieu', 'adj_possessifs', 'imperatif_present', 'genre_accord',
-  'cest_il_est', 'il_y_a',
+  'etre_avoir', 'pronoms_sujets', 'genre_accord', 'verbes_er', 'articles_def_indef',
+  'adjectifs_qualif', 'negation_base', 'negation_articles', 'questions_simples',
+  'nombres', 'prepositions_lieu', 'adj_possessifs', 'adj_demonstratifs',
+  'imperatif_present', 'comparatif', 'il_y_a',
 ]
 
 export const A1_CONCEPTS = {
@@ -104,14 +104,6 @@ export const A1_CONCEPTS = {
     rule: 'All French nouns have grammatical gender (masculine or feminine). Adjectives, articles, and some pronouns must agree with the noun in both gender and number.',
     formula: ['nom (m/f)', '+', 'adjectif (accord)', '/', 'article (accord)'],
   },
-  cest_il_est: {
-    slug: 'cest_il_est',
-    name: "C'est vs il est",
-    nameFr: "C'est et il est",
-    mapLabel: "C'est / Il est",
-    rule: "C'est introduces a noun phrase or name (C'est un médecin). Il/elle est introduces an adjective or unmodified profession without an article (Il est médecin.).",
-    formula: ["c'est + article + nom / nom propre", '/', 'il est / elle est + adjectif / profession'],
-  },
   il_y_a: {
     slug: 'il_y_a',
     name: 'Il y a',
@@ -120,15 +112,39 @@ export const A1_CONCEPTS = {
     rule: 'Il y a means "there is" or "there are" and is invariable. It also expresses elapsed time (il y a deux jours = two days ago). Negative form: il n\'y a pas de.',
     formula: ['il y a', '+', 'nom (existence)', '/', 'il y a', '+', 'durée (ago)'],
   },
+  negation_articles: {
+    slug: 'negation_articles',
+    name: 'Negation and articles',
+    nameFr: 'La négation et les articles',
+    mapLabel: 'Négation articles',
+    rule: 'After a negation, indefinite articles (un, une, des) and partitive articles (du, de la, de l\') change to de or d\' before a vowel. This rule does not apply after ne…que.',
+    formula: ['un / une / des / du / de la / de l\'', '→', 'de / d\' (après négation)'],
+  },
+  adj_demonstratifs: {
+    slug: 'adj_demonstratifs',
+    name: 'Demonstrative adjectives',
+    nameFr: 'Les adjectifs démonstratifs',
+    mapLabel: 'Adj. démonstratifs',
+    rule: 'Demonstrative adjectives (ce, cet, cette, ces) point out specific nouns. Use cet before masculine nouns starting with a vowel or silent h. Add -ci (near) or -là (far) for contrast.',
+    formula: ['ce / cet / cette / ces', '+', 'nom', '(+ -ci / -là)'],
+  },
+  comparatif: {
+    slug: 'comparatif',
+    name: 'Comparative',
+    nameFr: 'Le comparatif',
+    mapLabel: 'Le comparatif',
+    rule: 'Comparatives compare two elements: plus…que (more than), moins…que (less than), aussi…que (as…as). Irregular forms: meilleur(e) (better than), pire (worse than), mieux (better, for adverbs).',
+    formula: ['plus / moins / aussi', '+', 'adjectif / adverbe', '+', 'que', '+', 'complément'],
+  },
 }
 
 // ─── A2 ───────────────────────────────────────────────────────────────────────
 
 export const A2_ORDER = [
-  'passe_compose_avoir', 'passe_compose_etre', 'imparfait', 'futur_proche',
-  'verbes_ir_re', 'verbes_irreguliers', 'articles_contractes', 'articles_partitifs',
-  'place_adjectif', 'adverbes', 'pronoms_cod', 'pronoms_coi',
-  'adj_demonstratifs', 'verbes_pronominaux', 'comparatif',
+  'passe_compose_avoir', 'passe_compose_etre', 'verbes_ir_re', 'verbes_irreguliers',
+  'imparfait', 'futur_proche', 'articles_contractes', 'articles_partitifs',
+  'adverbes', 'place_adjectif', 'pronoms_cod', 'verbes_pronominaux',
+  'pc_verbes_pronominaux', 'si_clauses_type0', 'nombres_avances',
 ]
 
 export const A2_CONCEPTS = {
@@ -220,47 +236,47 @@ export const A2_CONCEPTS = {
     rule: 'Direct object pronouns replace a noun that directly receives the action: me, te, le, la, nous, vous, les. They precede the conjugated verb, or the infinitive in a two-verb construction.',
     formula: ['sujet', '+', 'me / te / le / la / nous / vous / les', '+', 'verbe'],
   },
-  pronoms_coi: {
-    slug: 'pronoms_coi',
-    name: 'Indirect object pronouns',
-    nameFr: 'Les pronoms COI',
-    mapLabel: 'Pronoms COI',
-    rule: 'Indirect object pronouns replace à + person: me, te, lui, nous, vous, leur. They precede the verb and indicate the recipient. Lui/leur are third-person only.',
-    formula: ['sujet', '+', 'me / te / lui / nous / vous / leur', '+', 'verbe'],
-  },
-  adj_demonstratifs: {
-    slug: 'adj_demonstratifs',
-    name: 'Demonstrative adjectives',
-    nameFr: 'Les adjectifs démonstratifs',
-    mapLabel: 'Adj. démonstratifs',
-    rule: 'Demonstrative adjectives (ce, cet, cette, ces) point out specific nouns. Use cet before masculine nouns starting with a vowel or silent h. Add -ci (near) or -là (far) for contrast.',
-    formula: ['ce / cet / cette / ces', '+', 'nom', '(+ -ci / -là)'],
-  },
   verbes_pronominaux: {
     slug: 'verbes_pronominaux',
     name: 'Reflexive verbs',
     nameFr: 'Les verbes pronominaux',
     mapLabel: 'Verbes pronominaux',
-    rule: 'Reflexive verbs take a reflexive pronoun (me, te, se, nous, vous) that refers back to the subject. In compound tenses they use être, and the past participle typically agrees with the subject.',
+    rule: 'Reflexive verbs take a reflexive pronoun (me, te, se, nous, vous) that refers back to the subject. The pronoun precedes the verb and matches the subject in person and number.',
     formula: ['sujet', '+', 'me / te / se / nous / vous', '+', 'verbe pronominal'],
   },
-  comparatif: {
-    slug: 'comparatif',
-    name: 'Comparative',
-    nameFr: 'Le comparatif',
-    mapLabel: 'Le comparatif',
-    rule: 'Comparatives compare two elements: plus…que (more than), moins…que (less than), aussi…que (as…as). Irregular forms: meilleur(e) (better), pire (worse), mieux (better, for adverbs).',
-    formula: ['plus / moins / aussi', '+', 'adjectif / adverbe', '+', 'que', '+', 'complément'],
+  pc_verbes_pronominaux: {
+    slug: 'pc_verbes_pronominaux',
+    name: 'Passé composé of reflexive verbs',
+    nameFr: 'Le passé composé des verbes pronominaux',
+    mapLabel: 'PC verbes pronom.',
+    rule: 'Reflexive verbs always use être as their auxiliary in the passé composé. The past participle agrees in gender and number with the subject, unless a direct object follows the verb.',
+    formula: ['sujet', '+', 'pronom réfléchi', '+', 'être (présent)', '+', 'participe passé (accordé)'],
+  },
+  si_clauses_type0: {
+    slug: 'si_clauses_type0',
+    name: 'Si clauses (type 0)',
+    nameFr: 'Les propositions conditionnelles (type 0)',
+    mapLabel: 'Si clauses (type 0)',
+    rule: 'Type 0 conditionals use si + present tense in both clauses to express a general truth or automatic consequence — a situation that is always true when the condition is met.',
+    formula: ['si', '+', 'présent', '→', 'présent (vérité générale)'],
+  },
+  nombres_avances: {
+    slug: 'nombres_avances',
+    name: 'Advanced numbers',
+    nameFr: 'Les nombres avancés',
+    mapLabel: 'Nombres avancés',
+    rule: 'Numbers from 70–99 use compound forms (soixante-dix, quatre-vingts, quatre-vingt-dix). Ordinal numbers add -ième to the cardinal. Cent and mille are invariable as multipliers.',
+    formula: ['70: soixante-dix / 80: quatre-vingts / 90: quatre-vingt-dix', '/', '100+: cent, mille…', '/', 'ordinal: radical + -ième'],
   },
 }
 
 // ─── B2 ───────────────────────────────────────────────────────────────────────
 
 export const B2_ORDER = [
-  'subjonctif_etendu', 'plus_que_parfait', 'futur_anterieur', 'conditionnel_passe',
-  'voix_passive', 'si_clauses_2_3', 'discours_indirect', 'nominalisation',
-  'pronoms_relatifs_cx', 'concessifs_opposition', 'cause_consequence',
-  'constructions_inf', 'struct_emphatiques', 'registre_langue',
+  'plus_que_parfait', 'subjonctif_etendu', 'conditionnel_passe', 'futur_anterieur',
+  'si_clauses_2_3', 'discours_indirect', 'voix_passive', 'passif_avec_agent',
+  'faire_causatif', 'nominalisation', 'pronoms_relatifs_cx', 'concessifs_opposition',
+  'cause_consequence', 'struct_emphatiques', 'registre_langue',
 ]
 
 export const B2_CONCEPTS = {
@@ -352,13 +368,21 @@ export const B2_CONCEPTS = {
     rule: 'Cause connectors: parce que, puisque, car, à cause de, grâce à. Consequence connectors: donc, alors, c\'est pourquoi, si bien que, tellement…que.',
     formula: ['parce que / puisque / car', '+', 'cause', '→', "donc / c'est pourquoi + conséquence"],
   },
-  constructions_inf: {
-    slug: 'constructions_inf',
-    name: 'Infinitive constructions',
-    nameFr: 'Les constructions infinitives',
-    mapLabel: 'Constructions inf.',
-    rule: 'When the subject of two clauses is the same, French replaces the subjunctive with an infinitive: vouloir faire rather than vouloir que je fasse. Key prepositions: pour, avant de, sans, afin de + infinitive.',
-    formula: ['pour / avant de / sans / afin de', '+', 'infinitif (même sujet)'],
+  passif_avec_agent: {
+    slug: 'passif_avec_agent',
+    name: 'Passive voice: the agent',
+    nameFr: 'La voix passive : le complément d\'agent',
+    mapLabel: 'Passif avec agent',
+    rule: 'In the passive voice, the agent (the doer) is introduced by par for most action verbs. De is used with verbs of state or feeling (être aimé de, être entouré de). The agent may be omitted when unknown or irrelevant.',
+    formula: ['sujet', '+', 'être', '+', 'participe passé', '+', 'par + agent (action)', '/', 'de + agent (état)'],
+  },
+  faire_causatif: {
+    slug: 'faire_causatif',
+    name: 'Causative faire',
+    nameFr: 'Le faire causatif',
+    mapLabel: 'Faire causatif',
+    rule: 'Faire + infinitive means to have something done or to make someone do something. The agent (the person carrying out the action) is introduced by par or à.',
+    formula: ['sujet', '+', 'faire', '+', 'infinitif', '+', '(par / à + agent)'],
   },
   struct_emphatiques: {
     slug: 'struct_emphatiques',
@@ -381,13 +405,21 @@ export const B2_CONCEPTS = {
 // ─── C1 ───────────────────────────────────────────────────────────────────────
 
 export const C1_ORDER = [
-  'subjonctif_passe', 'subjonctif_imparfait', 'passe_simple', 'passe_anterieur',
-  'conditionnel_journalistique', 'negation_nuancee', 'nominalisation_abstraite',
-  'connecteurs_discursifs', 'participes_implicites', 'passif_complexe',
-  'inversion_stylistique', 'constructions_idiomatiques',
+  'subjonctif_passe', 'subjonctif_imparfait', 'constructions_inf', 'passe_simple',
+  'passe_anterieur', 'conditionnel_journalistique', 'negation_nuancee',
+  'nominalisation_abstraite', 'connecteurs_discursifs', 'participes_implicites',
+  'passif_complexe', 'inversion_stylistique', 'constructions_idiomatiques',
 ]
 
 export const C1_CONCEPTS = {
+  constructions_inf: {
+    slug: 'constructions_inf',
+    name: 'Infinitive constructions',
+    nameFr: 'Les constructions infinitives',
+    mapLabel: 'Constructions inf.',
+    rule: 'When the subject of two clauses is the same, French replaces the subjunctive with an infinitive: vouloir faire rather than vouloir que je fasse. Key prepositions: pour, avant de, après (+ past infinitive), sans, afin de.',
+    formula: ['pour / avant de / sans / afin de', '+', 'infinitif (même sujet)', '/', 'après', '+', 'infinitif passé'],
+  },
   subjonctif_passe: {
     slug: 'subjonctif_passe',
     name: 'Subjonctif passé',
@@ -567,26 +599,27 @@ export const B1_CATEGORIES = [
   {
     label: 'Tenses & Moods',
     labelFr: 'Temps et modes',
-    slugs: ['imparfait_vs_pc', 'futur_simple', 'conditionnel_present', 'subjonctif_present'],
+    slugs: ['imparfait_vs_pc', 'futur_simple', 'conditionnel_present', 'subjonctif_present', 'subjonctif_triggers'],
   },
   {
     label: 'Pronouns',
     labelFr: 'Pronoms',
-    slugs: ['pronoms_relatifs', 'pronoms_toniques', 'y_et_en', 'double_pronoms'],
+    slugs: ['pronoms_relatifs', 'pronoms_toniques', 'pronoms_coi', 'y_et_en', 'double_pronoms'],
   },
   {
     label: 'Structures',
     labelFr: 'Structures grammaticales',
-    slugs: ['superlatif', 'negation_etendue', 'pronoms_interrogatifs', 'depuis_pendant', 'faire_causatif', 'gerondif', 'si_clauses_type1'],
+    slugs: ['superlatif', 'negation_etendue', 'pronoms_interrogatifs', 'depuis_pendant', 'cest_il_est', 'gerondif', 'si_clauses_type1'],
   },
 ]
 
 // Ordered list of all B1 concept slugs — used for daily rotation and promotion checks
 export const B1_ORDER = [
-  'imparfait_vs_pc', 'futur_simple', 'conditionnel_present', 'subjonctif_present',
-  'pronoms_relatifs', 'pronoms_toniques', 'y_et_en', 'double_pronoms',
+  'imparfait_vs_pc', 'futur_simple', 'si_clauses_type1', 'pronoms_relatifs',
+  'pronoms_toniques', 'pronoms_coi', 'y_et_en', 'double_pronoms',
   'superlatif', 'negation_etendue', 'pronoms_interrogatifs', 'depuis_pendant',
-  'faire_causatif', 'gerondif', 'si_clauses_type1',
+  'cest_il_est', 'conditionnel_present', 'subjonctif_present', 'subjonctif_triggers',
+  'gerondif',
 ]
 
 export const B1_CONCEPTS = {
@@ -698,14 +731,32 @@ export const B1_CONCEPTS = {
     formula: ['depuis + présent', '/', 'pendant + passé composé', '/', 'il y a + passé composé'],
     keyTerms: 'J\'étudie depuis deux ans. J\'ai étudié pendant une heure. Il est parti il y a cinq minutes.',
   },
-  faire_causatif: {
-    slug: 'faire_causatif',
-    name: 'Causative faire',
-    nameFr: 'Le faire causatif',
-    mapLabel: 'Faire causatif',
-    rule: 'Faire + infinitive means to have something done or to make someone do something. The agent (the person who carries out the action) is introduced by par or à.',
-    formula: ['sujet', '+', 'faire', '+', 'infinitif', '+', '(par / à + agent)'],
-    keyTerms: 'Je fais réparer la voiture. Elle fait chanter les enfants. Il se fait couper les cheveux.',
+  pronoms_coi: {
+    slug: 'pronoms_coi',
+    name: 'Indirect object pronouns',
+    nameFr: 'Les pronoms COI',
+    mapLabel: 'Pronoms COI',
+    rule: 'Indirect object pronouns replace à + person: me, te, lui, nous, vous, leur. They precede the verb and indicate the recipient of the action. Lui and leur are used only for third-person references.',
+    formula: ['sujet', '+', 'me / te / lui / nous / vous / leur', '+', 'verbe'],
+    keyTerms: 'Je lui parle. Elle leur écrit. Il me donne le livre. Nous vous envoyons les documents.',
+  },
+  cest_il_est: {
+    slug: 'cest_il_est',
+    name: "C'est vs il est",
+    nameFr: "C'est et il est",
+    mapLabel: "C'est / Il est",
+    rule: "C'est introduces a noun phrase or proper name (C'est un médecin / C'est Marie). Il/elle est introduces an adjective or an unmodified profession without an article (Il est médecin / Elle est grande). The distinction is rigid in written French.",
+    formula: ["c'est + article + nom / nom propre", '/', 'il est / elle est + adjectif / profession (sans article)'],
+    keyTerms: "C'est un professeur. Il est professeur. C'est elle. Elle est intelligente. C'est intéressant.",
+  },
+  subjonctif_triggers: {
+    slug: 'subjonctif_triggers',
+    name: 'Subjunctive triggers',
+    nameFr: 'Les déclencheurs du subjonctif',
+    mapLabel: 'Subjonctif triggers',
+    rule: 'The subjunctive is required after expressions of doubt, emotion, necessity, will, and concessive conjunctions. Verbs of certainty and opinion (penser que, croire que, être sûr que) take the indicative when affirmative, but switch to the subjunctive in negative or interrogative form.',
+    formula: ['doute / émotion / nécessité + que', '+', 'subjonctif', '/', 'certitude / opinion + que', '+', 'indicatif'],
+    keyTerms: 'il faut que tu viennes, je doute qu\'il soit là, bien qu\'elle soit fatiguée, je pense qu\'il vient',
   },
   gerondif: {
     slug: 'gerondif',

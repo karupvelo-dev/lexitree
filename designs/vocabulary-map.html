@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocabulary Map — Lexitree Design</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --dark: #1A1814;
+      --mid: #6B6860;
+      --light: #9A9890;
+      --border: #E3E2DF;
+      --bg: #F8F7F4;
+      --white: #FFFFFF;
+      --terracotta: #C4603A;
+      --terracotta-bg: #FDF0EB;
+      --terracotta-light: #EAAC96;
+      --green: #3A7D44;
+      --green-light: #EBF5ED;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+      /* POS colour system */
+      --verb:       #C4603A;
+      --verb-bg:    #FDF0EB;
+      --verb-mid:   #EAAC96;
+      --adj:        #4169A8;
+      --adj-bg:     #EEF2FB;
+      --adj-mid:    #B3C4E8;
+      --adv:        #3A7D44;
+      --adv-bg:     #EBF5ED;
+      --adv-mid:    #9ECBA6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-sans); background: var(--bg); color: var(--dark); height: 100vh; overflow: hidden; }
+
+    /* ── Shell ────────────────────────────────────────────────────────── */
+    .shell { display: flex; height: 100vh; }
+
+    /* ── Sidebar ──────────────────────────────────────────────────────── */
+    .sidebar {
+      width: 200px; min-width: 200px;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      padding: 0;
+    }
+    .sidebar-logo {
+      font-family: var(--font-serif);
+      font-size: 18px; color: var(--dark);
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo span { color: var(--terracotta); font-style: italic; }
+
+    .nav-section { padding: 8px 8px 4px; }
+    .nav-label {
+      font-size: 9px; font-weight: 500; letter-spacing: 0.7px;
+      text-transform: uppercase; color: var(--light);
+      padding: 6px 8px 4px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 8px; border-radius: var(--radius);
+      font-size: 13px; color: var(--mid);
+      text-decoration: none; cursor: pointer;
+      transition: background 0.1s;
+    }
+    .nav-item.active { color: var(--dark); font-weight: 500; background: var(--terracotta-bg); }
+    .nav-item:hover:not(.active) { background: var(--bg); }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .level-box {
+      padding: 12px; background: var(--terracotta-bg);
+      border-radius: var(--radius); border: 1px solid var(--terracotta-light);
+    }
+    .level-box-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--terracotta); margin-bottom: 4px;
+    }
+    .level-box-value { font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--dark); }
+    .level-box-sub { font-size: 12px; color: var(--mid); margin-top: 2px; }
+    .level-box-vocab {
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid var(--terracotta-light);
+    }
+    .level-box-count { font-size: 15px; font-weight: 600; color: var(--dark); }
+    .level-box-count-label { font-size: 11px; color: var(--mid); line-height: 1.4; }
+
+    /* ── Main ─────────────────────────────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+    /* ── Topbar ───────────────────────────────────────────────────────── */
+    .topbar {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-left { font-size: 13px; color: var(--light); display: flex; align-items: center; gap: 5px; }
+    .topbar-left .sep { color: var(--border); }
+    .topbar-left .selected-word { color: var(--dark); font-weight: 500; }
+
+    /* ── Level tabs ───────────────────────────────────────────────────── */
+    .tabs-bar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 20px; display: flex; gap: 0; flex-shrink: 0;
+    }
+    .tab {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 10px 16px 0; cursor: pointer; position: relative;
+      gap: 6px; border-bottom: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .tab:hover .tab-label { color: var(--dark); }
+    .tab.active { border-bottom-color: var(--terracotta); }
+    .tab.active .tab-label { color: var(--terracotta); font-weight: 600; }
+    .tab.locked { cursor: default; opacity: 0.4; }
+    .tab.locked .tab-label { color: var(--light); }
+
+    .tab-label { font-size: 13px; color: var(--mid); font-weight: 500; white-space: nowrap; padding-bottom: 8px; }
+    .tab-progress {
+      width: 100%; height: 3px;
+      background: var(--border); border-radius: 2px; overflow: hidden;
+    }
+    .tab-progress-fill { height: 100%; background: var(--terracotta); border-radius: 2px; transition: width 0.3s; }
+    .tab-progress-fill.complete { background: var(--green); }
+    .tab-count { font-size: 10px; color: var(--light); }
+
+    /* ── Filter bar ───────────────────────────────────────────────────── */
+    .filter-bar {
+      padding: 10px 20px; background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 20px; flex-shrink: 0;
+    }
+    .filter-stat { font-size: 12px; color: var(--mid); }
+    .filter-stat strong { color: var(--dark); }
+    .filter-chips { display: flex; gap: 6px; margin-left: auto; }
+    .chip {
+      padding: 4px 12px; border-radius: 20px; font-size: 12px;
+      cursor: pointer; transition: all 0.1s; border: 1px solid var(--border);
+      background: var(--white); color: var(--mid); font-weight: 500;
+    }
+    .chip.active { background: var(--dark); color: var(--white); border-color: var(--dark); }
+    .chip.verb-chip.active   { background: var(--verb); border-color: var(--verb); color: #fff; }
+    .chip.adj-chip.active    { background: var(--adj);  border-color: var(--adj);  color: #fff; }
+    .chip.adv-chip.active    { background: var(--adv);  border-color: var(--adv);  color: #fff; }
+
+    /* ── Content ──────────────────────────────────────────────────────── */
+    .content-area { flex: 1; display: flex; overflow: hidden; }
+
+    /* ── Word grid ────────────────────────────────────────────────────── */
+    .grid-scroll {
+      flex: 1; overflow-y: auto; padding: 20px 24px;
+    }
+    .grid-scroll::-webkit-scrollbar { width: 5px; }
+    .grid-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .pos-section { margin-bottom: 28px; }
+    .pos-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .pos-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .pos-title {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .pos-tally { font-size: 11px; color: var(--light); }
+    .pos-divider { flex: 1; height: 1px; background: var(--border); }
+
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    /* ── Word card ────────────────────────────────────────────────────── */
+    .word-card {
+      padding: 12px; border-radius: var(--radius);
+      cursor: pointer; transition: box-shadow 0.12s, transform 0.1s;
+      border: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 6px;
+      background: var(--white);
+      position: relative;
+    }
+    .word-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.10); transform: translateY(-1px); }
+    .word-card.selected { box-shadow: 0 0 0 2px var(--terracotta) !important; transform: none; }
+
+    /* State: unseen */
+    .word-card.unseen {
+      background: var(--bg); opacity: 0.55;
+      border-color: var(--border);
+    }
+    .word-card.unseen:hover { opacity: 0.75; transform: translateY(-1px); }
+
+    /* State: seen (1–2×) — white with colored left accent */
+    .word-card.seen-verb   { border-left: 3px solid var(--verb); }
+    .word-card.seen-adj    { border-left: 3px solid var(--adj); }
+    .word-card.seen-adv    { border-left: 3px solid var(--adv); }
+
+    /* State: known (3–5×) — light POS tint */
+    .word-card.known-verb  { background: var(--verb-bg); border-color: var(--verb-mid); }
+    .word-card.known-adj   { background: var(--adj-bg);  border-color: var(--adj-mid); }
+    .word-card.known-adv   { background: var(--adv-bg);  border-color: var(--adv-mid); }
+
+    /* State: mastered (6+) — solid POS color */
+    .word-card.mastered-verb { background: var(--verb); border-color: var(--verb); }
+    .word-card.mastered-adj  { background: var(--adj);  border-color: var(--adj); }
+    .word-card.mastered-adv  { background: var(--adv);  border-color: var(--adv); }
+    .word-card.mastered-verb .word-fr,
+    .word-card.mastered-adj  .word-fr,
+    .word-card.mastered-adv  .word-fr { color: #fff; }
+    .word-card.mastered-verb .word-def,
+    .word-card.mastered-adj  .word-def,
+    .word-card.mastered-adv  .word-def { color: rgba(255,255,255,0.75); }
+    .word-card.mastered-verb .word-footer,
+    .word-card.mastered-adj  .word-footer,
+    .word-card.mastered-adv  .word-footer { border-top-color: rgba(255,255,255,0.2); }
+
+    .word-fr {
+      font-family: var(--font-serif);
+      font-size: 15px; font-weight: 600; color: var(--dark);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .word-def {
+      font-size: 11px; color: var(--mid);
+      line-height: 1.4; flex: 1;
+    }
+    .word-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 6px; border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+    .word-pos-chip {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; padding: 2px 6px; border-radius: 3px;
+    }
+    .chip-verb { background: var(--verb-bg); color: var(--verb); }
+    .chip-adj  { background: var(--adj-bg);  color: var(--adj); }
+    .chip-adv  { background: var(--adv-bg);  color: var(--adv); }
+    .mastered-verb .chip-verb { background: rgba(255,255,255,0.2); color: #fff; }
+    .mastered-adj  .chip-adj  { background: rgba(255,255,255,0.2); color: #fff; }
+    .mastered-adv  .chip-adv  { background: rgba(255,255,255,0.2); color: #fff; }
+
+    .word-count {
+      font-size: 10px; font-weight: 500; color: var(--light);
+      display: flex; align-items: center; gap: 3px;
+    }
+    .mastered-verb .word-count,
+    .mastered-adj  .word-count,
+    .mastered-adv  .word-count { color: rgba(255,255,255,0.7); }
+
+    .count-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--border); display: inline-block;
+    }
+    .count-dot.filled-verb { background: var(--verb); }
+    .count-dot.filled-adj  { background: var(--adj); }
+    .count-dot.filled-adv  { background: var(--adv); }
+
+    /* ── Detail panel ─────────────────────────────────────────────────── */
+    .detail-panel {
+      width: 240px; min-width: 240px;
+      border-left: 1px solid var(--border);
+      background: var(--white);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    .detail-panel::-webkit-scrollbar { width: 4px; }
+    .detail-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .detail-empty {
+      padding: 24px 18px; color: var(--light); font-size: 13px; line-height: 1.6;
+    }
+    .detail-empty-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--light); margin-bottom: 8px;
+    }
+
+    .detail-header {
+      padding: 20px 18px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .detail-word {
+      font-family: var(--font-serif); font-size: 24px; font-weight: 600;
+      color: var(--dark); margin-bottom: 6px; line-height: 1.2;
+    }
+    .detail-def {
+      font-size: 14px; color: var(--mid); line-height: 1.5; margin-bottom: 10px;
+    }
+    .detail-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .detail-tag {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    }
+
+    .detail-section {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .detail-section-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--light); margin-bottom: 10px;
+    }
+
+    .encounter-meter {
+      display: flex; gap: 5px; align-items: center; margin-bottom: 6px;
+    }
+    .meter-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--border);
+    }
+    .meter-dot.filled { background: var(--terracotta); }
+    .encounter-label { font-size: 12px; color: var(--mid); }
+
+    .state-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 4px;
+    }
+    .state-badge.unseen  { background: var(--bg); color: var(--light); border: 1px solid var(--border); }
+    .state-badge.seen    { background: var(--terracotta-bg); color: var(--terracotta); border: 1px solid var(--terracotta-light); }
+    .state-badge.known   { background: #FEF3C7; color: #92400E; border: 1px solid #D97706; }
+    .state-badge.mastered { background: var(--green-light); color: var(--green); border: 1px solid var(--green); }
+
+    .example-box {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+    .example-fr {
+      font-family: var(--font-serif); font-style: italic;
+      font-size: 13px; color: var(--dark); line-height: 1.6; margin-bottom: 4px;
+    }
+    .example-en { font-size: 11px; color: var(--light); }
+
+    .detail-cta { padding: 14px 18px; }
+    .btn-practice {
+      width: 100%; padding: 10px; border-radius: var(--radius);
+      background: var(--dark); color: #fff; border: none;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      font-family: var(--font-sans); transition: opacity 0.15s;
+    }
+    .btn-practice:hover { opacity: 0.85; }
+    .btn-note { font-size: 10px; color: var(--light); text-align: center; margin-top: 5px; }
+
+    /* ── Legend ───────────────────────────────────────────────────────── */
+    .legend {
+      display: flex; gap: 16px; font-size: 11px; color: var(--mid);
+      padding: 0; align-items: center;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-swatch {
+      width: 10px; height: 10px; border-radius: 2px; border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+    <div class="sidebar-logo">Lexitree<span>.</span></div>
+    <div class="nav-section">
+      <div class="nav-label">Learn</div>
+      <div class="nav-item" onclick="void(0)">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+        Today
+      </div>
+      <div class="nav-item active">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h6m-6 4h10M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" /></svg>
+        Vocabulary
+      </div>
+      <div class="nav-item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+        Grammar Map
+      </div>
+      <div class="nav-item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>
+        Archive
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="level-box">
+        <div class="level-box-label">Your level</div>
+        <div class="level-box-value">B1</div>
+        <div class="level-box-sub">Intermediate</div>
+        <div class="level-box-vocab">
+          <div class="level-box-count" id="sidebar-count">68</div>
+          <div class="level-box-count-label">words encountered<br>up to B1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span>Vocabulary map</span>
+        <span class="sep" id="topbar-sep" style="display:none">›</span>
+        <span class="selected-word" id="topbar-word"></span>
+      </div>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--bg);"></div> not seen
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--white); border-left:3px solid var(--terracotta);"></div> seen
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--verb-bg); border-color:var(--verb-mid);"></div> known
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:var(--verb); border-color:var(--verb);"></div> mastered
+        </div>
+      </div>
+    </div>
+
+    <!-- Level tabs -->
+    <div class="tabs-bar" id="tabs-bar"></div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="filter-stat" id="filter-stat"></div>
+      <div class="filter-chips">
+        <div class="chip active" onclick="setFilter('all')">All</div>
+        <div class="chip verb-chip" onclick="setFilter('verb')">Verbs</div>
+        <div class="chip adj-chip" onclick="setFilter('adjective')">Adjectives</div>
+        <div class="chip adv-chip" onclick="setFilter('adverb')">Adverbs</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content-area">
+
+      <!-- Word grid -->
+      <div class="grid-scroll" id="grid-scroll"></div>
+
+      <!-- Detail panel -->
+      <div class="detail-panel" id="detail-panel">
+        <div class="detail-empty">
+          <div class="detail-empty-label">Selected word</div>
+          Click any word card to see its definition and progress.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const VOCABULARY = {
+  A1: [
+    { word: 'aimer',      def: 'to like / to love',    pos: 'verb' },
+    { word: 'aller',      def: 'to go',                pos: 'verb' },
+    { word: 'avoir',      def: 'to have',              pos: 'verb' },
+    { word: 'chercher',   def: 'to look for',          pos: 'verb' },
+    { word: 'donner',     def: 'to give',              pos: 'verb' },
+    { word: 'écouter',    def: 'to listen',            pos: 'verb' },
+    { word: 'faire',      def: 'to do / to make',      pos: 'verb' },
+    { word: 'habiter',    def: 'to live (somewhere)',  pos: 'verb' },
+    { word: 'manger',     def: 'to eat',               pos: 'verb' },
+    { word: 'partir',     def: 'to leave',             pos: 'verb' },
+    { word: 'parler',     def: 'to speak / to talk',   pos: 'verb' },
+    { word: 'prendre',    def: 'to take',              pos: 'verb' },
+    { word: 'regarder',   def: 'to watch / to look',   pos: 'verb' },
+    { word: 'travailler', def: 'to work',              pos: 'verb' },
+    { word: 'vouloir',    def: 'to want',              pos: 'verb' },
+    { word: 'beau',       def: 'beautiful / handsome', pos: 'adjective' },
+    { word: 'bon',        def: 'good',                 pos: 'adjective' },
+    { word: 'content',    def: 'happy / pleased',      pos: 'adjective' },
+    { word: 'facile',     def: 'easy',                 pos: 'adjective' },
+    { word: 'grand',      def: 'big / tall',           pos: 'adjective' },
+    { word: 'heureux',    def: 'happy',                pos: 'adjective' },
+    { word: 'jeune',      def: 'young',                pos: 'adjective' },
+    { word: 'mauvais',    def: 'bad',                  pos: 'adjective' },
+    { word: 'nouveau',    def: 'new',                  pos: 'adjective' },
+    { word: 'petit',      def: 'small / little',       pos: 'adjective' },
+    { word: 'triste',     def: 'sad',                  pos: 'adjective' },
+    { word: 'vieux',      def: 'old',                  pos: 'adjective' },
+    { word: 'assez',      def: 'quite / enough',       pos: 'adverb' },
+    { word: 'beaucoup',   def: 'a lot / very much',    pos: 'adverb' },
+    { word: 'bien',       def: 'well',                 pos: 'adverb' },
+    { word: 'mal',        def: 'badly',                pos: 'adverb' },
+    { word: 'souvent',    def: 'often',                pos: 'adverb' },
+    { word: 'toujours',   def: 'always / still',       pos: 'adverb' },
+    { word: 'très',       def: 'very',                 pos: 'adverb' },
+    { word: 'vite',       def: 'quickly / fast',       pos: 'adverb' },
+  ],
+  A2: [
+    { word: 'acheter',    def: 'to buy',                  pos: 'verb' },
+    { word: 'apprendre',  def: 'to learn',                pos: 'verb' },
+    { word: 'choisir',    def: 'to choose',               pos: 'verb' },
+    { word: 'commencer',  def: 'to begin / to start',     pos: 'verb' },
+    { word: 'connaître',  def: 'to know (a person/place)',pos: 'verb' },
+    { word: 'décider',    def: 'to decide',               pos: 'verb' },
+    { word: 'finir',      def: 'to finish',               pos: 'verb' },
+    { word: 'oublier',    def: 'to forget',               pos: 'verb' },
+    { word: 'penser',     def: 'to think',                pos: 'verb' },
+    { word: 'rentrer',    def: 'to go home / to return',  pos: 'verb' },
+    { word: 'savoir',     def: 'to know (a fact)',        pos: 'verb' },
+    { word: 'sortir',     def: 'to go out',               pos: 'verb' },
+    { word: 'trouver',    def: 'to find',                 pos: 'verb' },
+    { word: 'vendre',     def: 'to sell',                 pos: 'verb' },
+    { word: 'voir',       def: 'to see',                  pos: 'verb' },
+    { word: 'calme',      def: 'calm / quiet',            pos: 'adjective' },
+    { word: 'difficile',  def: 'difficult',               pos: 'adjective' },
+    { word: 'différent',  def: 'different',               pos: 'adjective' },
+    { word: 'important',  def: 'important',               pos: 'adjective' },
+    { word: 'intéressant',def: 'interesting',             pos: 'adjective' },
+    { word: 'libre',      def: 'free / available',        pos: 'adjective' },
+    { word: 'possible',   def: 'possible',                pos: 'adjective' },
+    { word: 'premier',    def: 'first',                   pos: 'adjective' },
+    { word: 'propre',     def: 'clean / own',             pos: 'adjective' },
+    { word: 'seul',       def: 'alone / only',            pos: 'adjective' },
+    { word: 'encore',     def: 'again / still',           pos: 'adverb' },
+    { word: 'ensemble',   def: 'together',                pos: 'adverb' },
+    { word: 'jamais',     def: 'never',                   pos: 'adverb' },
+    { word: 'parfois',    def: 'sometimes',               pos: 'adverb' },
+    { word: 'peut-être',  def: 'maybe / perhaps',         pos: 'adverb' },
+    { word: 'presque',    def: 'almost / nearly',         pos: 'adverb' },
+    { word: 'rapidement', def: 'quickly / rapidly',       pos: 'adverb' },
+    { word: 'trop',       def: 'too / too much',          pos: 'adverb' },
+    { word: 'vraiment',   def: 'really / truly',          pos: 'adverb' },
+    { word: 'tard',       def: 'late',                    pos: 'adverb' },
+  ],
+  B1: [
+    { word: 'accomplir',     def: 'to accomplish / to carry out', pos: 'verb' },
+    { word: 'accepter',      def: 'to accept',                   pos: 'verb' },
+    { word: 'changer',       def: 'to change',                   pos: 'verb' },
+    { word: 'comprendre',    def: 'to understand',               pos: 'verb' },
+    { word: 'devenir',       def: 'to become',                   pos: 'verb' },
+    { word: 'expliquer',     def: 'to explain',                  pos: 'verb' },
+    { word: 'obtenir',       def: 'to obtain / to get',          pos: 'verb' },
+    { word: 'offrir',        def: 'to offer / to give',          pos: 'verb' },
+    { word: 'paraître',      def: 'to seem / to appear',         pos: 'verb' },
+    { word: 'parvenir',      def: 'to manage / to succeed in',   pos: 'verb' },
+    { word: 'promettre',     def: 'to promise',                  pos: 'verb' },
+    { word: 'proposer',      def: 'to suggest / to propose',     pos: 'verb' },
+    { word: 'réussir',       def: 'to succeed',                  pos: 'verb' },
+    { word: 'sembler',       def: 'to seem',                     pos: 'verb' },
+    { word: 'supposer',      def: 'to suppose / to assume',      pos: 'verb' },
+    { word: 'ambitieux',     def: 'ambitious',                   pos: 'adjective' },
+    { word: 'capable',       def: 'capable / able',              pos: 'adjective' },
+    { word: 'certain',       def: 'certain / sure',              pos: 'adjective' },
+    { word: 'curieux',       def: 'curious / strange',           pos: 'adjective' },
+    { word: 'essentiel',     def: 'essential',                   pos: 'adjective' },
+    { word: 'jaloux',        def: 'jealous',                     pos: 'adjective' },
+    { word: 'particulier',   def: 'particular / special',        pos: 'adjective' },
+    { word: 'précis',        def: 'precise / specific',          pos: 'adjective' },
+    { word: 'responsable',   def: 'responsible',                 pos: 'adjective' },
+    { word: 'vif',           def: 'lively / sharp / bright',     pos: 'adjective' },
+    { word: 'absolument',    def: 'absolutely',                  pos: 'adverb' },
+    { word: 'actuellement',  def: 'currently / at the moment',   pos: 'adverb' },
+    { word: 'clairement',    def: 'clearly',                     pos: 'adverb' },
+    { word: 'complètement',  def: 'completely',                  pos: 'adverb' },
+    { word: 'cependant',     def: 'however / nevertheless',      pos: 'adverb' },
+    { word: 'finalement',    def: 'finally / in the end',        pos: 'adverb' },
+    { word: 'généralement',  def: 'generally / usually',         pos: 'adverb' },
+    { word: 'notamment',     def: 'notably / in particular',     pos: 'adverb' },
+    { word: 'particulièrement',def:'particularly',               pos: 'adverb' },
+    { word: 'pourtant',      def: 'yet / however / still',       pos: 'adverb' },
+  ],
+  B2: [
+    { word: 'aboutir',     def: 'to lead to / to result in',  pos: 'verb' },
+    { word: 'affirmer',    def: 'to assert / to claim',       pos: 'verb' },
+    { word: 'admettre',    def: 'to admit / to acknowledge',  pos: 'verb' },
+    { word: 'constater',   def: 'to note / to observe',       pos: 'verb' },
+    { word: 'contribuer',  def: 'to contribute',              pos: 'verb' },
+    { word: 'envisager',   def: 'to consider / to envisage',  pos: 'verb' },
+    { word: 'évoquer',     def: 'to evoke / to mention',      pos: 'verb' },
+    { word: 'négliger',    def: 'to neglect',                 pos: 'verb' },
+    { word: 'prétendre',   def: 'to claim / to pretend',      pos: 'verb' },
+    { word: 'reconnaître', def: 'to recognise / to admit',    pos: 'verb' },
+    { word: 'revendiquer', def: 'to claim / to demand',       pos: 'verb' },
+    { word: "s'avérer",    def: 'to turn out / to prove to be', pos: 'verb' },
+    { word: "s'engager",   def: 'to commit / to engage',      pos: 'verb' },
+    { word: 'souligner',   def: 'to underline / to emphasise',pos: 'verb' },
+    { word: 'soutenir',    def: 'to support / to maintain',   pos: 'verb' },
+    { word: 'ambigu',      def: 'ambiguous',                  pos: 'adjective' },
+    { word: 'approfondi',  def: 'in-depth / thorough',        pos: 'adjective' },
+    { word: 'complexe',    def: 'complex',                    pos: 'adjective' },
+    { word: 'considérable',def: 'considerable / significant', pos: 'adjective' },
+    { word: 'crucial',     def: 'crucial',                    pos: 'adjective' },
+    { word: 'éventuel',    def: 'possible / potential',       pos: 'adjective' },
+    { word: 'inévitable',  def: 'inevitable',                 pos: 'adjective' },
+    { word: 'nuancé',      def: 'nuanced / subtle',           pos: 'adjective' },
+    { word: 'pertinent',   def: 'relevant / pertinent',       pos: 'adjective' },
+    { word: 'remarquable', def: 'remarkable / notable',       pos: 'adjective' },
+    { word: 'certes',      def: 'admittedly / certainly',     pos: 'adverb' },
+    { word: 'davantage',   def: 'more / further',             pos: 'adverb' },
+    { word: 'effectivement',def:'indeed / effectively',       pos: 'adverb' },
+    { word: 'en revanche', def: 'on the other hand',          pos: 'adverb' },
+    { word: 'manifestement',def:'clearly / obviously',        pos: 'adverb' },
+    { word: 'néanmoins',   def: 'nevertheless / nonetheless', pos: 'adverb' },
+    { word: 'précisément', def: 'precisely / exactly',        pos: 'adverb' },
+    { word: 'probablement',def: 'probably',                   pos: 'adverb' },
+    { word: 'toutefois',   def: 'however / yet',              pos: 'adverb' },
+    { word: 'substantiellement',def:'substantially',          pos: 'adverb' },
+  ],
+  C1: [
+    { word: 'approfondir',   def: 'to deepen / to go further into', pos: 'verb' },
+    { word: 'concéder',      def: 'to concede / to grant',          pos: 'verb' },
+    { word: 'contester',     def: 'to contest / to challenge',      pos: 'verb' },
+    { word: 'déplorer',      def: 'to deplore / to regret',         pos: 'verb' },
+    { word: 'étayer',        def: 'to support / to back up',        pos: 'verb' },
+    { word: 'nuancer',       def: 'to qualify / to add nuance',     pos: 'verb' },
+    { word: 'pallier',       def: 'to remedy / to compensate for',  pos: 'verb' },
+    { word: 'préconiser',    def: 'to advocate / to recommend',     pos: 'verb' },
+    { word: 'prôner',        def: 'to advocate / to champion',      pos: 'verb' },
+    { word: 'réfuter',       def: 'to refute',                      pos: 'verb' },
+    { word: "s'efforcer",    def: 'to strive / to endeavour',       pos: 'verb' },
+    { word: "s'interroger",  def: 'to question / to wonder',        pos: 'verb' },
+    { word: 'soulever',      def: 'to raise (a question/issue)',    pos: 'verb' },
+    { word: 'prévaloir',     def: 'to prevail',                     pos: 'verb' },
+    { word: 'infléchir',     def: 'to influence / to bend',         pos: 'verb' },
+    { word: 'délibéré',      def: 'deliberate / intentional',       pos: 'adjective' },
+    { word: 'équivoque',     def: 'ambiguous / equivocal',          pos: 'adjective' },
+    { word: 'inhérent',      def: 'inherent',                       pos: 'adjective' },
+    { word: 'lacunaire',     def: 'incomplete / full of gaps',      pos: 'adjective' },
+    { word: 'ostensible',    def: 'conspicuous / evident',          pos: 'adjective' },
+    { word: 'péremptoire',   def: 'peremptory / absolute',          pos: 'adjective' },
+    { word: 'prépondérant',  def: 'preponderant / dominant',        pos: 'adjective' },
+    { word: 'résolu',        def: 'resolute / determined',          pos: 'adjective' },
+    { word: 'rigoureux',     def: 'rigorous / strict',              pos: 'adjective' },
+    { word: 'tangible',      def: 'tangible / concrete',            pos: 'adjective' },
+    { word: 'conjointement', def: 'jointly / together',             pos: 'adverb' },
+    { word: 'délibérément',  def: 'deliberately / intentionally',   pos: 'adverb' },
+    { word: 'foncièrement',  def: 'fundamentally / deeply',         pos: 'adverb' },
+    { word: 'indubitablement',def:'undoubtedly / indubitably',      pos: 'adverb' },
+    { word: 'incontestablement',def:'unquestionably',               pos: 'adverb' },
+    { word: 'paradoxalement',def: 'paradoxically',                  pos: 'adverb' },
+    { word: 'résolument',    def: 'resolutely / firmly',            pos: 'adverb' },
+    { word: 'a priori',      def: 'on the face of it',              pos: 'adverb' },
+    { word: 'inexorablement',def: 'inexorably / relentlessly',      pos: 'adverb' },
+    { word: 'manifestement', def: 'manifestly / obviously',         pos: 'adverb' },
+  ],
+  C2: [
+    { word: 'atténuer',      def: 'to mitigate / to soften',        pos: 'verb' },
+    { word: 'corroborer',    def: 'to corroborate / to confirm',    pos: 'verb' },
+    { word: 'déceler',       def: 'to detect / to uncover',         pos: 'verb' },
+    { word: 'entraver',      def: 'to hinder / to impede',          pos: 'verb' },
+    { word: 'exacerber',     def: 'to exacerbate / to worsen',      pos: 'verb' },
+    { word: 'invalider',     def: 'to invalidate',                  pos: 'verb' },
+    { word: 'parachever',    def: 'to complete / to perfect',       pos: 'verb' },
+    { word: 'récuser',       def: 'to challenge / to dismiss',      pos: 'verb' },
+    { word: 'susciter',      def: 'to arouse / to give rise to',    pos: 'verb' },
+    { word: 'transiger',     def: 'to compromise',                  pos: 'verb' },
+    { word: 'véhiculer',     def: 'to convey / to carry',           pos: 'verb' },
+    { word: 'perpétuer',     def: 'to perpetuate',                  pos: 'verb' },
+    { word: 'se prévaloir',  def: 'to avail oneself of / to claim', pos: 'verb' },
+    { word: 'infléchir',     def: 'to bend / to shift',             pos: 'verb' },
+    { word: 'prévaloir',     def: 'to prevail / to take precedence',pos: 'verb' },
+    { word: 'délétère',      def: 'deleterious / harmful',          pos: 'adjective' },
+    { word: 'fallacieux',    def: 'fallacious / misleading',        pos: 'adjective' },
+    { word: 'incongru',      def: 'incongruous / absurd',           pos: 'adjective' },
+    { word: 'irréfutable',   def: 'irrefutable',                    pos: 'adjective' },
+    { word: 'prégnant',      def: 'striking / pregnant with meaning',pos:'adjective' },
+    { word: 'rédhibitoire',  def: 'prohibitive / deal-breaking',    pos: 'adjective' },
+    { word: 'sibyllin',      def: 'cryptic / sibylline',            pos: 'adjective' },
+    { word: 'véhément',      def: 'vehement / fierce',              pos: 'adjective' },
+    { word: 'a contrario',   def: 'on the contrary / conversely',   pos: 'adverb' },
+    { word: 'a fortiori',    def: 'all the more so',                pos: 'adverb' },
+    { word: 'inexorablement',def: 'inexorably',                     pos: 'adverb' },
+    { word: 'irrémédiablement',def:'irreparably / irremediably',    pos: 'adverb' },
+    { word: 'nonobstant',    def: 'notwithstanding / nonetheless',  pos: 'adverb' },
+    { word: 'ostensiblement',def: 'ostensibly / conspicuously',     pos: 'adverb' },
+    { word: 'subsidiairement',def:'subsidiarily',                   pos: 'adverb' },
+    { word: 'indubitablement',def:'undoubtedly',                    pos: 'adverb' },
+    { word: 'inéluctablement',def:'inescapably / inevitably',       pos: 'adverb' },
+    { word: 'substantiellement',def:'substantially',                pos: 'adverb' },
+  ],
+}
+
+// Simulated vocabulary_seen — mixed states to show all card variants
+const VOCAB_SEEN = {
+  // A1 — all seen (user has been at A1 for a long time)
+  'aimer':8,'aller':9,'avoir':12,'chercher':7,'donner':6,'écouter':5,'faire':11,
+  'habiter':4,'manger':8,'partir':6,'parler':10,'prendre':7,'regarder':5,
+  'travailler':6,'vouloir':9,'beau':4,'bon':8,'content':3,'facile':5,'grand':7,
+  'heureux':4,'jeune':3,'mauvais':5,'nouveau':4,'petit':7,'triste':3,'vieux':4,
+  'assez':6,'beaucoup':9,'bien':11,'mal':4,'souvent':5,'toujours':7,'très':12,'vite':4,
+  // A2 — mostly seen, some known/mastered
+  'acheter':4,'apprendre':5,'choisir':3,'commencer':4,'connaître':6,'décider':3,
+  'finir':5,'oublier':2,'penser':4,'rentrer':3,'savoir':6,'sortir':4,'trouver':5,
+  'vendre':2,'voir':7,'calme':3,'difficile':5,'différent':3,'important':4,
+  'intéressant':2,'libre':2,'possible':4,'premier':3,'propre':2,'seul':3,
+  'encore':5,'ensemble':2,'jamais':4,'parfois':3,'peut-être':3,'presque':2,
+  'rapidement':2,'trop':4,'vraiment':3,'tard':1,
+  // B1 — mixed: some mastered, some known, some seen, some unseen
+  'accomplir':6,'parvenir':5,'réussir':4,'certain':4,'ambitieux':3,
+  'absolument':3,'comprendre':2,'expliquer':2,'capable':2,'actuellement':2,
+  'devenir':1,'changer':1,'curieux':1,'clairement':1,
+  // rest of B1 = 0 (unseen)
+}
+
+const EXAMPLES = {
+  'parvenir':   { fr: "Elle est parvenue à finir avant minuit.",      en: "She managed to finish before midnight." },
+  'accomplir':  { fr: "Il a accompli quelque chose d'extraordinaire.", en: "He accomplished something extraordinary." },
+  'réussir':    { fr: "Tu réussiras si tu travailles sérieusement.",  en: "You'll succeed if you work seriously." },
+  'absolument': { fr: "C'est absolument nécessaire.",                 en: "It's absolutely necessary." },
+  'ambitieux':  { fr: "Il est trop ambitieux pour ce poste.",         en: "He's too ambitious for this position." },
+  'capable':    { fr: "Elle est tout à fait capable de le faire.",    en: "She's perfectly capable of doing it." },
+  'comprendre': { fr: "Je comprends maintenant ce que tu voulais dire.", en: "I now understand what you meant." },
+}
+
+const LEVEL_ORDER = ['A1','A2','B1','B2','C1','C2']
+const USER_LEVEL = 'B1'
+const USER_LEVEL_IDX = LEVEL_ORDER.indexOf(USER_LEVEL)
+
+const LEVEL_META = {
+  A1: { label: 'A1', name: 'Beginner' },
+  A2: { label: 'A2', name: 'Elementary' },
+  B1: { label: 'B1 · you', name: 'Intermediate' },
+  B2: { label: 'B2', name: 'Upper-Intermediate' },
+  C1: { label: 'C1', name: 'Advanced' },
+  C2: { label: 'C2', name: 'Mastery' },
+}
+
+const POS_COLOR = {
+  verb:      { key: 'verb',      label: 'verb',      dot: 'var(--verb)', chip: 'chip-verb' },
+  adjective: { key: 'adj',       label: 'adj',       dot: 'var(--adj)',  chip: 'chip-adj'  },
+  adverb:    { key: 'adv',       label: 'adv',       dot: 'var(--adv)',  chip: 'chip-adv'  },
+}
+
+function getCount(word) { return VOCAB_SEEN[word] ?? 0 }
+function getState(word) {
+  const c = getCount(word)
+  if (c === 0) return 'unseen'
+  if (c <= 2)  return 'seen'
+  if (c <= 5)  return 'known'
+  return 'mastered'
+}
+function getStateLabel(state) {
+  return { unseen:'not seen', seen:'seen', known:'known', mastered:'mastered' }[state]
+}
+function cardClass(word, pos) {
+  const state = getState(word)
+  const pk = POS_COLOR[pos].key
+  if (state === 'unseen')   return 'word-card unseen'
+  if (state === 'seen')     return `word-card seen-${pk}`
+  if (state === 'known')    return `word-card known-${pk}`
+  return `word-card mastered-${pk}`
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let activeLevel = USER_LEVEL
+let activeFilter = 'all'
+let selectedWord = null
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function buildTabs() {
+  const bar = document.getElementById('tabs-bar')
+  bar.innerHTML = ''
+  LEVEL_ORDER.forEach(lvl => {
+    const idx = LEVEL_ORDER.indexOf(lvl)
+    const accessible = idx <= USER_LEVEL_IDX
+    const isCurrent = lvl === USER_LEVEL
+    const isActive = lvl === activeLevel
+    const words = VOCABULARY[lvl] ?? []
+    const seen = words.filter(w => getCount(w.word) > 0).length
+    const pct = Math.round((seen / words.length) * 100)
+
+    const tab = document.createElement('div')
+    tab.className = `tab${isActive ? ' active' : ''}${!accessible ? ' locked' : ''}`
+    if (accessible) tab.onclick = () => switchLevel(lvl)
+    tab.innerHTML = `
+      <div class="tab-label">${isCurrent ? `${lvl} · you` : lvl}</div>
+      <div class="tab-progress" style="margin-bottom:0">
+        <div class="tab-progress-fill${pct===100?' complete':''}" style="width:${accessible ? pct : 0}%"></div>
+      </div>
+    `
+    bar.appendChild(tab)
+  })
+}
+
+function switchLevel(lvl) {
+  activeLevel = lvl
+  selectedWord = null
+  buildTabs()
+  buildGrid()
+  updateFilterStat()
+  renderDetail()
+  document.getElementById('topbar-sep').style.display = 'none'
+  document.getElementById('topbar-word').textContent = ''
+}
+
+// ── FILTER ────────────────────────────────────────────────────────────────────
+function setFilter(f) {
+  activeFilter = f
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'))
+  const map = { all: 0, verb: 1, adjective: 2, adverb: 3 }
+  document.querySelectorAll('.chip')[map[f]].classList.add('active')
+  buildGrid()
+  updateFilterStat()
+}
+
+function updateFilterStat() {
+  const words = (VOCABULARY[activeLevel] ?? []).filter(w =>
+    activeFilter === 'all' || w.pos === activeFilter
+  )
+  const seen = words.filter(w => getCount(w.word) > 0).length
+  const total = words.length
+  const pct = total > 0 ? Math.round((seen / total) * 100) : 0
+  document.getElementById('filter-stat').innerHTML =
+    `<strong>${seen}</strong> of <strong>${total}</strong> words encountered at ${activeLevel} — <strong>${pct}%</strong>`
+}
+
+// ── GRID ──────────────────────────────────────────────────────────────────────
+function buildGrid() {
+  const container = document.getElementById('grid-scroll')
+  const words = VOCABULARY[activeLevel] ?? []
+  const posGroups = ['verb', 'adjective', 'adverb']
+  const posLabels = { verb: 'Verbs', adjective: 'Adjectives', adverb: 'Adverbs' }
+
+  container.innerHTML = ''
+
+  posGroups.forEach(pos => {
+    if (activeFilter !== 'all' && activeFilter !== pos) return
+    const group = words.filter(w => w.pos === pos)
+    const seenCount = group.filter(w => getCount(w.word) > 0).length
+    const pc = POS_COLOR[pos]
+
+    const section = document.createElement('div')
+    section.className = 'pos-section'
+
+    // Section header
+    const header = document.createElement('div')
+    header.className = 'pos-header'
+    header.innerHTML = `
+      <div class="pos-dot" style="background:${pc.dot}"></div>
+      <div class="pos-title" style="color:${pc.dot}">${posLabels[pos]}</div>
+      <div class="pos-tally">${seenCount} / ${group.length} encountered</div>
+      <div class="pos-divider"></div>
+    `
+    section.appendChild(header)
+
+    // Cards
+    const grid = document.createElement('div')
+    grid.className = 'word-grid'
+    group.forEach(w => {
+      const count = getCount(w.word)
+      const state = getState(w.word)
+      const isSelected = selectedWord === w.word
+
+      const card = document.createElement('div')
+      card.className = cardClass(w.word, w.pos) + (isSelected ? ' selected' : '')
+      card.onclick = () => selectWord(w)
+
+      // Dots (max 5 shown)
+      const maxDots = 5
+      const filledDots = Math.min(count, maxDots)
+      const dots = Array.from({length: maxDots}, (_, i) => {
+        const filled = i < filledDots
+        const cl = filled ? `count-dot filled-${pc.key}` : 'count-dot'
+        return `<span class="${cl}"></span>`
+      }).join('')
+
+      card.innerHTML = `
+        <div class="word-fr">${w.word}</div>
+        <div class="word-def">${w.def}</div>
+        <div class="word-footer">
+          <span class="word-pos-chip ${pc.chip}">${pc.label}</span>
+          <div class="word-count">
+            ${count > 0 ? dots : '<span style="font-size:10px;color:var(--light)">—</span>'}
+          </div>
+        </div>
+      `
+      grid.appendChild(card)
+    })
+    section.appendChild(grid)
+    container.appendChild(section)
+  })
+}
+
+// ── SELECT ────────────────────────────────────────────────────────────────────
+function selectWord(w) {
+  selectedWord = selectedWord === w.word ? null : w.word
+  buildGrid()
+  renderDetail()
+
+  const sep = document.getElementById('topbar-sep')
+  const tw = document.getElementById('topbar-word')
+  if (selectedWord) {
+    sep.style.display = 'inline'
+    tw.textContent = w.word
+  } else {
+    sep.style.display = 'none'
+    tw.textContent = ''
+  }
+}
+
+function renderDetail() {
+  const panel = document.getElementById('detail-panel')
+  if (!selectedWord) {
+    panel.innerHTML = `
+      <div class="detail-empty">
+        <div class="detail-empty-label">Selected word</div>
+        Click any word card to see its definition and progress.
+      </div>`
+    return
+  }
+
+  // Find word data
+  const allWords = Object.values(VOCABULARY).flat()
+  const w = allWords.find(x => x.word === selectedWord)
+  if (!w) return
+
+  const count = getCount(w.word)
+  const state = getState(w.word)
+  const pc = POS_COLOR[w.pos]
+  const example = EXAMPLES[w.word]
+
+  // Mastery dots
+  const maxDots = 6
+  const dots = Array.from({length: maxDots}, (_, i) =>
+    `<div class="meter-dot${i < Math.min(count, maxDots) ? ' filled' : ''}"></div>`
+  ).join('')
+
+  const stateBadge = {
+    unseen:   `<span class="state-badge unseen">○ Not seen yet</span>`,
+    seen:     `<span class="state-badge seen">◑ ${count}× encountered</span>`,
+    known:    `<span class="state-badge known">◕ ${count}× — known</span>`,
+    mastered: `<span class="state-badge mastered">✓ ${count}× — mastered</span>`,
+  }[state]
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-word">${w.word}</div>
+      <div class="detail-def">${w.def}</div>
+      <div class="detail-tags">
+        <span class="detail-tag" style="background:${pc.dot}22;color:${pc.dot}">${w.pos}</span>
+        <span class="detail-tag" style="background:var(--bg);color:var(--mid)">${w.word.includes(' ') ? w.word.slice(0,1).toUpperCase()+w.word.slice(1) : 'B1'}</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-label">Progress</div>
+      <div class="encounter-meter">${dots}</div>
+      <div class="encounter-label" style="margin-bottom:8px">${count === 0 ? 'Not yet encountered' : `Encountered in ${count} session${count===1?'':'s'}`}</div>
+      ${stateBadge}
+    </div>
+
+    ${example ? `
+    <div class="detail-section">
+      <div class="detail-section-label">Example</div>
+      <div class="example-box">
+        <div class="example-fr">${example.fr}</div>
+        <div class="example-en">${example.en}</div>
+      </div>
+    </div>` : ''}
+
+    <div class="detail-cta">
+      <button class="btn-practice">Practice in a session →</button>
+      <div class="btn-note">Opens today's session with this word prioritised</div>
+    </div>
+  `
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildTabs()
+buildGrid()
+updateFilterStat()
+renderDetail()
+</script>
+</body>
+</html>

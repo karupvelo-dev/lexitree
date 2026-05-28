@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maître Vault — Ledger Edit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --white: #fff;
+      --dark: #1a1a1a;
+      --mid: #555;
+      --light: #888;
+      --border: #e8e5df;
+      --gold: #C9A84C;
+      --card-bg: #090d18;       /* deep navy — richer than flat black */
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --cw: 168px;
+      --ch: 220px;
+      --cr: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #dedad5;
+      font-family: var(--font-sans);
+      color: var(--dark);
+      padding: 40px 20px 80px;
+    }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #999; text-align: center;
+      margin: 40px 0 16px;
+    }
+
+    /* Phone shell */
+    .phone, .share-phone {
+      max-width: 430px; margin: 0 auto;
+      background: var(--bg); border-radius: 24px;
+      overflow: visible;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: var(--white);
+      border-bottom: 1px solid var(--border);
+      border-radius: 24px 24px 0 0;
+    }
+    .nav-logo { font-family: var(--font-serif); font-weight: 800; font-size: 16px; letter-spacing: -0.02em; }
+    .nav-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: #fff; font-weight: 700;
+    }
+    .nav-cta {
+      font-size: 11px; font-weight: 600; color: var(--mid);
+      padding: 5px 12px; border: 1px solid var(--border);
+      border-radius: 100px; text-decoration: none;
+    }
+
+    .profile-header { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 18px 14px; }
+    .profile-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .big-avatar {
+      width: 40px; height: 40px; border-radius: 50%; background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .profile-name { font-size: 14px; font-weight: 700; }
+    .profile-sub { font-size: 11px; color: var(--light); margin-top: 1px; }
+    .stats-row { display: flex; }
+    .stat { flex: 1; text-align: center; padding: 8px 0; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+    .stat-val { font-size: 16px; font-weight: 800; line-height: 1.1; }
+    .stat-val.gold { color: var(--gold); }
+    .stat-lbl { font-size: 9px; color: var(--light); margin-top: 2px; }
+
+    .tabs { display: flex; background: var(--white); border-bottom: 1px solid var(--border); }
+    .tab { flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 600; color: var(--light); }
+    .tab.active { color: var(--dark); border-bottom: 2px solid var(--dark); }
+
+    /* Vault */
+    .vault { padding: 24px 20px 48px; }
+    .vault-section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--light); margin-bottom: 16px;
+    }
+    .vault-divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    /* ═══════════════════════════════════════════
+       COMPLETED LEVEL DECKS
+       Each level is a tight card stack — the
+       whole deck is "closed" (all slots filled).
+       Clicking would fan them open in final app.
+    ═══════════════════════════════════════════ */
+    .completed-row { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    .mini-deck {
+      position: relative;
+      width: 64px;
+      height: 80px;
+      cursor: default;
+    }
+
+    /* Shadow cards behind */
+    .mini-deck::before,
+    .mini-deck::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 7px;
+    }
+    .mini-deck::before { transform: translate(3px, 4px); z-index: 0; }
+    .mini-deck::after  { transform: translate(6px, 8px); z-index: -1; border-color: rgba(201,168,76,0.15); }
+
+    .mini-card {
+      position: relative; z-index: 1;
+      width: 64px; height: 80px;
+      background: var(--card-bg);
+      border: 1px solid var(--gold);
+      border-radius: 7px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 4px;
+    }
+    .mini-level {
+      font-family: var(--font-serif);
+      font-size: 18px; font-weight: 700;
+      color: rgba(201,168,76,0.55);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.10), 0 -1px 0 rgba(0,0,0,1);
+    }
+    .mini-count {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(201,168,76,0.25);
+    }
+
+    /* ═══════════════════════════════════════════
+       LEDGER CARD — the main concept
+       One physical card; concept names are
+       engraved in rows. When rows fill up, a
+       new card is added to the deck.
+    ═══════════════════════════════════════════ */
+    .deck-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* The deck: a stack of ledger cards */
+    .deck {
+      position: relative;
+      width: var(--cw);
+      height: var(--ch);
+      cursor: pointer;
+    }
+
+    /* Depth cards peeking behind — only show when >1 card */
+    .deck.multi::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: var(--cr);
+      transform: translate(5px, 6px);
+      z-index: 0;
+    }
+    .deck.multi::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.15);
+      border-radius: var(--cr);
+      transform: translate(10px, 12px);
+      z-index: -1;
+    }
+
+    /* The ledger card itself */
+    .ledger-card {
+      position: relative; z-index: 1;
+      width: var(--cw);
+      height: var(--ch);
+      background: var(--card-bg);
+      border: 1px solid var(--gold);
+      border-radius: var(--cr);
+      overflow: hidden;
+      transition: transform 0.4s cubic-bezier(0.34,1.4,0.64,1);
+    }
+
+    /* Top-edge light catch */
+    .ledger-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: rgba(255,255,255,0.08);
+      z-index: 2;
+    }
+
+    /* Gold glow */
+    .ledger-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 12%; right: 12%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+      z-index: 3;
+    }
+
+    /* Card interior */
+    .card-inner {
+      position: absolute; inset: 0;
+      padding: 14px 14px 12px;
+      display: flex; flex-direction: column;
+    }
+
+    /* Card header */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .card-level-tag {
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(201,168,76,0.45);
+    }
+    .card-num {
+      font-family: var(--font-serif);
+      font-size: 10px; font-weight: 400;
+      color: rgba(201,168,76,0.25);
+      font-style: italic;
+    }
+
+    /* Gold hairline under header */
+    .card-rule {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(201,168,76,0.5), rgba(201,168,76,0.1));
+      margin-bottom: 10px;
+    }
+
+    /* Name rows */
+    .name-rows {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .name-row {
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .name-row:last-child { border-bottom: none; }
+
+    /* Row number */
+    .row-num {
+      font-size: 8px; font-weight: 700;
+      color: rgba(201,168,76,0.2);
+      letter-spacing: 0.06em;
+      min-width: 12px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* Engraved gold name */
+    .row-name {
+      font-family: var(--font-serif);
+      font-size: 11px; font-weight: 600;
+      color: rgba(201,168,76,0.52);
+      text-shadow:
+        0  1px 0 rgba(255,255,255,0.10),
+        0 -1px 0 rgba(0,0,0,1.00);
+      line-height: 1.25;
+    }
+
+    /* Empty slot — dashed rule, space waiting to be filled */
+    .name-row.empty .row-name {
+      display: none;
+    }
+    .name-row.empty {
+      border-bottom-style: dashed;
+      border-bottom-color: rgba(201,168,76,0.06);
+      opacity: 0.5;
+    }
+
+    /* Deck hover hint */
+    .deck-hint {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--light);
+      transition: opacity 0.3s ease;
+    }
+
+    /* ═══════════════════════════════════════════
+       SPREAD STATE — hover deck to spread cards
+    ═══════════════════════════════════════════ */
+    .spread-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spread {
+      position: relative;
+      width: var(--cw);
+      height: var(--ch);
+      cursor: pointer;
+    }
+
+    .spread .sc {
+      position: absolute;
+      top: 0; left: 0;
+      width: var(--cw);
+      height: var(--ch);
+      background: var(--card-bg);
+      border: 1px solid var(--gold);
+      border-radius: var(--cr);
+      overflow: hidden;
+      transition: transform 0.55s cubic-bezier(0.34,1.4,0.64,1),
+                  box-shadow 0.3s ease;
+    }
+
+    .spread .sc::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: rgba(255,255,255,0.08);
+      z-index: 2;
+    }
+
+    /* Rest — slightly offset to show depth */
+    .spread .sc:nth-child(1) { transform: translateX(0);   z-index: 2; }
+    .spread .sc:nth-child(2) { transform: translateX(5px); z-index: 1; }
+
+    /* Hover — spread apart */
+    .spread:hover .sc:nth-child(1) { transform: translateX(-92px); transition-delay: 0ms; }
+    .spread:hover .sc:nth-child(2) { transform: translateX( 92px); transition-delay: 30ms; }
+
+    .spread:hover .sc:hover {
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.6), 0 -8px 28px rgba(0,0,0,0.5);
+      z-index: 10 !important;
+    }
+
+    .spread:hover ~ .spread-hint { opacity: 0; }
+    .spread-hint {
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--light);
+      transition: opacity 0.3s ease;
+    }
+
+    /* Share page */
+    .share-header {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 20px 18px 16px; border-radius: 24px 24px 0 0;
+    }
+    .share-name { font-size: 14px; font-weight: 700; }
+    .share-meta { font-size: 10px; color: var(--light); margin-top: 2px; }
+    .share-count-row { display: flex; align-items: baseline; gap: 6px; margin-top: 12px; }
+    .share-count { font-family: var(--font-serif); font-size: 32px; font-weight: 700; color: var(--gold); letter-spacing: -0.03em; line-height: 1; }
+    .share-count-label { font-size: 11px; color: var(--light); font-weight: 500; }
+    .share-body { padding: 24px 20px 32px; }
+    .share-btn {
+      display: block; width: 100%; padding: 15px;
+      background: var(--white); color: var(--dark);
+      text-align: center; font-family: var(--font-serif);
+      font-size: 15px; font-weight: 600;
+      border-radius: 10px; text-decoration: none;
+      border: 1.5px solid var(--dark); margin-top: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ CLOSE-UP ══════════════════════════════════ -->
+<p class="section-label">Ledger card — close-up</p>
+<div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-bottom:0">
+
+  <!-- Single card, partially filled (C1 in progress) -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999">Card in progress</div>
+    <div style="width:var(--cw);height:var(--ch);background:var(--card-bg);border:1px solid var(--gold);border-radius:var(--cr);overflow:hidden;position:relative">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,0.08)"></div>
+      <div style="position:absolute;inset:0;padding:14px 14px 12px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:8px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,168,76,0.45)">C1</span>
+          <span style="font-family:var(--font-serif);font-size:10px;font-weight:400;color:rgba(201,168,76,0.25);font-style:italic">i</span>
+        </div>
+        <div style="height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),rgba(201,168,76,0.1));margin-bottom:10px"></div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">1</span>
+            <span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Subjonctif présent</span>
+          </div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">2</span>
+            <span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Conditionnel passé</span>
+          </div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">3</span>
+            <span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Pronoms relatifs</span>
+          </div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">4</span>
+            <span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Voix passive</span>
+          </div>
+          <!-- Empty slots — awaiting more Maîtres -->
+          <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;align-items:center;gap:8px;opacity:0.5">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">5</span>
+          </div>
+          <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;align-items:center;gap:8px;opacity:0.5">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">6</span>
+          </div>
+          <div style="padding:7px 0;display:flex;align-items:center;gap:8px;opacity:0.5">
+            <span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full card (A1 — complete) -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#999">Full card</div>
+    <div style="width:var(--cw);height:var(--ch);background:var(--card-bg);border:1px solid var(--gold);border-radius:var(--cr);overflow:hidden;position:relative">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:rgba(255,255,255,0.08)"></div>
+      <div style="position:absolute;inset:0;padding:14px 14px 12px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:8px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,168,76,0.45)">A1</span>
+          <span style="font-family:var(--font-serif);font-size:10px;font-weight:400;color:rgba(201,168,76,0.25);font-style:italic">i</span>
+        </div>
+        <div style="height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),rgba(201,168,76,0.1));margin-bottom:10px"></div>
+        <div style="flex:1;display:flex;flex-direction:column">
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">1</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Présent indicatif</span></div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">2</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Articles définis</span></div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">3</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Négation simple</span></div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">4</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Questions directes</span></div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">5</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Adjectifs qualificatifs</span></div>
+          <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">6</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Verbes pronominaux</span></div>
+          <div style="padding:7px 0;display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">7</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Impératif présent</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ══════════════════════════════════ PROFILE ══════════════════════════════════ -->
+<p class="section-label">Profile — Maîtres (Ledger Edit)</p>
+
+<div class="phone">
+  <div class="nav">
+    <span class="nav-logo">LexiTree</span>
+    <div class="nav-avatar">N</div>
+  </div>
+
+  <div class="profile-header">
+    <div class="profile-row">
+      <div class="big-avatar">N</div>
+      <div>
+        <div class="profile-name">Nithin Sebastian</div>
+        <div class="profile-sub">C1 · 14 day streak</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val gold">50</div><div class="stat-lbl">Maîtres</div></div>
+      <div class="stat"><div class="stat-val">142</div><div class="stat-lbl">Sessions</div></div>
+      <div class="stat"><div class="stat-val">83%</div><div class="stat-lbl">Accuracy</div></div>
+      <div class="stat"><div class="stat-val">91</div><div class="stat-lbl">Vocab</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab">Stats</div>
+    <div class="tab">Concepts</div>
+    <div class="tab active">Maîtres</div>
+  </div>
+
+  <div class="vault">
+
+    <!-- Completed levels — each is a closed full deck -->
+    <div class="vault-section-label">Completed</div>
+    <div class="completed-row">
+      <div class="mini-deck">
+        <div class="mini-card"><span class="mini-level">A1</span><span class="mini-count">7 / 7</span></div>
+      </div>
+      <div class="mini-deck">
+        <div class="mini-card"><span class="mini-level">A2</span><span class="mini-count">7 / 7</span></div>
+      </div>
+      <div class="mini-deck">
+        <div class="mini-card"><span class="mini-level">B1</span><span class="mini-count">7 / 7</span></div>
+      </div>
+      <div class="mini-deck">
+        <div class="mini-card"><span class="mini-level">B2</span><span class="mini-count">7 / 7</span></div>
+      </div>
+    </div>
+
+    <div class="vault-divider"></div>
+
+    <!-- C1 — active deck, 2 cards (card 1 full at 7, card 2 partial) -->
+    <!-- Hover to spread the two cards apart -->
+    <div class="vault-section-label">C1 — card 2 of 2</div>
+    <div class="spread-stage">
+      <div class="spread">
+
+        <!-- Card 1 — full (names 1–7) -->
+        <div class="sc">
+          <div style="position:absolute;inset:0;padding:14px 14px 12px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:8px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,168,76,0.45)">C1</span>
+              <span style="font-family:var(--font-serif);font-size:10px;color:rgba(201,168,76,0.25);font-style:italic">i</span>
+            </div>
+            <div style="height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),rgba(201,168,76,0.1));margin-bottom:10px"></div>
+            <div style="flex:1;display:flex;flex-direction:column">
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">1</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Subjonctif présent</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">2</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Conditionnel passé</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">3</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Pronoms relatifs</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">4</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Voix passive</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">5</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Discours indirect</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">6</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Gérondif</span></div>
+              <div style="padding:7px 0;display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">7</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Participe passé</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 — current (3 names, 4 slots empty) -->
+        <div class="sc">
+          <div style="position:absolute;inset:0;padding:14px 14px 12px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:8px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,168,76,0.45)">C1</span>
+              <span style="font-family:var(--font-serif);font-size:10px;color:rgba(201,168,76,0.25);font-style:italic">ii</span>
+            </div>
+            <div style="height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),rgba(201,168,76,0.1));margin-bottom:10px"></div>
+            <div style="flex:1;display:flex;flex-direction:column">
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">8</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Accord de l'adj.</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">9</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Infinitif passé</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;align-items:center;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">10</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Négation complexe</span></div>
+              <!-- Empty slots -->
+              <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;align-items:center;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">11</span></div>
+              <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;align-items:center;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">12</span></div>
+              <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;align-items:center;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">13</span></div>
+              <div style="padding:7px 0;display:flex;align-items:center;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">14</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="spread-hint">Hover to open</div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════ SHARE ══════════════════════════════════ -->
+<p class="section-label">Collection Share Page (Ledger Edit)</p>
+
+<div class="share-phone">
+  <div class="share-header">
+    <div class="share-name">Nithin Sebastian</div>
+    <div class="share-meta">C1 · French grammar</div>
+    <div class="share-count-row">
+      <span class="share-count">50</span>
+      <span class="share-count-label">Maîtres earned</span>
+    </div>
+  </div>
+
+  <div class="share-body">
+
+    <div class="vault-section-label" style="margin-bottom:16px">Completed</div>
+    <div class="completed-row" style="margin-bottom:0">
+      <div class="mini-deck"><div class="mini-card"><span class="mini-level">A1</span><span class="mini-count">7 / 7</span></div></div>
+      <div class="mini-deck"><div class="mini-card"><span class="mini-level">A2</span><span class="mini-count">7 / 7</span></div></div>
+      <div class="mini-deck"><div class="mini-card"><span class="mini-level">B1</span><span class="mini-count">7 / 7</span></div></div>
+      <div class="mini-deck"><div class="mini-card"><span class="mini-level">B2</span><span class="mini-count">7 / 7</span></div></div>
+    </div>
+
+    <div class="vault-divider"></div>
+
+    <div class="vault-section-label" style="margin-bottom:16px">C1 — in progress</div>
+    <div class="spread-stage">
+      <div class="spread">
+        <div class="sc">
+          <div style="position:absolute;inset:0;padding:14px 14px 12px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:8px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,168,76,0.45)">C1</span>
+              <span style="font-family:var(--font-serif);font-size:10px;color:rgba(201,168,76,0.25);font-style:italic">i</span>
+            </div>
+            <div style="height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),rgba(201,168,76,0.1));margin-bottom:10px"></div>
+            <div style="flex:1;display:flex;flex-direction:column">
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">1</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Subjonctif présent</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">2</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Conditionnel passé</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">3</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Pronoms relatifs</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">4</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Voix passive</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">5</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Discours indirect</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">6</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Gérondif</span></div>
+              <div style="padding:7px 0;display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">7</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Participe passé</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="sc">
+          <div style="position:absolute;inset:0;padding:14px 14px 12px;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:8px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,168,76,0.45)">C1</span>
+              <span style="font-family:var(--font-serif);font-size:10px;color:rgba(201,168,76,0.25);font-style:italic">ii</span>
+            </div>
+            <div style="height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),rgba(201,168,76,0.1));margin-bottom:10px"></div>
+            <div style="flex:1;display:flex;flex-direction:column">
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">8</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Accord de l'adj.</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">9</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Infinitif passé</span></div>
+              <div style="padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.1);display:flex;gap:8px"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.2);min-width:12px;text-align:right">10</span><span style="font-family:var(--font-serif);font-size:11px;font-weight:600;color:rgba(201,168,76,0.52);text-shadow:0 1px 0 rgba(255,255,255,0.10),0 -1px 0 rgba(0,0,0,1);line-height:1.25">Négation complexe</span></div>
+              <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">11</span></div>
+              <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">12</span></div>
+              <div style="padding:7px 0;border-bottom:1px dashed rgba(201,168,76,0.07);display:flex;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">13</span></div>
+              <div style="padding:7px 0;display:flex;gap:8px;opacity:0.4"><span style="font-size:8px;font-weight:700;color:rgba(201,168,76,0.15);min-width:12px;text-align:right">14</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="spread-hint">Hover to open</div>
+    </div>
+
+    <a href="#" class="share-btn">Start learning French</a>
+
+  </div>
+</div>
+
+</body>
+</html>

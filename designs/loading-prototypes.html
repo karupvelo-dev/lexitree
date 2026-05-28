@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Loading Prototypes — A · B · C</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0ede8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Tab bar ── */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    padding: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #f0ede8;
+    width: 100%;
+    justify-content: center;
+  }
+  .tab {
+    padding: 8px 22px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    border-radius: 500px;
+    border: 1.5px solid #d4cfc8;
+    background: transparent;
+    color: #aaa;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-family: 'Inter', sans-serif;
+  }
+  .tab.active {
+    background: #1a1a1a;
+    border-color: #1a1a1a;
+    color: #fff;
+  }
+
+  /* ── Stage ── */
+  .stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 24px 48px;
+    width: 100%;
+  }
+
+  .proto { display: none; width: 100%; max-width: 480px; flex-direction: column; align-items: center; gap: 0; }
+  .proto.active { display: flex; }
+
+  /* ── Card shell ── */
+  .card {
+    background: #fff;
+    border: 1px solid #e8e5df;
+    border-radius: 16px;
+    width: 100%;
+    padding: 56px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    gap: 28px;
+    text-align: center;
+  }
+
+  /* ── Text area (shared) ── */
+  .txt-fr {
+    font-family: 'Lora', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.5;
+    transition: opacity 0.35s ease;
+    min-height: 26px;
+  }
+  .txt-en {
+    font-size: 13px;
+    color: #bbb;
+    font-weight: 400;
+    margin-top: 5px;
+    transition: opacity 0.35s ease;
+    min-height: 20px;
+  }
+  .txt-wrap { display: flex; flex-direction: column; align-items: center; }
+
+  /* ── A: Card Stack ── */
+  .stack-scene {
+    position: relative;
+    width: 80px;
+    height: 68px;
+  }
+  .s-card {
+    position: absolute;
+    width: 80px;
+    height: 46px;
+    background: #fff;
+    border: 1.5px solid #e8e5df;
+    border-radius: 7px;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+
+  /* ── B: Tree ── */
+  .tree-wrap { width: 100px; height: 100px; display: flex; align-items: flex-end; justify-content: center; }
+  .tree-svg { overflow: visible; }
+  .tl {
+    fill: none;
+    stroke: #1a1a1a;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .tf {
+    fill: #1a1a1a;
+    opacity: 0;
+    transform-origin: center;
+    transform: scale(0);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  /* ── C: Bricks ── */
+  .brick-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 18px);
+    gap: 3px;
+  }
+  .brick-row { display: contents; }
+  .brick {
+    width: 18px;
+    height: 13px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    opacity: 0;
+    transform: scale(0.5) translateY(4px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+
+  /* ── Proto label ── */
+  .proto-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('a')">A · Cards</button>
+  <button class="tab"        onclick="show('b')">B · Tree</button>
+  <button class="tab"        onclick="show('c')">C · Bricks</button>
+</div>
+
+<div class="stage">
+
+  <!-- ── PROTO A: Card Stack ── -->
+  <div class="proto active" id="proto-a">
+    <div class="card">
+      <div class="stack-scene" id="stack-scene">
+        <div class="s-card" id="sc0"></div>
+        <div class="s-card" id="sc1"></div>
+        <div class="s-card" id="sc2"></div>
+        <div class="s-card" id="sc3"></div>
+        <div class="s-card" id="sc4"></div>
+        <div class="s-card" id="sc5"></div>
+        <div class="s-card" id="sc6"></div>
+      </div>
+      <div class="txt-wrap">
+        <div class="txt-fr" id="a-fr">Préparation des questions…</div>
+        <div class="txt-en" id="a-en">Building your 7 questions</div>
+      </div>
+    </div>
+    <div class="proto-label">A — 7 questions stacking into place</div>
+  </div>
+
+  <!-- ── PROTO B: Tree ── -->
+  <div class="proto" id="proto-b">
+    <div class="card">
+      <div class="tree-wrap">
+        <svg class="tree-svg" id="tree-svg" width="100" height="100" viewBox="0 0 100 100">
+          <line class="tl" id="tr" x1="50" y1="98" x2="50" y2="62" stroke-dasharray="36" stroke-dashoffset="36"/>
+          <line class="tl" id="tbl" x1="50" y1="75" x2="24" y2="48" stroke-dasharray="37" stroke-dashoffset="37"/>
+          <line class="tl" id="tbr" x1="50" y1="70" x2="76" y2="44" stroke-dasharray="37" stroke-dashoffset="37"/>
+          <line class="tl" id="tbll" x1="24" y1="48" x2="10" y2="30" stroke-dasharray="22" stroke-dashoffset="22"/>
+          <line class="tl" id="tblr" x1="24" y1="48" x2="36" y2="30" stroke-dasharray="20" stroke-dashoffset="20"/>
+          <line class="tl" id="tbrl" x1="76" y1="44" x2="64" y2="26" stroke-dasharray="20" stroke-dashoffset="20"/>
+          <line class="tl" id="tbrr" x1="76" y1="44" x2="90" y2="28" stroke-dasharray="20" stroke-dashoffset="20"/>
+          <circle class="tf" id="lf0" cx="10"  cy="26"  r="3"/>
+          <circle class="tf" id="lf1" cx="36"  cy="26"  r="3"/>
+          <circle class="tf" id="lf2" cx="64"  cy="22"  r="3"/>
+          <circle class="tf" id="lf3" cx="90"  cy="24"  r="3"/>
+          <circle class="tf" id="lf4" cx="50"  cy="58"  r="2.5"/>
+          <circle class="tf" id="lf5" cx="22"  cy="44"  r="2.5"/>
+          <circle class="tf" id="lf6" cx="78"  cy="40"  r="2.5"/>
+        </svg>
+      </div>
+      <div class="txt-wrap">
+        <div class="txt-fr" id="b-fr">Votre leçon prend forme…</div>
+        <div class="txt-en" id="b-en">Your lesson is taking shape</div>
+      </div>
+    </div>
+    <div class="proto-label">B — LexiTree growing branch by branch</div>
+  </div>
+
+  <!-- ── PROTO C: Bricks ── -->
+  <div class="proto" id="proto-c">
+    <div class="card">
+      <div class="brick-grid" id="brick-grid">
+        <!-- 3 rows × 5 cols = 15 bricks -->
+        <div class="brick" data-row="0"></div><div class="brick" data-row="0"></div><div class="brick" data-row="0"></div><div class="brick" data-row="0"></div><div class="brick" data-row="0"></div>
+        <div class="brick" data-row="1"></div><div class="brick" data-row="1"></div><div class="brick" data-row="1"></div><div class="brick" data-row="1"></div><div class="brick" data-row="1"></div>
+        <div class="brick" data-row="2"></div><div class="brick" data-row="2"></div><div class="brick" data-row="2"></div><div class="brick" data-row="2"></div><div class="brick" data-row="2"></div>
+      </div>
+      <div class="txt-wrap">
+        <div class="txt-fr" id="c-fr">Construction en cours…</div>
+        <div class="txt-en" id="c-en">Laying the foundations</div>
+      </div>
+    </div>
+    <div class="proto-label">C — Building block by block, bottom up</div>
+  </div>
+
+</div>
+
+<script>
+  /* ── Shared messages ── */
+  const msgs = [
+    { fr: 'Préparation de votre leçon…',        en: 'Getting your lesson ready.' },
+    { fr: 'Sort de conjugaison lancé…',          en: 'Conjugation spell successfully cast.' },
+    { fr: 'Les verbes se réveillent…',           en: 'The verbs are waking up.' },
+    { fr: 'Consultation du grand livre…',        en: 'Consulting the grand grammar tome.' },
+    { fr: 'Le professeur réfléchit…',            en: 'The professor is thinking.' },
+    { fr: 'Vos questions arrivent bientôt…',     en: 'Your questions are almost ready.' },
+    { fr: 'Grammaire en cours de chargement…',   en: 'Grammar loading.' },
+  ]
+
+  function cycleText(frEl, enEl, interval = 4200) {
+    let i = 0
+    function next() {
+      frEl.style.opacity = '0'
+      enEl.style.opacity = '0'
+      setTimeout(() => {
+        i = (i + 1) % msgs.length
+        frEl.textContent = msgs[i].fr
+        enEl.textContent = msgs[i].en
+        frEl.style.opacity = '1'
+        enEl.style.opacity = '1'
+      }, 350)
+    }
+    return setInterval(next, interval)
+  }
+
+  /* ── Tab switching ── */
+  let activeTimers = []
+  function clearTimers() { activeTimers.forEach(clearTimeout); activeTimers = [] }
+
+  function show(id) {
+    document.querySelectorAll('.proto').forEach(p => p.classList.remove('active'))
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+    document.getElementById('proto-' + id).classList.add('active')
+    document.querySelectorAll('.tab')[['a','b','c'].indexOf(id)].classList.add('active')
+    clearTimers()
+    if (id === 'a') startA()
+    if (id === 'b') startB()
+    if (id === 'c') startC()
+  }
+
+  /* ─────────── A: Card Stack ─────────── */
+  const OFFSETS = [0, 5, 10, 15, 20, 25, 30]
+
+  function startA() {
+    cycleText(document.getElementById('a-fr'), document.getElementById('a-en'))
+    loopA()
+  }
+
+  function loopA() {
+    const cards = [0,1,2,3,4,5,6].map(i => document.getElementById('sc'+i))
+
+    // Reset
+    cards.forEach((c, i) => {
+      c.style.transition = 'none'
+      c.style.opacity = '0'
+      c.style.transform = 'translateY(10px)'
+      c.style.bottom = OFFSETS[i] + 'px'
+      c.style.borderColor = '#e8e5df'
+    })
+
+    // Animate in, bottom card first
+    cards.forEach((card, i) => {
+      const t = setTimeout(() => {
+        card.style.transition = 'opacity 0.28s ease, transform 0.28s ease'
+        card.style.opacity = '1'
+        card.style.transform = 'translateY(0)'
+        // Top card gets dark border
+        if (i === 6) {
+          setTimeout(() => { card.style.borderColor = '#1a1a1a' }, 280)
+        }
+      }, i * 360)
+      activeTimers.push(t)
+    })
+
+    // Hold then fade out and loop
+    const hold = setTimeout(() => {
+      cards.forEach(c => {
+        c.style.transition = 'opacity 0.4s ease'
+        c.style.opacity = '0'
+      })
+      const next = setTimeout(loopA, 500)
+      activeTimers.push(next)
+    }, 6 * 360 + 1600)
+    activeTimers.push(hold)
+  }
+
+  /* ─────────── B: Tree ─────────── */
+  const treeLines = [
+    { id: 'tr',   delay: 200,  dur: 400 },
+    { id: 'tbl',  delay: 680,  dur: 320 },
+    { id: 'tbr',  delay: 900,  dur: 320 },
+    { id: 'tbll', delay: 1150, dur: 260 },
+    { id: 'tblr', delay: 1300, dur: 240 },
+    { id: 'tbrl', delay: 1420, dur: 240 },
+    { id: 'tbrr', delay: 1560, dur: 240 },
+  ]
+  const treeLeaves = [
+    { id: 'lf0', delay: 1680 },
+    { id: 'lf1', delay: 1780 },
+    { id: 'lf2', delay: 1860 },
+    { id: 'lf3', delay: 1960 },
+    { id: 'lf4', delay: 1440 },
+    { id: 'lf5', delay: 1580 },
+    { id: 'lf6', delay: 1740 },
+  ]
+
+  function startB() {
+    cycleText(document.getElementById('b-fr'), document.getElementById('b-en'))
+    loopB()
+  }
+
+  function loopB() {
+    // Reset lines
+    treeLines.forEach(({ id, delay, dur }) => {
+      const el = document.getElementById(id)
+      const len = parseFloat(el.getAttribute('stroke-dasharray'))
+      el.style.transition = 'none'
+      el.style.strokeDashoffset = len
+    })
+    // Reset leaves
+    treeLeaves.forEach(({ id }) => {
+      const el = document.getElementById(id)
+      el.style.transition = 'none'
+      el.style.opacity = '0'
+      el.style.transform = 'scale(0)'
+    })
+
+    // Draw lines
+    treeLines.forEach(({ id, delay, dur }) => {
+      const t = setTimeout(() => {
+        const el = document.getElementById(id)
+        el.style.transition = `stroke-dashoffset ${dur}ms ease`
+        el.style.strokeDashoffset = '0'
+      }, delay)
+      activeTimers.push(t)
+    })
+
+    // Pop leaves
+    treeLeaves.forEach(({ id, delay }) => {
+      const t = setTimeout(() => {
+        const el = document.getElementById(id)
+        el.style.transition = 'opacity 0.15s ease, transform 0.15s cubic-bezier(0.34,1.56,0.64,1)'
+        el.style.opacity = '1'
+        el.style.transform = 'scale(1)'
+      }, delay)
+      activeTimers.push(t)
+    })
+
+    // Hold then fade out and loop
+    const hold = setTimeout(() => {
+      const svg = document.getElementById('tree-svg')
+      svg.style.transition = 'opacity 0.5s ease'
+      svg.style.opacity = '0'
+      const next = setTimeout(() => {
+        svg.style.transition = 'none'
+        svg.style.opacity = '1'
+        loopB()
+      }, 600)
+      activeTimers.push(next)
+    }, 2200)
+    activeTimers.push(hold)
+  }
+
+  /* ─────────── C: Bricks ─────────── */
+  function startC() {
+    cycleText(document.getElementById('c-fr'), document.getElementById('c-en'))
+    loopC()
+  }
+
+  function loopC() {
+    const allBricks = Array.from(document.querySelectorAll('.brick'))
+    // Group by row (0=top, 1=mid, 2=bottom in DOM order)
+    // We want bottom row (row=2) first
+    const rows = [2, 1, 0]
+
+    // Reset all
+    allBricks.forEach(b => {
+      b.style.transition = 'none'
+      b.style.opacity = '0'
+      b.style.transform = 'scale(0.5) translateY(4px)'
+    })
+
+    let delay = 80
+    rows.forEach(row => {
+      const rowBricks = allBricks.filter(b => b.dataset.row == row)
+      rowBricks.forEach(brick => {
+        const d = delay
+        const t = setTimeout(() => {
+          brick.style.transition = 'opacity 0.16s ease, transform 0.2s cubic-bezier(0.34,1.4,0.64,1)'
+          brick.style.opacity = '1'
+          brick.style.transform = 'scale(1) translateY(0)'
+        }, d)
+        activeTimers.push(t)
+        delay += 90
+      })
+      delay += 120 // gap between rows
+    })
+
+    // Hold then fade out and loop
+    const hold = setTimeout(() => {
+      allBricks.forEach(b => {
+        b.style.transition = 'opacity 0.3s ease'
+        b.style.opacity = '0'
+      })
+      const next = setTimeout(loopC, 400)
+      activeTimers.push(next)
+    }, delay + 1200)
+    activeTimers.push(hold)
+  }
+
+  /* ── Boot ── */
+  startA()
+</script>
+
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lexitree — Identity Artifact Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --dark: #000; --mid: #545454; --light: #ADADAD; --border: #E2E2E2;
+      --bg: #F6F6F6; --white: #FFF; --green: #0E8345;
+      --font-sans: 'Inter', system-ui, sans-serif;
+      --font-serif: 'Lora', Georgia, serif;
+    }
+    body { font-family: var(--font-sans); background: #EFEFEF; color: var(--dark); -webkit-font-smoothing: antialiased; padding: 48px 24px; }
+
+    h2 { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light); margin-bottom: 20px; margin-top: 48px; }
+    h2:first-of-type { margin-top: 0; }
+
+    .section-note { font-size: 13px; color: var(--mid); max-width: 520px; margin-bottom: 28px; line-height: 1.6; }
+
+    /* ── LAYOUT ── */
+    .row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+
+    /* ══════════════════════════════════════════
+       1. SHAREABLE RESULT CARD
+    ══════════════════════════════════════════ */
+
+    /* The card itself — what gets screenshotted / shared */
+    .share-card {
+      width: 320px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 24px rgba(0,0,0,0.08);
+      font-family: var(--font-sans);
+    }
+
+    .share-card-logo {
+      font-size: 13px; font-weight: 800; color: #000; letter-spacing: -0.04em;
+      margin-bottom: 20px;
+    }
+
+    .share-card-eyebrow {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--light); margin-bottom: 4px;
+    }
+
+    .share-card-concept {
+      font-family: var(--font-serif); font-size: 20px; font-weight: 600;
+      color: var(--dark); margin-bottom: 20px; line-height: 1.3;
+    }
+
+    /* 7-square result grid */
+    .result-grid {
+      display: flex; gap: 6px; margin-bottom: 20px;
+    }
+    .rg-cell {
+      width: 32px; height: 32px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+    }
+    .rg-cell.correct { background: #000; color: #fff; }
+    .rg-cell.wrong   { background: #E2E2E2; color: #ADADAD; }
+
+    .share-card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 16px; border-top: 1px solid #F0F0F0;
+    }
+    .share-card-score {
+      font-size: 22px; font-weight: 800; color: var(--dark); letter-spacing: -0.03em;
+    }
+    .share-card-score span { font-size: 13px; font-weight: 400; color: var(--light); }
+    .share-card-badges { display: flex; gap: 6px; }
+    .badge {
+      font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 500px;
+      border: 1px solid var(--border); color: var(--mid); background: var(--bg);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .badge.level { background: #000; color: #fff; border-color: #000; }
+
+    .share-card-url {
+      text-align: center; font-size: 10px; color: var(--light);
+      margin-top: 14px; letter-spacing: 0.03em;
+    }
+
+    /* In-app share moment — what the user sees after completing a session */
+    .in-app-panel {
+      width: 360px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .in-app-header {
+      padding: 20px 20px 0;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--light);
+    }
+    .in-app-preview {
+      margin: 12px 20px;
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .in-app-mini-grid { display: flex; gap: 4px; }
+    .mini-cell {
+      width: 18px; height: 18px; border-radius: 4px;
+    }
+    .mini-cell.correct { background: #000; }
+    .mini-cell.wrong   { background: #CECECE; }
+    .in-app-preview-text .concept-label {
+      font-size: 12px; color: var(--mid);
+    }
+    .in-app-preview-text .score-label {
+      font-size: 18px; font-weight: 700; color: var(--dark); letter-spacing: -0.02em;
+    }
+    .in-app-actions {
+      display: flex; gap: 8px; padding: 12px 20px 20px;
+    }
+    .btn-share {
+      flex: 1; padding: 12px; background: #000; color: #fff;
+      border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-copy {
+      padding: 12px 14px; background: var(--bg); color: var(--mid);
+      border: 1px solid var(--border); border-radius: 10px; font-size: 13px;
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+    }
+
+    /* ══════════════════════════════════════════
+       2. PHRASE DU JOUR
+    ══════════════════════════════════════════ */
+
+    .phrasedujour-card {
+      width: 360px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .pdj-header {
+      background: #000; padding: 16px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .pdj-logo { font-size: 13px; font-weight: 800; color: #fff; letter-spacing: -0.04em; }
+    .pdj-tag {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .pdj-body { padding: 20px; }
+
+    .pdj-eyebrow {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--light); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .pdj-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+    .pdj-sentence {
+      font-family: var(--font-serif); font-size: 20px; color: var(--dark);
+      line-height: 1.5; margin-bottom: 20px;
+    }
+    .pdj-blank {
+      display: inline-block; width: 80px; height: 2px; background: #000;
+      vertical-align: middle; margin: 0 4px; position: relative; top: -4px;
+    }
+
+    .pdj-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+    .pdj-option {
+      padding: 11px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+      font-size: 14px; font-family: var(--font-serif); color: var(--dark);
+      cursor: pointer; transition: border-color 0.1s;
+    }
+    .pdj-option.correct {
+      border-color: var(--green); background: #D4EDDA; color: #0E5130;
+    }
+    .pdj-option.wrong {
+      border-color: #D1293D; background: #FDECEA; color: #D1293D;
+    }
+
+    /* Result state - what shows after answering */
+    .pdj-result-grid {
+      display: flex; gap: 5px; margin-bottom: 14px;
+    }
+    .pdj-result-cell {
+      flex: 1; height: 8px; border-radius: 2px;
+    }
+    .pdj-result-cell.done { background: #000; }
+    .pdj-result-cell.empty { background: var(--border); }
+
+    .pdj-result-text {
+      font-size: 13px; color: var(--mid); margin-bottom: 16px; line-height: 1.5;
+    }
+
+    .pdj-share-btn {
+      width: 100%; padding: 12px; background: #000; color: #fff; border: none;
+      border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    .pdj-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .pdj-timer { font-size: 11px; color: var(--light); }
+    .pdj-timer strong { color: var(--mid); font-weight: 600; }
+    .pdj-streak { font-size: 12px; color: var(--mid); display: flex; align-items: center; gap: 4px; }
+
+    /* ══════════════════════════════════════════
+       3. SHAREABLE PHRASE RESULT CARD
+    ══════════════════════════════════════════ */
+
+    .phrase-share-card {
+      width: 300px; background: #fff; border-radius: 16px;
+      padding: 22px; box-shadow: 0 2px 24px rgba(0,0,0,0.08);
+    }
+    .psc-logo { font-size: 12px; font-weight: 800; color: #000; letter-spacing: -0.04em; margin-bottom: 16px; }
+    .psc-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light); margin-bottom: 8px; }
+    .psc-date { font-size: 10px; color: var(--light); margin-bottom: 16px; }
+    .psc-grid { display: flex; gap: 6px; margin-bottom: 16px; }
+    .psc-cell {
+      width: 28px; height: 28px; border-radius: 5px;
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+    }
+    .psc-cell.win  { background: #000; }
+    .psc-cell.lose { background: #E2E2E2; }
+    .psc-sentence {
+      font-family: var(--font-serif); font-size: 14px; color: var(--mid);
+      line-height: 1.5; margin-bottom: 14px; font-style: italic;
+    }
+    .psc-sentence strong { color: var(--dark); font-style: normal; }
+    .psc-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 12px; border-top: 1px solid #F0F0F0;
+    }
+    .psc-level { font-size: 11px; font-weight: 700; background: #000; color: #fff; padding: 3px 8px; border-radius: 4px; }
+    .psc-cta { font-size: 11px; color: var(--light); }
+
+    /* labels */
+    .label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--light); margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ══ SECTION 1: SESSION RESULT CARD ══ -->
+  <h2>1 · Session result card — shareable artifact</h2>
+  <p class="section-note">
+    After completing a grammar session, users see a card designed to screenshot and share.
+    7 squares = 7 questions. Black = correct first try. Grey = missed.
+    Compact, legible out of context, carries identity signal (level + concept).
+  </p>
+
+  <div class="row">
+
+    <!-- The shareable card itself -->
+    <div>
+      <div class="label">The card (screenshot / share target)</div>
+      <div class="share-card">
+        <div class="share-card-logo">LexiTree</div>
+        <div class="share-card-eyebrow">Today's session</div>
+        <div class="share-card-concept">Le subjonctif présent</div>
+
+        <div class="result-grid">
+          <div class="rg-cell correct">■</div>
+          <div class="rg-cell correct">■</div>
+          <div class="rg-cell wrong">■</div>
+          <div class="rg-cell correct">■</div>
+          <div class="rg-cell correct">■</div>
+          <div class="rg-cell correct">■</div>
+          <div class="rg-cell correct">■</div>
+        </div>
+
+        <div class="share-card-meta">
+          <div>
+            <div class="share-card-score">6<span>/7</span></div>
+            <div style="font-size:11px;color:var(--light);margin-top:1px">first-attempt correct</div>
+          </div>
+          <div class="share-card-badges">
+            <div class="badge level">B1</div>
+            <div class="badge">🔥 5</div>
+          </div>
+        </div>
+
+        <div class="share-card-url">lexitree.app</div>
+      </div>
+    </div>
+
+    <!-- In-app share prompt -->
+    <div>
+      <div class="label">In-app — after session completes</div>
+      <div class="in-app-panel">
+        <div class="in-app-header">Share your result</div>
+        <div class="in-app-preview">
+          <div class="in-app-mini-grid">
+            <div class="mini-cell correct"></div>
+            <div class="mini-cell correct"></div>
+            <div class="mini-cell wrong"></div>
+            <div class="mini-cell correct"></div>
+            <div class="mini-cell correct"></div>
+            <div class="mini-cell correct"></div>
+            <div class="mini-cell correct"></div>
+          </div>
+          <div class="in-app-preview-text">
+            <div class="concept-label">Le subjonctif présent</div>
+            <div class="score-label">6/7 <span style="font-size:12px;font-weight:400;color:#ADADAD">B1 · 🔥5</span></div>
+          </div>
+        </div>
+        <div class="in-app-actions">
+          <button class="btn-share">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <button class="btn-copy">
+            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Perfect score variant -->
+    <div>
+      <div class="label">Perfect score variant</div>
+      <div class="share-card" style="background:#000;">
+        <div class="share-card-logo" style="color:#fff;">LexiTree</div>
+        <div class="share-card-eyebrow" style="color:rgba(255,255,255,0.3);">Today's session</div>
+        <div class="share-card-concept" style="color:#fff; margin-bottom:16px;">Le passé composé avec avoir</div>
+
+        <div class="result-grid" style="margin-bottom:16px;">
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+          <div class="rg-cell" style="background:#fff;color:#000;">■</div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:14px;">Acquis · 7/7</div>
+
+        <div class="share-card-meta" style="border-top:1px solid rgba(255,255,255,0.08);">
+          <div>
+            <div class="share-card-score" style="color:#fff;font-size:28px;">7<span style="color:rgba(255,255,255,0.3)">/7</span></div>
+          </div>
+          <div class="share-card-badges">
+            <div class="badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.1);">A2</div>
+            <div class="badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.1);">🔥 12</div>
+          </div>
+        </div>
+        <div class="share-card-url" style="color:rgba(255,255,255,0.2);">lexitree.app</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ══ SECTION 2: PHRASE DU JOUR ══ -->
+  <h2>2 · Phrase du jour — daily shared challenge</h2>
+  <p class="section-note">
+    One sentence to complete per day. Same challenge for all users at your level.
+    Can't skip ahead or binge. Shareable result creates the "did you get it?" conversation.
+    Separate from the daily grammar session — a lighter, 1-question ritual.
+  </p>
+
+  <div class="row">
+
+    <!-- Active state — user hasn't answered yet -->
+    <div>
+      <div class="label">Active — before answering</div>
+      <div class="phrasedujour-card">
+        <div class="pdj-header">
+          <div class="pdj-logo">LexiTree</div>
+          <div class="pdj-tag">Phrase du jour · B1</div>
+        </div>
+        <div class="pdj-body">
+          <div class="pdj-eyebrow">
+            <div class="pdj-dot"></div>
+            Mardi 27 mai 2026
+          </div>
+          <div class="pdj-sentence">
+            Il faut que tu <span class="pdj-blank"></span> avant de partir.
+          </div>
+          <div class="pdj-options">
+            <div class="pdj-option">finiras</div>
+            <div class="pdj-option correct">finisses</div>
+            <div class="pdj-option">finis</div>
+            <div class="pdj-option">finir</div>
+          </div>
+          <div style="font-size:12px;color:var(--light);font-style:italic;font-family:var(--font-serif);">
+            Select the correct form.
+          </div>
+        </div>
+        <div class="pdj-footer">
+          <div class="pdj-timer">Next phrase in <strong>14h 22m</strong></div>
+          <div class="pdj-streak">🔥 5 jour streak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completed state — result + share -->
+    <div>
+      <div class="label">Completed — result + share prompt</div>
+      <div class="phrasedujour-card">
+        <div class="pdj-header">
+          <div class="pdj-logo">LexiTree</div>
+          <div class="pdj-tag">Phrase du jour · B1</div>
+        </div>
+        <div class="pdj-body">
+          <div class="pdj-eyebrow" style="margin-bottom:12px;">
+            <div class="pdj-dot"></div>
+            Mardi 27 mai 2026
+          </div>
+          <div class="pdj-result-grid">
+            <div class="pdj-result-cell done"></div>
+            <div class="pdj-result-cell done"></div>
+            <div class="pdj-result-cell done"></div>
+            <div class="pdj-result-cell done"></div>
+            <div class="pdj-result-cell done"></div>
+            <div class="pdj-result-cell empty"></div>
+            <div class="pdj-result-cell empty"></div>
+          </div>
+          <div class="pdj-result-text">
+            <strong style="color:var(--dark)">Bien joué !</strong> The answer was <em style="font-family:var(--font-serif)">finisses</em> — subjonctif présent after <em style="font-family:var(--font-serif)">il faut que</em>.
+          </div>
+          <button class="pdj-share-btn">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share today's result
+          </button>
+        </div>
+        <div class="pdj-footer">
+          <div class="pdj-timer">Next phrase in <strong>14h 22m</strong></div>
+          <div class="pdj-streak">🔥 6 jour streak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- The shareable card for phrase du jour -->
+    <div>
+      <div class="label">Shared card (screenshot target)</div>
+      <div class="phrase-share-card">
+        <div class="psc-logo">LexiTree</div>
+        <div class="psc-title">Phrase du jour</div>
+        <div class="psc-date">27 mai 2026 · B1</div>
+        <div class="psc-grid">
+          <div class="psc-cell win">■</div>
+          <div class="psc-cell lose">■</div>
+          <div class="psc-cell win">■</div>
+          <div class="psc-cell win">■</div>
+          <div class="psc-cell win">■</div>
+        </div>
+        <div class="psc-sentence">
+          Il faut que tu <strong>finisses</strong> avant de partir.
+        </div>
+        <div style="font-size:11px;color:var(--light);margin-bottom:14px;font-family:var(--font-serif);font-style:italic;">
+          Subjonctif présent after il faut que.
+        </div>
+        <div class="psc-meta">
+          <div class="psc-level">B1</div>
+          <div class="psc-cta">lexitree.app/phrase</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

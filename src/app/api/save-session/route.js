@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { sessionDelta, clampScore, checkPromotion } from '@/lib/level'
 import { B1_ORDER } from '@/data/grammar-map'
+import { updateStreak } from '@/lib/streak'
 
 const LEVEL_CONCEPTS = {
   B1: B1_ORDER,
@@ -41,12 +42,19 @@ export async function POST(request) {
       await updateVocabularySeen(user.id, vocabularyWords)
     }
 
-    return NextResponse.json({ ok: true, promotion, recalibration })
+    // 5. Update streak
+    const streak = await updateStreak(user.id)
+
+    // 6. Award Maître — only on a perfect, full session
+    const maitre = await awardMaitre(user.id, level, concept, concept_name, score, total)
+
+    return NextResponse.json({ ok: true, promotion, recalibration, streak, maitre })
   } catch (error) {
     console.error('save-session error:', error)
     return NextResponse.json({ error: 'Failed to save session' }, { status: 500 })
   }
 }
+
 
 async function checkRecalibration(userId, currentLevel) {
   try {
@@ -120,6 +128,36 @@ async function updateVocabularySeen(userId, words) {
   }
 }
 
+async function awardMaitre(userId, level, concept, conceptName, score, total) {
+  if (score !== total || total !== 7) return false
+  try {
+    const { data: existing } = await supabase
+      .from('concept_mastery')
+      .select('perfect_count')
+      .eq('user_id', userId)
+      .eq('concept', concept)
+      .single()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('concept_mastery')
+        .update({ perfect_count: existing.perfect_count + 1, earned_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('concept', concept)
+      if (error) { console.error('awardMaitre update error:', error); return false }
+    } else {
+      const { error } = await supabase
+        .from('concept_mastery')
+        .insert({ user_id: userId, level, concept, concept_name: conceptName, earned_at: new Date().toISOString(), perfect_count: 1, status: 'earned' })
+      if (error) { console.error('awardMaitre insert error:', error); return false }
+    }
+    return true
+  } catch (err) {
+    console.error('awardMaitre error:', err)
+    return false
+  }
+}
+
 async function updateProfileScore(userId, level, sessionScore, sessionTotal) {
   try {
     // Fetch current profile
@@ -146,7 +184,7 @@ async function updateProfileScore(userId, level, sessionScore, sessionTotal) {
 
     const { data: sessionRows } = await supabase
       .from('sessions')
-      .select('concept, score, total')
+      .select('concept, score, total, created_at')
       .eq('user_id', userId)
       .eq('level', level)
 
