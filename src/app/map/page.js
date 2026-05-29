@@ -39,7 +39,7 @@ export default function MapPage() {
   const graphRef = useRef(null)
 
   useEffect(() => {
-    const level = localStorage.getItem('lexitree_level')
+    const level = localStorage.getItem('lagram_level')
     setLevelLoaded(true)
     if (!level) return
     setUserLevel(level)
@@ -79,7 +79,7 @@ export default function MapPage() {
 
   function handlePractice(concept) {
     // Don't overwrite the user's level — just set the concept override
-    localStorage.setItem('lexitree_concept', JSON.stringify(concept))
+    localStorage.setItem('lagram_concept', JSON.stringify(concept))
     router.push('/session')
   }
 
@@ -119,8 +119,8 @@ export default function MapPage() {
           .gm-mobile-sheet {
             position: fixed; left: 0; right: 0; bottom: 60px; z-index: 150;
             background: var(--white); border-top: 1px solid var(--border);
-            border-radius: 16px 16px 0 0; max-height: 65vh; overflow-y: auto;
-            box-shadow: 0 -4px 24px rgba(0,0,0,0.10);
+            border-radius: 3px 3px 0 0; max-height: 65vh; overflow-y: auto;
+            box-shadow: 0 -2px 12px rgba(26,20,16,0.12);
             transform: translateY(100%); transition: transform 0.25s ease;
             pointer-events: none;
           }
@@ -138,16 +138,18 @@ export default function MapPage() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
         {/* Topbar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+        <div style={{ padding: '44px 52px 0', flexShrink: 0 }}>
+          <h1 className="page-title">Carte de grammaire</h1>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 52px 12px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--light)' }}>
-            <h1 style={{ fontSize: 13, fontWeight: 'inherit', color: 'inherit', margin: 0 }}>Grammar map</h1>
             {selected && <>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3l3 3-3 3" stroke="var(--light)" strokeWidth="1.2" strokeLinecap="round"/></svg>
               <span style={{ color: 'var(--dark)', fontWeight: 500 }}>{selected.nameFr}</span>
             </>}
           </div>
           {selected && (
-            <button onClick={() => handlePractice(selected)} style={{ fontSize: 12, fontFamily: 'var(--font-sans)', padding: '5px 14px', borderRadius: '500px', border: 'none', background: 'var(--dark)', color: 'var(--white)', cursor: 'pointer', fontWeight: 600 }}>
+            <button onClick={() => handlePractice(selected)} style={{ fontSize: 12, fontFamily: 'var(--font-sans)', padding: '5px 14px', borderRadius: 2, border: 'none', background: 'var(--dark)', color: 'var(--white)', cursor: 'pointer', fontWeight: 500 }}>
               Practice now
             </button>
           )}
@@ -224,12 +226,12 @@ export default function MapPage() {
                     style={{
                       flexShrink: 0,
                       padding: '5px 14px',
-                      borderRadius: 20,
+                      borderRadius: 2,
                       fontSize: 12,
-                      fontWeight: isTab ? 600 : 400,
+                      fontWeight: isTab ? 500 : 400,
                       fontFamily: 'var(--font-sans)',
-                      border: isTab ? 'none' : '1px solid var(--border)',
-                      background: isTab ? (isLocked ? 'var(--light)' : 'var(--terracotta)') : 'var(--white)',
+                      border: isTab ? '2px solid var(--dark)' : '2px solid var(--border)',
+                      background: isTab ? (isLocked ? 'var(--light)' : 'var(--dark)') : 'transparent',
                       color: isTab ? 'var(--white)' : isLocked ? 'var(--light)' : isAccessible ? 'var(--dark)' : 'var(--light)',
                       cursor: 'pointer',
                       opacity: (!isAccessible && !isLocked && !isTab) ? 0.5 : 1,
@@ -322,7 +324,7 @@ function LevelCol({ level, badge, sublabel, sublabelColor, nodes, selected, onSe
   return (
     <div style={{ width: 134, display: 'flex', flexDirection: 'column' }}>
       <div style={{ marginBottom: 12 }}>
-        <div style={{ display: 'inline-flex', fontSize: 11, fontWeight: 500, padding: '3px 9px', borderRadius: 4, letterSpacing: '0.3px', marginBottom: 3, ...badgeColors[badge] }}>
+        <div style={{ display: 'inline-flex', fontSize: 11, fontWeight: 500, padding: '3px 9px', borderRadius: 2, letterSpacing: '0.3px', marginBottom: 3, ...badgeColors[badge] }}>
           {level}
         </div>
         <div style={{ fontSize: 10, color: sublabelColor }}>{sublabel}</div>
@@ -358,7 +360,7 @@ function Node({ node, isSelected, onSelect }) {
     <div
       className={isInteractive ? 'gm-node' : ''}
       onClick={isInteractive && node.concept ? () => onSelect(isSelected ? null : node.concept) : undefined}
-      style={{ fontSize: 11, padding: '5px 9px', borderRadius: 5, cursor: isInteractive && node.concept ? 'pointer' : 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', transition: 'filter 0.1s', ...base, ...selectedExtra }}
+      style={{ fontSize: 11, padding: '5px 9px', borderRadius: 2, cursor: isInteractive && node.concept ? 'pointer' : 'default', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', transition: 'filter 0.1s', ...base, ...selectedExtra }}
     >
       {node.label}
     </div>
@@ -415,7 +417,7 @@ function DetailPanel({ concept, onPractice }) {
           {concept.formula.map((part, i) =>
             ['+', '→', '/'].includes(part)
               ? <span key={i} style={{ fontSize: 11, color: 'var(--light)' }}>{part}</span>
-              : <span key={i} style={{ fontSize: 10, fontWeight: 500, padding: '3px 7px', borderRadius: 4, background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--dark)', whiteSpace: 'nowrap' }}>{part}</span>
+              : <span key={i} style={{ fontSize: 10, fontWeight: 500, padding: '3px 7px', borderRadius: 2, background: 'var(--bg)', border: '2px solid var(--border)', color: 'var(--dark)', whiteSpace: 'nowrap' }}>{part}</span>
           )}
         </div>
       </div>
@@ -423,7 +425,7 @@ function DetailPanel({ concept, onPractice }) {
       <div style={{ padding: '12px 16px', marginTop: 'auto' }}>
         <button
           onClick={() => onPractice(concept)}
-          style={{ width: '100%', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, padding: '0 16px', minHeight: 40, borderRadius: '500px', background: 'var(--dark)', color: 'var(--white)', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: '100%', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, padding: '0 16px', minHeight: 40, borderRadius: 2, background: 'var(--dark)', color: 'var(--white)', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onMouseOver={e => e.currentTarget.style.opacity = '0.85'}
           onMouseOut={e => e.currentTarget.style.opacity = '1'}
         >
@@ -471,7 +473,7 @@ function LockedDetail({ onSignIn }) {
 // ─── Shared micro-components ──────────────────────────────────────────────────
 
 function Tag({ bg, color, children }) {
-  return <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 4, background: bg, color }}>{children}</span>
+  return <span style={{ fontSize: 10, fontWeight: 500, padding: '2px 7px', borderRadius: 2, background: bg, color }}>{children}</span>
 }
 
 // ─── Style constants ──────────────────────────────────────────────────────────

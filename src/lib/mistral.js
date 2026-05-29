@@ -11,13 +11,14 @@ export async function callMistral({
   temperature = 0.4,
   json = true,
   retries = 2,
+  timeout = 25000,
 }) {
   let lastErr
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt > 0) await new Promise(r => setTimeout(r, attempt * 1500))
     try {
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 25000)
+      const timeoutId = setTimeout(() => controller.abort(), timeout)
 
       const res = await fetch(MISTRAL_URL, {
         method: 'POST',

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabaseBrowser } from '@/lib/supabase-browser'
+import { getDailyEclairs, DAILY_GOAL } from '@/lib/eclairs'
 
 const NAV = [
   {
@@ -25,8 +26,8 @@ const NAV = [
     ),
   },
   {
-    key: 'vocab-practice',
-    href: '/vocab-practice',
+    key: 'vocab',
+    href: '/vocab',
     label: 'Vocabulaire',
     icon: (
       <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -54,12 +55,15 @@ function getLast7Days() {
   })
 }
 
-export function Sidebar({ active, user, signInWithGoogle, signOut, children, vocabScoreOverride, vocabWordsSeenOverride }) {
+export function Sidebar({ active, user, signInWithGoogle, signOut, children, vocabScoreOverride, vocabWordsSeenOverride, eclairsOverride }) {
   const router = useRouter()
   const [streak, setStreak] = useState(0)
   const [vocabScore, setVocabScore] = useState(null)
   const [vocabWordsSeen, setVocabWordsSeen] = useState(null)
   const [sessionDates, setSessionDates] = useState(new Set())
+  const [eclairs, setEclairs] = useState(0)
+
+  useEffect(() => { setEclairs(getDailyEclairs()) }, [])
 
   useEffect(() => {
     if (!user) {
@@ -103,7 +107,7 @@ export function Sidebar({ active, user, signInWithGoogle, signOut, children, voc
         href={user ? '/session' : '/'}
         style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: '#fff', letterSpacing: '-0.05em', textDecoration: 'none' }}
       >
-        LexiTree
+        Lagram
       </a>
       {user ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -138,7 +142,7 @@ export function Sidebar({ active, user, signInWithGoogle, signOut, children, voc
       ))}
     </nav>
     <div className="sidebar">
-      <a className="sidebar-logo" href={user ? '/session' : '/'}>LexiTree</a>
+      <a className="sidebar-logo" href={user ? '/session' : '/'}>Lagram</a>
       <nav className="sidebar-nav">
         {NAV.map(({ key, href, label, icon }) => (
           <a key={key} className={`nav-item${active === key ? ' active' : ''}`} href={href}>
@@ -150,6 +154,8 @@ export function Sidebar({ active, user, signInWithGoogle, signOut, children, voc
 
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {children}
+
+        <EclairsWidget points={eclairsOverride ?? eclairs} goal={DAILY_GOAL} />
 
         {(vocabScoreOverride ?? vocabScore) > 0 && (
           <div style={{ padding: '10px 12px', background: 'var(--white)', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
@@ -209,6 +215,127 @@ export function Sidebar({ active, user, signInWithGoogle, signOut, children, voc
       </div>
     </div>
     </>
+  )
+}
+
+function lerpN(a, b, t) { return a + (b - a) * t }
+function clamp01(v) { return Math.max(0, Math.min(1, v)) }
+function rnd(v) { return Math.round(v) }
+
+function EclairsWidget({ points, goal }) {
+  const over = points > goal
+  const done = points >= goal
+
+  // ── fixed-size shell shared by all states ──────────────────────────
+  const shell = {
+    padding: '10px 12px',
+    borderRadius: 'var(--radius)',
+    position: 'relative',
+    overflow: 'hidden',
+    // fixed layout: label row (~22px) + sub row (~14px) + gap(13px) + bar(3px) + padding(22px) = ~74px
+  }
+
+  // ── row styles (identical across states for fixed sizing) ──────────
+  const topRow  = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }
+  const subRow  = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }
+  const labelSz = { fontSize: '10px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' }
+  const numSz   = { fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 700, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }
+  const subSz   = { fontSize: '10px', fontVariantNumeric: 'tabular-nums' }
+
+  // ── OVER GOAL ──────────────────────────────────────────────────────
+  if (over) {
+    const multiplier    = points / goal
+    const t             = clamp01((multiplier - 1) / 2)  // 0 at ×1.0, 1.0 at ×3.0
+
+    // number color: white → gold-light
+    const numColor = `rgb(${rnd(lerpN(255,240,t))},${rnd(lerpN(255,220,t))},${rnd(lerpN(255,138,t))})`
+
+    // multiplier label color: dim gold → bright gold
+    const multColor = `rgb(${rnd(lerpN(180,240,t))},${rnd(lerpN(140,220,t))},${rnd(lerpN(60,138,t))})`
+
+    // éclairs label: white at ×1.0 → gold at ×3.0
+    const labelColor = `rgb(${rnd(lerpN(255,201,t))},${rnd(lerpN(255,168,t))},${rnd(lerpN(255,76,t))})`
+
+    // hairline: centre stop slides gold → white
+    const hlOp  = lerpN(0.45, 1.0, t).toFixed(2)
+    const hlCR  = rnd(lerpN(201, 255, t))
+    const hlCG  = rnd(lerpN(168, 255, t))
+    const hlCB  = rnd(lerpN(76,  255, t))
+    const hlGold    = `rgba(201,168,76,${hlOp})`
+    const hlCentre  = `rgb(${hlCR},${hlCG},${hlCB})`
+    const hairline  = `linear-gradient(90deg,transparent,${hlGold} 20%,${hlCentre} 50%,${hlGold} 80%,transparent)`
+
+    // bar segment colors
+    const bR = rnd(lerpN(160, 240, t)), bG = rnd(lerpN(128, 220, t)), bB = rnd(lerpN(50, 138, t))
+    const barColor      = `rgb(${bR},${bG},${bB})`
+    const completeColor = `rgb(${rnd(bR*.4)},${rnd(bG*.4)},${rnd(bB*.4)})`
+
+    // glow on active bar tip
+    const glowR   = lerpN(3,  14, t).toFixed(1)
+    const glowS   = lerpN(1,   5, t).toFixed(1)
+    const glowOp  = lerpN(0.35, 0.85, t).toFixed(2)
+    const tipGlow = `0 0 ${glowR}px ${glowS}px rgba(${hlCR},${hlCG},${hlCB},${glowOp})`
+    const pulseDur = lerpN(2.2, 1.0, t).toFixed(2) + 's'
+
+    // bar segments: cap complete loops at 3 to avoid layout overflow
+    const completeLoops = Math.min(Math.floor(multiplier), 3)
+    const activeWidthPct = ((points % goal) / goal * 100).toFixed(1) + '%'
+    const hasActiveSeg  = (points % goal) > 0
+
+    return (
+      <div style={{ ...shell, background: '#4a1a06', border: '1.5px solid #6b2a0d' }}>
+        <style>{`@keyframes eclairs-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.6)}}`}</style>
+
+        <div style={topRow}>
+          <span style={{ ...labelSz, color: labelColor }}>Éclairs</span>
+          <span style={{ ...numSz, color: numColor }}>{points}</span>
+        </div>
+        <div style={subRow}>
+          <span style={{ fontSize: '9px' }}>{/* spacer */}</span>
+          <span style={{ ...subSz, color: multColor, fontWeight: 700 }}>
+            ×{multiplier.toFixed(1)} <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 500 }}>objectif</span>
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '2px', height: '3px' }}>
+          {Array.from({ length: completeLoops }).map((_, i) => (
+            <div key={i} style={{ flex: 1, height: '3px', borderRadius: '2px', background: completeColor }} />
+          ))}
+          <div style={{ flex: 1, height: '3px', borderRadius: '2px', background: 'rgba(255,255,255,0.12)', overflow: 'visible', position: 'relative' }}>
+            <div style={{ height: '100%', width: activeWidthPct, borderRadius: '2px', background: barColor, position: 'relative' }}>
+              {hasActiveSeg && (
+                <div style={{
+                  position: 'absolute', right: '-3px', top: '-2px',
+                  width: '7px', height: '7px', borderRadius: '50%',
+                  background: barColor, boxShadow: tipGlow,
+                  animation: `eclairs-pulse ${pulseDur} ease-in-out infinite`,
+                }} />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── UNDER / AT GOAL ────────────────────────────────────────────────
+  const pct = Math.min((points / goal) * 100, 100)
+  return (
+    <div style={{ ...shell, background: 'var(--white)', border: done ? '1.5px solid rgba(193,68,14,0.4)' : '1.5px solid var(--border)' }}>
+      <div style={topRow}>
+        <span style={{ ...labelSz, color: done ? 'var(--terracotta)' : 'var(--light)' }}>Éclairs</span>
+        <span style={{ ...numSz, color: done ? 'var(--terracotta)' : 'var(--dark)' }}>{points}</span>
+      </div>
+      <div style={subRow}>
+        <span style={{ fontSize: '9px' }}>{/* spacer */}</span>
+        <span style={{ ...subSz, color: done ? 'var(--terracotta)' : 'var(--light)', fontWeight: done ? 600 : 400 }}>
+          {done ? '✓ objectif' : `/ ${goal}`}
+        </span>
+      </div>
+      <div style={{ height: '3px', background: 'rgba(58,47,38,0.2)', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: done ? 'var(--terracotta)' : 'var(--gold)', borderRadius: '2px', transition: 'width 0.5s ease' }} />
+      </div>
+    </div>
   )
 }
 

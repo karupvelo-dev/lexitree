@@ -19,7 +19,7 @@ export function useAuth() {
 
       if (profile?.level_score) {
         const level = scoreToLevel(profile.level_score)
-        localStorage.setItem('lexitree_level', level)
+        localStorage.setItem('lagram_level', level)
         return true
       }
       return false
@@ -31,7 +31,7 @@ export function useAuth() {
   // Create profile from localStorage level when user signs in without an existing profile.
   // This handles the case where a guest completes assessment then signs in.
   async function createProfileFromStorage(u) {
-    const level = localStorage.getItem('lexitree_level')
+    const level = localStorage.getItem('lagram_level')
     if (!level) return
     try {
       const { levelToScore } = await import('@/lib/level')
@@ -72,6 +72,10 @@ export function useAuth() {
   }
 
   function signOut() {
+    localStorage.removeItem('lagram_level')
+    localStorage.removeItem('lagram_concept')
+    localStorage.removeItem('lagram_session_date')
+    localStorage.removeItem('lagram_session_concept')
     return supabaseBrowser.auth.signOut()
   }
 

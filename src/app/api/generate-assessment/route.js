@@ -61,9 +61,19 @@ const CONCEPT_POOL = {
     "négation complexe (ne...que, ne...aucun, ne...guère)",
     "infinitive constructions replacing subjunctive clauses",
   ],
+  C2: [
+    "literary tenses — passé simple, passé antérieur, subjonctif imparfait, subjonctif plus-que-parfait",
+    "rhetorical structures — anaphora, chiasmus, thèse–antithèse–synthèse",
+    "lexical precision — distinguishing near-synonyms, collocations, avoiding false friends",
+    "regional variations — Québécois, Belgian, Swiss French distinctions",
+    "archaic and legal vocabulary — icelle, nonobstant, susmentionné",
+    "stylistic register — adapting vocabulary and syntax across literary, academic, professional registers",
+    "syntactic ellipsis — omitting predictable elements for concision or style",
+    "irony and implicature — decoding meaning beyond literal words (Gricean maxims)",
+  ],
 }
 
-const DISTRIBUTION = { A1: 1, A2: 2, B1: 2, B2: 1, C1: 1 }
+const DISTRIBUTION = { A1: 1, A2: 1, B1: 2, B2: 1, C1: 1, C2: 1 }
 
 function pickConcepts() {
   const picked = {}

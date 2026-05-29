@@ -163,7 +163,7 @@ export default function ProfilePage() {
     setConcepts(map)
   }
 
-  const level = typeof window !== 'undefined' ? (localStorage.getItem('lexitree_level') ?? 'B1') : 'B1'
+  const level = typeof window !== 'undefined' ? (localStorage.getItem('lagram_level') ?? 'B1') : 'B1'
   const name  = user?.user_metadata?.full_name ?? user?.email ?? '?'
   const initial = name[0].toUpperCase()
 

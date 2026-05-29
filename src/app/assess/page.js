@@ -22,7 +22,7 @@ export default function AssessPage() {
     if (params.get('reason') === 'new_user') setIsNewUser(true)
     if (params.get('retake') === 'true') {
       setIsRetake(true)
-      setCurrentLevel(localStorage.getItem('lexitree_level'))
+      setCurrentLevel(localStorage.getItem('lagram_level'))
     }
   }, [])
 
@@ -30,7 +30,7 @@ export default function AssessPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get('retake') === 'true') return
-    const level = localStorage.getItem('lexitree_level')
+    const level = localStorage.getItem('lagram_level')
     if (level) router.replace('/session')
   }, [])
   const [questions, setQuestions] = useState([])
@@ -88,14 +88,14 @@ export default function AssessPage() {
     if (isRetake) {
       const isUpgrade = LEVEL_SEQUENCE.indexOf(estimatedLevel) > LEVEL_SEQUENCE.indexOf(currentLevel)
       if (isUpgrade) {
-        localStorage.setItem('lexitree_level', estimatedLevel)
+        localStorage.setItem('lagram_level', estimatedLevel)
         if (user) await saveProfile(user, estimatedLevel)
       }
       router.push('/session')
       return
     }
 
-    localStorage.setItem('lexitree_level', estimatedLevel)
+    localStorage.setItem('lagram_level', estimatedLevel)
     if (user) await saveProfile(user, estimatedLevel)
     router.push('/session')
   }
@@ -199,7 +199,7 @@ function IntroCard({ fetchState, onBegin, isNewUser, onBack }) {
         )}
         <div style={{ marginBottom: '8px' }}>
           <a href="/" style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: '#000000', letterSpacing: '-0.05em', textDecoration: 'none' }}>
-            LexiTree
+            Lagram
           </a>
         </div>
         <h1 style={{ fontSize: '26px', fontWeight: 900, lineHeight: 1.2, color: 'var(--dark)', marginBottom: '12px', letterSpacing: '-0.03em' }}>
@@ -210,7 +210,7 @@ function IntroCard({ fetchState, onBegin, isNewUser, onBack }) {
       </p>
 
       <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', flexWrap: 'wrap' }}>
-        {['A1', 'A2', 'B1', 'B2', 'C1'].map(lvl => (
+        {['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(lvl => (
           <span key={lvl} className="level-badge">{lvl}</span>
         ))}
       </div>

@@ -1,6 +1,14 @@
-# Lexitree — Engineering Reference
+# Lagram — Engineering Reference
 
-Lexitree is a French grammar learning app. Users are assessed, placed at a CEFR level (A1–C2), and practice daily sessions. Each session consists of a dynamically generated visual lesson followed by 7 fill-in-the-blank multiple-choice questions. Progress is tracked and tied to a TCF numerical score that gates level advancement.
+## Working rules
+
+- **Always explain the plan and wait for explicit approval before writing any code or making any file edits.**
+- If a task involves multiple files, list them all and describe the change to each before touching anything.
+- "Yes", "go ahead", or equivalent confirmation is required before proceeding.
+
+---
+
+Lagram is a French grammar learning app. Users are assessed, placed at a CEFR level (A1–C2), and practice daily sessions. Each session consists of a dynamically generated visual lesson followed by 7 fill-in-the-blank multiple-choice questions. Progress is tracked and tied to a TCF numerical score that gates level advancement.
 
 ---
 
@@ -67,7 +75,7 @@ src/
 Landing → "Check my French level" → /assess
 /assess → AI generates 7 questions while user reads intro
 → user answers → estimateLevel() → result card
-→ "Begin session" → sets lexitree_level in localStorage → /session
+→ "Begin session" → sets lagram_level in localStorage → /session
 ```
 
 ### Returning user (guest)
@@ -79,12 +87,12 @@ Landing → "Check my French level" → /assess
 ### Returning user (signed in)
 ```
 / → useAuth resolves → syncProfileToStorage() fetches profile.level_score
-→ writes lexitree_level to localStorage → redirect to /session
+→ writes lagram_level to localStorage → redirect to /session
 ```
 
 ### Guest who signs in after assessment
 ```
-assess → sets lexitree_level in localStorage (no profile yet)
+assess → sets lagram_level in localStorage (no profile yet)
 → later signs in via Google → SIGNED_IN event fires
 → syncProfileToStorage() returns false (no profile row)
 → createProfileFromStorage() creates profile from localStorage level
@@ -389,7 +397,7 @@ B1 concepts additionally have `keyTerms` (legacy) used in old lesson panel data.
 - `user` — signed-in Supabase user object
 
 On page load, `getSession()` is called. On SIGNED_IN event:
-1. `syncProfileToStorage(user)` — fetches profile row, writes `level_score → lexitree_level` to localStorage. Returns `true` if successful.
+1. `syncProfileToStorage(user)` — fetches profile row, writes `level_score → lagram_level` to localStorage. Returns `true` if successful.
 2. If `false` (no profile yet — new sign-in after guest assessment): `createProfileFromStorage(user)` — creates profile row from localStorage level using `levelToScore()`.
 
 **Two Supabase clients:**

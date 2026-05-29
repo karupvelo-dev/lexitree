@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const base = 'https://lexitree.app'
+  const base = 'https://lagram.app'
   const now = new Date().toISOString()
 
   return [
@@ -26,6 +26,12 @@ export default function sitemap() {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.7,
+    },
+    {
+      url: `${base}/vocab-map`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
   ]
 }

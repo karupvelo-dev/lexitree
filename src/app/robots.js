@@ -3,10 +3,10 @@ export default function robots() {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/map', '/assess', '/vocab', '/share/'],
-        disallow: ['/session', '/archive', '/vocab-practice', '/api/', '/auth/'],
+        allow: ['/', '/map', '/assess', '/vocab', '/vocab-map', '/share/'],
+        disallow: ['/session', '/archive', '/api/', '/auth/'],
       },
     ],
-    sitemap: 'https://lexitree.app/sitemap.xml',
+    sitemap: 'https://lagram.app/sitemap.xml',
   }
 }

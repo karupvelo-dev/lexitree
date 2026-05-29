@@ -1,23 +1,23 @@
 import './globals.css'
 
 export const metadata = {
-  metadataBase: new URL('https://lexitree.app'),
+  metadataBase: new URL('https://lagram.app'),
   title: {
-    default: 'LexiTree — Learn French Grammar',
-    template: '%s — LexiTree',
+    default: 'Lagram — Learn French Grammar',
+    template: '%s — Lagram',
   },
   description: 'AI-powered French grammar sessions tailored to your CEFR level. Practice daily, track your progress, and advance from A1 to C2.',
   openGraph: {
-    title: 'LexiTree — Learn French Grammar',
+    title: 'Lagram — Learn French Grammar',
     description: 'AI-powered French grammar sessions tailored to your CEFR level. Practice daily, track your progress, and advance from A1 to C2.',
-    url: 'https://lexitree.app',
-    siteName: 'LexiTree',
+    url: 'https://lagram.app',
+    siteName: 'Lagram',
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LexiTree — Learn French Grammar',
+    title: 'Lagram — Learn French Grammar',
     description: 'AI-powered French grammar sessions tailored to your CEFR level.',
   },
   robots: {

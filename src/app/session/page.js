@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sidebar, UserAvatar } from '@/components/Sidebar'
+import { addEclairs } from '@/lib/eclairs'
 import { LEVEL_INFO } from '@/data/concepts'
 import {
   A1_ORDER, A1_CONCEPTS,
@@ -32,8 +33,56 @@ function nextLevel(level) {
 }
 
 
-// Returns the concept to practice today, rotating daily through available grammar map concepts.
-// Falls back to the hardcoded concept if the level has no grammar map yet.
+// Spaced-repetition concept picker for signed-in users.
+// Computes a need score per concept from session history and returns the highest-need concept.
+// Need score: 1 − strength, where strength = accuracy × exp(−ln2 × daysSince / halfLife)
+// Half-life scales with accuracy (2 days for 0%, 14 days for 100%).
+// Concepts never practiced get a fixed need of 0.5 — introducing new material
+// only after weak/due concepts are addressed.
+async function selectSmartConcept(level, userId) {
+  try {
+    const { data: sessions } = await supabaseBrowser
+      .from('sessions')
+      .select('concept, score, total, created_at')
+      .eq('user_id', userId)
+      .eq('level', level)
+      .order('created_at', { ascending: false })
+
+    const data = LEVEL_DATA[level]
+    if (!data) return getDailyConcept(level)
+
+    const now = Date.now()
+    let bestConcept = null
+    let bestNeed = -1
+
+    for (const slug of data.order) {
+      const conceptSessions = (sessions ?? []).filter(s => s.concept === slug)
+      let needScore
+
+      if (conceptSessions.length === 0) {
+        needScore = 0.5
+      } else {
+        const latest = conceptSessions[0] // sorted desc — most recent first
+        const daysSince = (now - new Date(latest.created_at).getTime()) / 86400000
+        const accuracy = latest.score / latest.total
+        const halfLife = 2 + accuracy * 12
+        const strength = accuracy * Math.exp(-Math.LN2 * daysSince / halfLife)
+        needScore = 1 - strength
+      }
+
+      if (needScore > bestNeed) {
+        bestNeed = needScore
+        bestConcept = data.concepts[slug]
+      }
+    }
+
+    return bestConcept ?? getDailyConcept(level)
+  } catch {
+    return getDailyConcept(level)
+  }
+}
+
+// Day-rotation fallback for guests (same concept for all users on a given day).
 function getDailyConcept(level) {
   const data = LEVEL_DATA[level]
   if (data) {
@@ -75,38 +124,76 @@ export default function SessionPage() {
   const [isMapSession, setIsMapSession] = useState(false)
   const [streak, setStreak] = useState(0)
   const [guestSessions, setGuestSessions] = useState(0)
-  const didFetch    = useRef(false)
-  const loadingRef  = useRef(null)   // ref to LoadingCard's accelerate() handle
-  const skipScenario = useRef(false)
+  const [eclairsOverride, setEclairsOverride] = useState(null)
+  const loadingRef     = useRef(null)
+  const skipScenario   = useRef(false)
+  const prevUser       = useRef(undefined)
+  const conceptPicked  = useRef(false)
 
+  // Effect 1: read level and map override synchronously on mount
   useEffect(() => {
-    if (didFetch.current) return
-    didFetch.current = true
-
-    const storedLevel = localStorage.getItem('lexitree_level')
-    if (!storedLevel) { router.replace('/assess'); return }
-
-    const overrideRaw = localStorage.getItem('lexitree_concept')
-    const c = overrideRaw ? JSON.parse(overrideRaw) : getDailyConcept(storedLevel)
-    const mapSession = !!overrideRaw
-
+    const storedLevel = localStorage.getItem('lagram_level') ?? 'A1'
     setLevel(storedLevel)
-    setConcept(c)
-    setIsMapSession(mapSession)
-    setGuestSessions(parseInt(localStorage.getItem('lexitree_guest_sessions') ?? '0', 10))
+    setGuestSessions(parseInt(localStorage.getItem('lagram_guest_sessions') ?? '0', 10))
 
-    // If today's daily concept was already completed, skip to todayDone
-    if (!mapSession) {
-      const today = new Date().toISOString().slice(0, 10)
-      if (
-        localStorage.getItem('lexitree_session_date') === today &&
-        localStorage.getItem('lexitree_session_concept') === c.slug
-      ) {
-        setPhase('todayDone')
-        return
-      }
+    const overrideRaw = localStorage.getItem('lagram_concept')
+    if (overrideRaw) {
+      setConcept(JSON.parse(overrideRaw))
+      setIsMapSession(true)
     }
   }, [])
+
+  // Effect 2: pick concept once level and auth both resolve
+  useEffect(() => {
+    if (level === null) return
+    if (user === undefined) return
+    if (isMapSession) return
+    if (conceptPicked.current) return
+    conceptPicked.current = true
+
+    const today = new Date().toISOString().slice(0, 10)
+    function checkTodayDone(c) {
+      if (localStorage.getItem('lagram_session_date') === today &&
+          localStorage.getItem('lagram_session_concept') === c.slug) {
+        setPhase('todayDone')
+      }
+    }
+
+    if (user === null) {
+      const c = getDailyConcept(level)
+      setConcept(c)
+      checkTodayDone(c)
+      return
+    }
+
+    selectSmartConcept(level, user.id).then(c => {
+      setConcept(c)
+      checkTodayDone(c)
+    })
+  }, [level, user, isMapSession])
+
+  // Sign-out: reset to A1 guest view
+  useEffect(() => {
+    const wasSignedIn = prevUser.current !== undefined && prevUser.current !== null
+    if (wasSignedIn && user === null) {
+      conceptPicked.current = false
+      const a1Concept = getDailyConcept('A1')
+      setLevel('A1')
+      setConcept(a1Concept)
+      setPhase('confirm')
+      setIsMapSession(false)
+      setResults([])
+      setQuestions([])
+      setLesson(null)
+      setLoadState('idle')
+      setIndex(0)
+      setSelected(null)
+      setTriedWrong(new Set())
+      setFirstPick(null)
+      setLastWrongPick(null)
+    }
+    prevUser.current = user
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -221,6 +308,7 @@ export default function SessionPage() {
     if (firstPick === null) {
       setFirstPick(option)
       setResults(prev => [...prev, { correct, answer: q.answer }])
+      if (correct) setEclairsOverride(addEclairs(100))
     }
 
     if (correct) {
@@ -244,14 +332,14 @@ export default function SessionPage() {
       // Mark daily concept as done for today
       if (!isMapSession) {
         const today = new Date().toISOString().slice(0, 10)
-        localStorage.setItem('lexitree_session_date', today)
-        localStorage.setItem('lexitree_session_concept', concept.slug)
+        localStorage.setItem('lagram_session_date', today)
+        localStorage.setItem('lagram_session_concept', concept.slug)
       }
       // Track guest session count for gating
       if (!user) {
-        const prev = parseInt(localStorage.getItem('lexitree_guest_sessions') ?? '0', 10)
+        const prev = parseInt(localStorage.getItem('lagram_guest_sessions') ?? '0', 10)
         const updated = prev + 1
-        localStorage.setItem('lexitree_guest_sessions', String(updated))
+        localStorage.setItem('lagram_guest_sessions', String(updated))
         setGuestSessions(updated)
       }
       setPhase('complete')
@@ -285,7 +373,14 @@ export default function SessionPage() {
         }),
       })
       const data = await res.json()
-      if (data.promotion) setPromotion(data.promotion)
+      if (data.promotion) {
+        setPromotion(data.promotion)
+        if (data.promotion.promoted && data.promotion.newLevel) {
+          localStorage.setItem('lagram_level', data.promotion.newLevel)
+          setLevel(data.promotion.newLevel)
+          conceptPicked.current = false
+        }
+      }
       if (data.recalibration) setRecalibration(data.recalibration)
       if (data.streak) setStreak(data.streak.current)
 
@@ -315,7 +410,7 @@ export default function SessionPage() {
         },
         body: JSON.stringify({ suggestedLevel }),
       })
-      localStorage.setItem('lexitree_level', suggestedLevel)
+      localStorage.setItem('lagram_level', suggestedLevel)
       router.push('/session')
     } catch (err) {
       console.error('Failed to accept recalibration:', err)
@@ -341,18 +436,13 @@ export default function SessionPage() {
   }
 
   function handleGoToMap() {
-    localStorage.removeItem('lexitree_concept')
+    localStorage.removeItem('lagram_concept')
     router.push('/map')
   }
 
-  function handleNewSession() {
-    // Clear map override and return to daily concept flow
-    localStorage.removeItem('lexitree_concept')
+  async function handleNewSession() {
+    localStorage.removeItem('lagram_concept')
     setIsMapSession(false)
-
-    const freshConcept = getDailyConcept(level)
-    setConcept(freshConcept)
-
     setIndex(0)
     setSelected(null)
     setTriedWrong(new Set())
@@ -363,11 +453,15 @@ export default function SessionPage() {
     setRecalibration(null)
     setQuestions([])
 
-    // If today's daily concept is already done, show the done card instead
+    const freshConcept = user
+      ? await selectSmartConcept(level, user.id)
+      : getDailyConcept(level)
+    setConcept(freshConcept)
+
     const today = new Date().toISOString().slice(0, 10)
     if (
-      localStorage.getItem('lexitree_session_date') === today &&
-      localStorage.getItem('lexitree_session_concept') === freshConcept.slug
+      localStorage.getItem('lagram_session_date') === today &&
+      localStorage.getItem('lagram_session_concept') === freshConcept.slug
     ) {
       setPhase('todayDone')
       return
@@ -377,8 +471,8 @@ export default function SessionPage() {
   }
 
   async function handleChangeLevel() {
-    localStorage.removeItem('lexitree_level')
-    localStorage.removeItem('lexitree_concept')
+    localStorage.removeItem('lagram_level')
+    localStorage.removeItem('lagram_concept')
     // Clear level from profile so returning sign-in doesn't restore old level
     if (user) {
       try {
@@ -397,20 +491,22 @@ export default function SessionPage() {
 
   return (
     <div className="app-shell">
-      <Sidebar active="session" user={user} signInWithGoogle={signInWithGoogle} signOut={signOut}>
-        <div style={{ padding: '12px', background: 'var(--terracotta-bg)', borderRadius: 'var(--radius)', border: '1px solid var(--terracotta-light)' }}>
-          <div style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--terracotta)', marginBottom: '4px' }}>Your level</div>
-          <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--dark)', letterSpacing: '-0.02em' }}>{level}</div>
-          <div style={{ fontSize: '12px', color: 'var(--mid)', marginTop: '2px' }}>{LEVEL_INFO[level]?.name}</div>
-          {vocabCount !== null && (
-            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--terracotta-light)' }}>
-              <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--dark)' }}>{vocabCount}</div>
-              <div style={{ fontSize: '11px', color: 'var(--mid)', lineHeight: 1.4 }}>
-                {vocabCount === 1 ? 'word' : 'words'} encountered up to {level}
+      <Sidebar active="session" user={user} signInWithGoogle={signInWithGoogle} signOut={signOut} eclairsOverride={eclairsOverride}>
+        {user && (
+          <div style={{ padding: '12px', background: 'var(--terracotta-bg)', borderRadius: 'var(--radius)', border: '1px solid var(--terracotta-light)' }}>
+            <div style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--terracotta)', marginBottom: '4px' }}>Your level</div>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: 'var(--dark)', letterSpacing: '-0.02em' }}>{level}</div>
+            <div style={{ fontSize: '12px', color: 'var(--mid)', marginTop: '2px' }}>{LEVEL_INFO[level]?.name}</div>
+            {vocabCount !== null && (
+              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--terracotta-light)' }}>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: 'var(--dark)' }}>{vocabCount}</div>
+                <div style={{ fontSize: '11px', color: 'var(--mid)', lineHeight: 1.4 }}>
+                  {vocabCount === 1 ? 'word' : 'words'} encountered up to {level}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </Sidebar>
 
       <div className="main-content">
@@ -418,7 +514,7 @@ export default function SessionPage() {
           <TodayDoneCard onGoToMap={() => router.push('/map')} onGoToArchive={() => router.push('/archive')} />
         )}
 
-        {phase === 'confirm' && (
+        {phase === 'confirm' && concept && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 140px)' }}>
             {user === null && guestSessions >= 2 ? (
               <GuestGateCard signInWithGoogle={signInWithGoogle} />
@@ -456,6 +552,8 @@ export default function SessionPage() {
             phase={phase}
             onSelect={handleSelect}
             onNext={handleNext}
+            concept={concept}
+            level={level}
           />
         )}
 
@@ -502,7 +600,6 @@ function ConfirmCard({ concept, level, onStart, showLastSessionWarning }) {
 
       {/* Header */}
       <div style={{ marginBottom: '16px' }}>
-        <span className="level-badge" style={{ marginBottom: '12px', display: 'inline-block' }}>{level}</span>
         <h2 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--dark)', letterSpacing: '-0.03em', marginBottom: '4px' }}>
           {concept.mapLabel ?? concept.nameFr}
         </h2>
@@ -840,7 +937,7 @@ function ConjugationTable({ data }) {
 
 // ─── Exercise card ────────────────────────────────────────────────────────────
 
-function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWrongPick, phase, onSelect, onNext }) {
+function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWrongPick, phase, onSelect, onNext, concept, level }) {
   const footerRef = useRef(null)
 
   useEffect(() => {
@@ -865,6 +962,14 @@ function ExerciseCard({ q, index, total, selected, triedWrong, firstPick, lastWr
         </div>
         <span style={{ fontSize: '13px', color: 'var(--mid)' }}>{index + 1} / {total}</span>
       </div>
+
+      {concept && (
+        <div style={{ marginBottom: '10px' }}>
+          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--terracotta)' }}>
+            {concept.nameFr ?? concept.mapLabel}
+          </span>
+        </div>
+      )}
 
       <div className="exercise-card">
         <p className="question-text">{renderQuestion(q.question)}</p>
@@ -1780,22 +1885,41 @@ function SummaryCard({ results, total, concept, level, promotion, recalibration,
             />
           )}
 
-          {promotion && next && (
-            promotion.eligible ? (
-              <div style={{ marginBottom: '20px', padding: '16px 20px', background: 'var(--green-light)', border: '1px solid var(--green)', borderRadius: 'var(--radius)' }}>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--dark)', marginBottom: '4px' }}>Ready to advance to {next}</p>
-                <p style={{ fontSize: '13px', color: 'var(--mid)', marginBottom: '12px', lineHeight: 1.5 }}>You've completed all {level} concepts with strong accuracy. You can move up when ready.</p>
-                <button className="btn-primary" onClick={onChangeLevel} style={{ fontSize: '13px', padding: '8px 16px' }}>Advance to {next} →</button>
+          {promotion && (
+            promotion.promoted ? (
+              <div style={{ marginBottom: '20px', padding: '16px 20px', background: 'var(--green-light)', border: '2px solid var(--green)', borderRadius: 'var(--radius)' }}>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: 'var(--dark)', marginBottom: '4px' }}>Promoted to {promotion.newLevel}!</p>
+                <p style={{ fontSize: '13px', color: 'var(--mid)', lineHeight: 1.5 }}>You've demonstrated mastery of {level}. Your next session will be at {promotion.newLevel}.</p>
               </div>
-            ) : (
-              <div style={{ marginBottom: '20px', padding: '16px 20px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--dark)', marginBottom: '8px' }}>Progress to {next}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  <ProgressRow done={promotion.allCompleted} label={promotion.allCompleted ? `All ${level} concepts attempted` : `Complete all ${level} concepts on the grammar map`} />
-                  <ProgressRow done={promotion.avgAccuracy >= 0.7} label={promotion.avgAccuracy >= 0.7 ? `Overall accuracy ${Math.round(promotion.avgAccuracy * 100)}% ✓` : `Reach 70% accuracy (currently ${Math.round(promotion.avgAccuracy * 100)}%)`} />
-                  {promotion.weakConcepts?.length > 0 && <ProgressRow done={false} label={`Strengthen weak areas: ${promotion.weakConcepts.join(', ')}`} />}
+            ) : next && (
+              promotion.eligible ? (
+                <div style={{ marginBottom: '20px', padding: '16px 20px', background: 'var(--green-light)', border: '1px solid var(--green)', borderRadius: 'var(--radius)' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--dark)', marginBottom: '4px' }}>Ready to advance to {next}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--mid)', marginBottom: '12px', lineHeight: 1.5 }}>You've completed all {level} concepts with strong accuracy.</p>
+                  <button className="btn-primary" onClick={onChangeLevel} style={{ fontSize: '13px', padding: '8px 16px' }}>Advance to {next} →</button>
                 </div>
-              </div>
+              ) : (
+                <div style={{ marginBottom: '20px', padding: '16px 20px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--dark)', marginBottom: '8px' }}>Progress to {next}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                    <ProgressRow done={promotion.allCovered} label={promotion.allCovered ? `All ${level} concepts practised recently` : `Practise all ${level} concepts on the grammar map`} />
+                    <ProgressRow
+                      done={promotion.avgAccuracy >= (promotion.config?.overallMin ?? 0.7)}
+                      label={promotion.avgAccuracy >= (promotion.config?.overallMin ?? 0.7)
+                        ? `Overall accuracy ${Math.round(promotion.avgAccuracy * 100)}% ✓`
+                        : `Reach ${Math.round((promotion.config?.overallMin ?? 0.7) * 100)}% accuracy (currently ${Math.round(promotion.avgAccuracy * 100)}%)`}
+                    />
+                    <ProgressRow
+                      done={promotion.consistencyMet}
+                      label={promotion.consistencyMet
+                        ? `Consistent performance ✓`
+                        : `${Math.round((promotion.config?.consistencyMin ?? 0.6) * 100)}% of sessions above threshold (currently ${Math.round((promotion.consistencyRate ?? 0) * 100)}%)`}
+                    />
+                    {promotion.weakConcepts?.length > 0 && <ProgressRow done={false} label={`Strengthen: ${promotion.weakConcepts.join(', ')}`} />}
+                    {promotion.thinConcepts?.length > 0 && <ProgressRow done={false} label={`More practice needed: ${promotion.thinConcepts.join(', ')}`} />}
+                  </div>
+                </div>
+              )
             )
           )}
 

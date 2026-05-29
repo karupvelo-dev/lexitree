@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { sessionDelta, clampScore, checkPromotion } from '@/lib/level'
-import { B1_ORDER } from '@/data/grammar-map'
+import { sessionDelta, clampScore, checkPromotion, levelToScore } from '@/lib/level'
+import { A1_ORDER, A2_ORDER, B1_ORDER, B2_ORDER, C1_ORDER, C2_ORDER } from '@/data/grammar-map'
 import { updateStreak } from '@/lib/streak'
 
 const LEVEL_CONCEPTS = {
+  A1: A1_ORDER,
+  A2: A2_ORDER,
   B1: B1_ORDER,
+  B2: B2_ORDER,
+  C1: C1_ORDER,
+  C2: C2_ORDER,
 }
 
 const LEVEL_SEQUENCE = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
@@ -160,37 +165,49 @@ async function awardMaitre(userId, level, concept, conceptName, score, total) {
 
 async function updateProfileScore(userId, level, sessionScore, sessionTotal) {
   try {
-    // Fetch current profile
     const { data: profile } = await supabase
       .from('profiles')
       .select('level_score')
       .eq('id', userId)
       .single()
 
-    if (!profile) return null  // No profile yet (guest who hasn't signed in)
+    if (!profile) return null
 
-    // Apply delta and clamp within TCF range
-    const delta    = sessionDelta(sessionScore, sessionTotal)
-    const newScore = clampScore(profile.level_score + delta)
+    const delta        = sessionDelta(sessionScore, sessionTotal)
+    const deltaScore   = clampScore(profile.level_score + delta)
 
+    const conceptsInLevel = LEVEL_CONCEPTS[level]
+    let finalScore        = deltaScore
+    let promotionResult   = null
+
+    if (conceptsInLevel) {
+      const { data: sessionRows } = await supabase
+        .from('sessions')
+        .select('concept, score, total, created_at')
+        .eq('user_id', userId)
+        .eq('level', level)
+
+      if (sessionRows?.length) {
+        promotionResult = checkPromotion(conceptsInLevel, sessionRows, level)
+
+        if (promotionResult.eligible) {
+          const nextIndex = LEVEL_SEQUENCE.indexOf(level) + 1
+          if (nextIndex < LEVEL_SEQUENCE.length) {
+            const nextLevel = LEVEL_SEQUENCE[nextIndex]
+            finalScore      = levelToScore(nextLevel)
+            promotionResult = { ...promotionResult, promoted: true, newLevel: nextLevel }
+          }
+        }
+      }
+    }
+
+    // Single DB write — either delta-adjusted score or promoted score
     await supabase
       .from('profiles')
-      .update({ level_score: newScore, updated_at: new Date().toISOString() })
+      .update({ level_score: finalScore, updated_at: new Date().toISOString() })
       .eq('id', userId)
 
-    // 3. Check promotion eligibility if this level has a full concept map
-    const conceptsInLevel = LEVEL_CONCEPTS[level]
-    if (!conceptsInLevel) return null
-
-    const { data: sessionRows } = await supabase
-      .from('sessions')
-      .select('concept, score, total, created_at')
-      .eq('user_id', userId)
-      .eq('level', level)
-
-    if (!sessionRows?.length) return null
-
-    return checkPromotion(conceptsInLevel, sessionRows)
+    return promotionResult
   } catch (err) {
     console.error('updateProfileScore error:', err)
     return null
